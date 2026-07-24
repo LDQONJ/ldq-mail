@@ -24,6 +24,7 @@ import {
   Store,
   Menu,
   X,
+  Ticket,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useConfig } from '@/hooks/use-config';
@@ -54,6 +55,7 @@ const NAV_GROUPS: ReadonlyArray<{
       { tab: 'settings', label: 'Settings', icon: Settings },
       { tab: 'branding', label: 'Branding', icon: Palette },
       { tab: 'auth', label: 'Authentication', icon: Shield },
+      { tab: 'invites', label: 'Invite Codes', icon: Ticket },
       { tab: 'policy', label: 'Policy', icon: Scale },
     ],
   },

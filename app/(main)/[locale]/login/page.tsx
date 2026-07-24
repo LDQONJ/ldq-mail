@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useRouter } from "@/i18n/navigation";
 import { useParams, useSearchParams } from "next/navigation";
+import Link from "next/link";
 import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -798,6 +799,12 @@ export default function LoginPage() {
 
           {/* Footer */}
           <div className="mt-6 flex flex-col items-center gap-2">
+            <Link
+              href={toRouterPath(`${getPathPrefix(params.locale as string)}/${params.locale}/register`)}
+              className="text-xs text-muted-foreground/80 hover:text-primary transition-colors font-medium mb-1"
+            >
+              {t("have_invite_code") || "Have an invite code?"} <span className="underline underline-offset-2">{t("register_link") || "Register Account"}</span>
+            </Link>
             {loginCompanyName && (
               <p className="text-center text-xs text-muted-foreground/60 font-medium">
                 {loginCompanyName}

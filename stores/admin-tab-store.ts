@@ -6,6 +6,7 @@ export const ADMIN_TABS = [
   'settings',
   'branding',
   'auth',
+  'invites',
   'policy',
   'plugins',
   'themes',

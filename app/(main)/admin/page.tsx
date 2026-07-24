@@ -6,6 +6,7 @@ import { DashboardTab } from './_tabs/dashboard';
 import { SettingsTab } from './_tabs/settings';
 import { BrandingTab } from './_tabs/branding';
 import { AuthTab } from './_tabs/auth';
+import { InvitesTab } from './_tabs/invites';
 import { PolicyTab } from './_tabs/policy';
 import { PluginsTab } from './_tabs/plugins';
 import { ThemesTab } from './_tabs/themes';
@@ -38,6 +39,7 @@ export default function AdminPage() {
     case 'settings': return <SettingsTab />;
     case 'branding': return <BrandingTab />;
     case 'auth': return <AuthTab />;
+    case 'invites': return <InvitesTab />;
     case 'policy': return <PolicyTab />;
     case 'plugins': return <PluginsTab />;
     case 'themes': return <ThemesTab />;

@@ -1,5 +1,37 @@
 {
   "meta_description": "使用 JMAP 协议的极简网页邮件客户端",
+  "register": {
+    "title": "创建邮箱账号",
+    "subtitle": "使用您的注册邀请码加入",
+    "invite_code_label": "邀请码",
+    "invite_code_placeholder": "例如 INV-88F2A-991",
+    "email_label": "期望的邮箱地址",
+    "username_placeholder": "用户名",
+    "display_name_label": "显示名称 / 姓名",
+    "display_name_optional": "(可选)",
+    "display_name_placeholder": "例如：张三 (默认使用用户名)",
+    "password_label": "设置密码",
+    "password_placeholder": "至少 6 个字符",
+    "confirm_password_label": "确认密码",
+    "confirm_password_placeholder": "再次输入密码",
+    "submit_button": "注册账号",
+    "submitting": "正在创建账号...",
+    "success_title": "注册成功！",
+    "success_subtitle": "您的全新邮箱账号已创建：",
+    "proceed_to_login": "前往登录",
+    "already_have_account": "已有账号？",
+    "login_link": "去登录",
+    "have_invite_code": "有邀请码？",
+    "register_link": "注册账号",
+    "error": {
+      "invite_required": "请输入有效的邀请码。",
+      "username_required": "请输入用户名。",
+      "username_invalid": "用户名包含非法字符（仅允许字母、数字、点、下划线和减号）。",
+      "password_required": "请输入密码。",
+      "password_short": "密码至少需要 6 个字符。",
+      "password_mismatch": "两次输入的密码不一致。"
+    }
+  },
   "login": {
     "title": "网页邮箱",
     "username_label": "邮箱地址",

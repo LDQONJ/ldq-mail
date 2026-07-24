@@ -1,5 +1,37 @@
 {
   "meta_description": "Minimalist webmail client using JMAP protocol",
+  "register": {
+    "title": "Create Email Account",
+    "subtitle": "Join using your registration invite code",
+    "invite_code_label": "Invite Code",
+    "invite_code_placeholder": "e.g. INV-88F2A-991",
+    "email_label": "Desired Email Address",
+    "username_placeholder": "username",
+    "display_name_label": "Display Name",
+    "display_name_optional": "(optional)",
+    "display_name_placeholder": "e.g. Alex Zhang (defaults to username)",
+    "password_label": "Password",
+    "password_placeholder": "At least 6 characters",
+    "confirm_password_label": "Confirm Password",
+    "confirm_password_placeholder": "Re-enter your password",
+    "submit_button": "Register Account",
+    "submitting": "Creating Account...",
+    "success_title": "Registration Successful!",
+    "success_subtitle": "Your new email account has been created:",
+    "proceed_to_login": "Proceed to Login",
+    "already_have_account": "Already have an account?",
+    "login_link": "Log In",
+    "have_invite_code": "Have an invite code?",
+    "register_link": "Register Account",
+    "error": {
+      "invite_required": "Please enter a valid invite code.",
+      "username_required": "Please enter a username.",
+      "username_invalid": "Username contains invalid characters (letters, numbers, dot, dash, underscore only).",
+      "password_required": "Please enter a password.",
+      "password_short": "Password must be at least 6 characters.",
+      "password_mismatch": "Passwords do not match."
+    }
+  },
   "login": {
     "title": "Webmail",
     "username_label": "Email",
