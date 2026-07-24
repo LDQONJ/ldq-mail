@@ -2707,6 +2707,7 @@ export class JMAPClient implements IJMAPClient {
     let createdEmailId: string | undefined;
     let emailSubmissionId: string | undefined;
     let serverSendAt: string | undefined;
+    let filingError: string | undefined;
 
     if (response.methodResponses) {
       for (const [methodName, result] of response.methodResponses) {
@@ -2740,6 +2741,24 @@ export class JMAPClient implements IJMAPClient {
           );
         }
 
+        // Post-submission filing problems (the implicit Email/set from
+        // onSuccessUpdateEmail, or destroying the old draft) must not fail
+        // the send - the message already left - but they must not stay
+        // silent either: a silently rejected filing/cleanup is exactly how
+        // "sent mail still sits in Drafts" reports look (#592, #588's
+        // sibling note in 4dc76bbb). Log the details and surface a warning
+        // to the caller.
+        if (result.notUpdated && Object.keys(result.notUpdated).length) {
+          console.error(`[sendEmail] ${methodName} notUpdated:`, JSON.stringify(result.notUpdated, null, 2));
+          const first = Object.values(result.notUpdated as Record<string, { type?: string; description?: string }>)[0];
+          filingError = filingError ?? (first?.description || first?.type || 'post-send filing failed');
+        }
+        if (result.notDestroyed && Object.keys(result.notDestroyed).length) {
+          console.error(`[sendEmail] ${methodName} notDestroyed (old draft):`, JSON.stringify(result.notDestroyed, null, 2));
+          const first = Object.values(result.notDestroyed as Record<string, { type?: string; description?: string }>)[0];
+          filingError = filingError ?? (first?.description || first?.type || 'old draft cleanup failed');
+        }
+
         if (methodName === 'Email/set' && result.created?.[emailId]?.id) {
           createdEmailId = result.created[emailId].id;
         }
@@ -2755,8 +2774,8 @@ export class JMAPClient implements IJMAPClient {
     }
 
     return delayedUntil
-      ? { scheduled: true, emailId: createdEmailId, emailSubmissionId, sendAt: serverSendAt }
-      : { scheduled: false, emailId: createdEmailId, emailSubmissionId };
+      ? { scheduled: true, emailId: createdEmailId, emailSubmissionId, sendAt: serverSendAt, filingError }
+      : { scheduled: false, emailId: createdEmailId, emailSubmissionId, filingError };
   }
 
   /**
@@ -4547,6 +4566,7 @@ export class JMAPClient implements IJMAPClient {
 
       for (const accountId of accountIds) {
         const isPrimary = accountId === primaryId;
+        if (!isPrimary && this.calendarAccessDenied.has(accountId)) continue;
         const account = this.accounts[accountId];
 
         try {
@@ -4753,6 +4773,11 @@ export class JMAPClient implements IJMAPClient {
       .map((event) => normalizeCalendarEventLike(event));
   }
 
+  // Shared accounts the server rejected calendar access for - probed once,
+  // then skipped for the rest of the session (see getCalendarCapableAccountIds
+  // for why the fan-out has to probe on suspicion).
+  private calendarAccessDenied = new Set<string>();
+
   async queryAllCalendarEvents(
     filter: CalendarEventFilter,
     sort?: Array<{ property: string; isAscending: boolean }>,
@@ -4765,6 +4790,7 @@ export class JMAPClient implements IJMAPClient {
 
       for (const accountId of accountIds) {
         const isPrimary = accountId === primaryId;
+        if (!isPrimary && this.calendarAccessDenied.has(accountId)) continue;
         const account = this.accounts[accountId];
 
         try {
@@ -4830,7 +4856,12 @@ export class JMAPClient implements IJMAPClient {
 
       if (queryResponse.methodResponses?.[0]?.[0] === "error") {
         const error = queryResponse.methodResponses[0][1];
-        throw new Error(error?.description || error?.type || "CalendarEvent/query failed");
+        // Keep the JMAP error type so the catch below can tell an expected
+        // access rejection apart from a genuine failure.
+        throw Object.assign(
+          new Error(error?.description || error?.type || "CalendarEvent/query failed"),
+          { jmapErrorType: error?.type },
+        );
       }
 
       const ids: string[] = queryResponse.methodResponses?.[0]?.[1]?.ids || [];
@@ -4874,6 +4905,18 @@ export class JMAPClient implements IJMAPClient {
 
       return filtered;
     } catch (error) {
+      // The fan-out over shared accounts probes on suspicion (see
+      // getCalendarCapableAccountIds) and may hit accounts that grant no
+      // calendar access at all. Remember the rejection and go quiet instead
+      // of re-probing - and re-logging - on every range change.
+      const type = (error as { jmapErrorType?: string } | null)?.jmapErrorType;
+      const denied = type === 'forbidden' || type === 'accountNotFound' ||
+        /not have access/i.test(error instanceof Error ? error.message : '');
+      if (targetAccountId && denied) {
+        this.calendarAccessDenied.add(targetAccountId);
+        debug.log('calendar', `No calendar access to account ${targetAccountId} - skipping it from now on`);
+        return [];
+      }
       console.error('Failed to query calendar events:', error);
       return [];
     }
@@ -5914,18 +5957,29 @@ export class JMAPClient implements IJMAPClient {
       .replace('{closeafter}', 'no')
       .replace('{ping}', '30');
 
-    this.sseAbortController = new AbortController();
+    // Each attempt tracks its own controller. When closePushNotifications
+    // aborts a connect that is still in flight (every account switch tears
+    // down and re-creates push for all connected clients), the rejection
+    // lands in the catch below AFTER the next attempt has already been set
+    // up - treating it as a network failure there would spawn an
+    // unsupervised polling interval and, via fallbackToPolling nulling
+    // sseAbortController, orphan the replacement connection.
+    const controller = new AbortController();
+    this.sseAbortController = controller;
 
     this.authenticatedFetch(url, {
       headers: { 'Accept': 'text/event-stream' },
-      signal: this.sseAbortController.signal,
+      signal: controller.signal,
     }).then(response => {
+      if (controller.signal.aborted) return;
       if (!response.ok || !response.body) {
         this.fallbackToPolling();
         return;
       }
-      this.readSSEStream(response.body);
+      this.readSSEStream(response.body, controller);
     }).catch((error) => {
+      // Intentional close, not a failure - no polling fallback.
+      if (controller.signal.aborted) return;
       if (error instanceof RateLimitError) {
         this.sseAbortController = null;
         this.scheduleSSEReconnect();
@@ -5935,7 +5989,7 @@ export class JMAPClient implements IJMAPClient {
     });
   }
 
-  private async readSSEStream(body: ReadableStream<Uint8Array>): Promise<void> {
+  private async readSSEStream(body: ReadableStream<Uint8Array>, controller: AbortController): Promise<void> {
     const reader = body.getReader();
     const decoder = new TextDecoder();
     let buffer = '';
@@ -5964,8 +6018,10 @@ export class JMAPClient implements IJMAPClient {
 
     this.stopSSEPingMonitor();
 
-    // Stream ended - reconnect unless we were intentionally closed
-    if (this.sseAbortController && !this.sseAbortController.signal.aborted) {
+    // Stream ended - reconnect only if this stream is still the current one
+    // and was not intentionally closed. A superseded stream must not spawn a
+    // second connection next to its replacement.
+    if (this.sseAbortController === controller && !controller.signal.aborted) {
       this.scheduleSSEReconnect();
     }
   }
