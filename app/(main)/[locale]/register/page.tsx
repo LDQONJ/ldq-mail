@@ -114,28 +114,28 @@ export default function RegisterPage() {
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-background via-muted/10 to-muted/30 relative px-4 py-12">
-      <div className="w-full max-w-[440px] mx-auto">
+      <div className="w-full max-w-[400px] mx-auto">
         <div className="rounded-2xl border border-border/60 bg-background/80 backdrop-blur-sm shadow-xl shadow-black/5 dark:shadow-black/20 overflow-hidden">
           
           {/* Header with logo - exact match with login page */}
-          <div className="px-8 pt-12 pb-4 text-center">
-            <div className="inline-flex items-center justify-center w-20 h-20 mb-6">
+          <div className="px-8 pt-10 pb-6 text-center">
+            <div className="inline-flex items-center justify-center w-16 h-16 mb-5">
               <img
                 src={withBasePath(resolvedTheme === 'dark' ? loginLogoDarkUrl : loginLogoLightUrl)}
                 alt={appName}
-                className="max-w-20 max-h-20 object-contain"
+                className="max-w-16 max-h-16 object-contain"
               />
             </div>
-            <h1 className="text-3xl font-bold text-foreground tracking-tight">
+            <h1 className="text-2xl font-semibold text-foreground tracking-tight">
               {t('title')}
             </h1>
-            <p className="text-sm text-muted-foreground mt-2 max-w-xs mx-auto leading-relaxed">
+            <p className="text-sm text-muted-foreground mt-1.5 max-w-xs mx-auto leading-relaxed">
               {t('subtitle')}
             </p>
           </div>
 
           {/* Body - exact match with login page padding & input sizes */}
-          <div className="px-8 pb-10 pt-4">
+          <div className="px-8 pb-8">
             {successEmail ? (
               /* Success Card */
               <div className="text-center space-y-6 py-4">
