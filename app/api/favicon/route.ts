@@ -502,6 +502,7 @@ async function fetchDuckDuckGoFavicon(targetDomain: string): Promise<{ data: Arr
 
 export async function GET(request: NextRequest) {
   const domain = request.nextUrl.searchParams.get('domain');
+  const forceRefresh = request.nextUrl.searchParams.get('refresh') === 'true';
 
   if (!domain || !isValidDomain(domain)) {
     return new NextResponse(null, {
@@ -522,24 +523,38 @@ export async function GET(request: NextRequest) {
     candidateDomains.push(rootDomain);
   }
 
-  // Check in-memory cache first for any candidate domains or rawDomain
-  for (const cand of [rawDomain, ...candidateDomains]) {
-    const cached = cache.get(cand);
-    if (cached && Date.now() - cached.fetchedAt < CACHE_TTL_MS) {
-      return new NextResponse(cached.data, {
-        headers: {
-          'Content-Type': cached.contentType,
-          'Cache-Control': 'public, max-age=1209600', // 2 weeks
-        },
-      });
+  if (forceRefresh) {
+    // Purge in-memory caches
+    cache.delete(rawDomain);
+    cache.delete(rootDomain);
+    cache.delete(mailDomain);
+    negativeCache.delete(rawDomain);
+    negativeCache.delete(rootDomain);
+    negativeCache.delete(mailDomain);
+  } else {
+    // Check in-memory cache first for any candidate domains or rawDomain
+    for (const cand of [rawDomain, ...candidateDomains]) {
+      const cached = cache.get(cand);
+      if (cached && Date.now() - cached.fetchedAt < CACHE_TTL_MS) {
+        return new NextResponse(cached.data, {
+          headers: {
+            'Content-Type': cached.contentType,
+            'Cache-Control': 'public, max-age=1209600', // 2 weeks
+          },
+        });
+      }
+    }
+
+    // Check negative cache
+    const neg = negativeCache.get(rootDomain) || negativeCache.get(mailDomain);
+    if (neg && Date.now() - neg.fetchedAt < NEGATIVE_CACHE_TTL_MS) {
+      return new NextResponse(TRANSPARENT_PNG, { headers: MISSING_FAVICON_HEADERS });
     }
   }
 
-  // Check negative cache
-  const neg = negativeCache.get(rootDomain) || negativeCache.get(mailDomain);
-  if (neg && Date.now() - neg.fetchedAt < NEGATIVE_CACHE_TTL_MS) {
-    return new NextResponse(TRANSPARENT_PNG, { headers: MISSING_FAVICON_HEADERS });
-  }
+  const cacheHeader = forceRefresh
+    ? 'no-cache, no-store, must-revalidate'
+    : 'public, max-age=1209600';
 
   // Priority Level A: Direct HTTP fetch from target servers (Preserves RGBA transparency & 0s delay!)
   for (const cand of candidateDomains) {
@@ -553,7 +568,7 @@ export async function GET(request: NextRequest) {
       return new NextResponse(directResult.data, {
         headers: {
           'Content-Type': directResult.contentType,
-          'Cache-Control': 'public, max-age=1209600', // 2 weeks
+          'Cache-Control': cacheHeader,
         },
       });
     }
@@ -571,7 +586,7 @@ export async function GET(request: NextRequest) {
       return new NextResponse(ddgResult.data, {
         headers: {
           'Content-Type': ddgResult.contentType,
-          'Cache-Control': 'public, max-age=1209600', // 2 weeks
+          'Cache-Control': cacheHeader,
         },
       });
     }

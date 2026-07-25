@@ -118,7 +118,7 @@ export default function RegisterPage() {
         <div className="rounded-2xl border border-border/60 bg-background/80 backdrop-blur-sm shadow-xl shadow-black/5 dark:shadow-black/20 overflow-hidden">
           
           {/* Header with logo - exact match with login page */}
-          <div className="px-8 pt-10 pb-6 text-center">
+          <div className="px-6 sm:px-8 pt-10 pb-6 text-center">
             <div className="inline-flex items-center justify-center w-16 h-16 mb-5">
               <img
                 src={withBasePath(resolvedTheme === 'dark' ? loginLogoDarkUrl : loginLogoLightUrl)}
@@ -135,7 +135,7 @@ export default function RegisterPage() {
           </div>
 
           {/* Body - exact match with login page padding & input sizes */}
-          <div className="px-8 pb-8">
+          <div className="px-6 sm:px-8 pb-8">
             {successEmail ? (
               /* Success Card */
               <div className="text-center space-y-6 py-4">
@@ -195,16 +195,16 @@ export default function RegisterPage() {
                   <label className="block text-sm font-medium text-foreground">
                     {t('email_label')}
                   </label>
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-1.5 sm:gap-2">
                     <input
                       type="text"
                       required
                       placeholder={t('username_placeholder')}
                       value={formData.username}
                       onChange={(e) => setFormData({ ...formData, username: e.target.value })}
-                      className="h-11 flex-1 px-3.5 bg-muted/40 border border-border/60 rounded-xl focus:bg-background focus:border-primary/50 transition-all duration-200 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20"
+                      className="h-11 flex-1 min-w-0 px-3 sm:px-3.5 bg-muted/40 border border-border/60 rounded-xl focus:bg-background focus:border-primary/50 transition-all duration-200 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20"
                     />
-                    <div className="h-11 px-3 bg-muted/40 border border-border/60 rounded-xl flex items-center text-sm font-medium text-muted-foreground select-none shrink-0">
+                    <div className="h-11 px-2.5 sm:px-3 bg-muted/40 border border-border/60 rounded-xl flex items-center text-xs sm:text-sm font-medium text-muted-foreground select-none shrink-0">
                       @{FIXED_DOMAIN}
                     </div>
                   </div>
