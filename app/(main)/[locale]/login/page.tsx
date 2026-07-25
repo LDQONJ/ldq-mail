@@ -1286,6 +1286,17 @@ export default function LoginPage() {
                     </div>
                   </div>
                 )}
+
+                {/* Register Link */}
+                <div className="mt-4 pt-3 text-center border-t border-border/40">
+                  <Link
+                    href={toRouterPath(`${getPathPrefix(params.locale as string)}/${params.locale}/register`)}
+                    className="text-xs text-muted-foreground hover:text-foreground transition-colors font-medium inline-flex items-center gap-1.5"
+                  >
+                    <span>{t("have_invite_code") || "有邀请码？"}</span>
+                    <span className="text-primary font-semibold hover:underline underline-offset-4">{t("register_link") || "注册新账号"}</span>
+                  </Link>
+                </div>
               </form>
             )}
 
