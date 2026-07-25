@@ -420,7 +420,6 @@ function getRootDomain(domain: string): string {
 
 function evictOldest() {
   if (cache.size < CACHE_MAX_SIZE) return;
-  // Evict the oldest entry
   let oldestKey: string | null = null;
   let oldestTime = Infinity;
   for (const [key, entry] of cache) {
@@ -430,76 +429,6 @@ function evictOldest() {
     }
   }
   if (oldestKey) cache.delete(oldestKey);
-}
-
-export async function GET(request: NextRequest) {
-  const domain = request.nextUrl.searchParams.get('domain');
-
-  if (!domain || !isValidDomain(domain)) {
-    return new NextResponse(null, {
-      status: 400,
-      headers: { 'Cache-Control': 'public, max-age=86400' },
-    });
-  }
-
-  // Resolve to root domain so subdomains share the same favicon lookup
-  const normalizedDomain = getRootDomain(domain.toLowerCase());
-
-  // Check negative cache (domains known to have no favicon)
-  const neg = negativeCache.get(normalizedDomain);
-  if (neg && Date.now() - neg.fetchedAt < NEGATIVE_CACHE_TTL_MS) {
-    return new NextResponse(TRANSPARENT_PNG, { headers: MISSING_FAVICON_HEADERS });
-  }
-
-  // Check cache
-  const cached = cache.get(normalizedDomain);
-  if (cached && Date.now() - cached.fetchedAt < CACHE_TTL_MS) {
-    return new NextResponse(cached.data, {
-      headers: {
-        'Content-Type': cached.contentType,
-        'Cache-Control': 'public, max-age=1209600', // 2 weeks
-      },
-    });
-  }
-
-  try {
-    const upstream = await fetch(
-      `https://icons.duckduckgo.com/ip3/${encodeURIComponent(normalizedDomain)}.ico`,
-      { signal: AbortSignal.timeout(5000) }
-    );
-
-    if (!upstream.ok) {
-      evictNegativeOldest();
-      negativeCache.set(normalizedDomain, { fetchedAt: Date.now() });
-      return new NextResponse(TRANSPARENT_PNG, { headers: MISSING_FAVICON_HEADERS });
-    }
-
-    const contentType = upstream.headers.get('content-type') || 'image/x-icon';
-    const data = await upstream.arrayBuffer();
-
-    // Don't cache empty/tiny responses (likely no real favicon)
-    if (data.byteLength < 10) {
-      evictNegativeOldest();
-      negativeCache.set(normalizedDomain, { fetchedAt: Date.now() });
-      return new NextResponse(TRANSPARENT_PNG, { headers: MISSING_FAVICON_HEADERS });
-    }
-
-    // Cache the result
-    evictOldest();
-    cache.set(normalizedDomain, { data, contentType, fetchedAt: Date.now() });
-
-    return new NextResponse(data, {
-      headers: {
-        'Content-Type': contentType,
-        'Cache-Control': 'public, max-age=1209600',
-      },
-    });
-  } catch {
-    return new NextResponse(null, {
-      status: 502,
-      headers: { 'Cache-Control': 'public, max-age=300' }, // 5 min
-    });
-  }
 }
 
 function evictNegativeOldest() {
@@ -513,4 +442,92 @@ function evictNegativeOldest() {
     }
   }
   if (oldestKey) negativeCache.delete(oldestKey);
+}
+
+async function fetchSingleFavicon(targetDomain: string): Promise<{ data: ArrayBuffer; contentType: string } | null> {
+  try {
+    const upstream = await fetch(
+      `https://icons.duckduckgo.com/ip3/${encodeURIComponent(targetDomain)}.ico`,
+      { signal: AbortSignal.timeout(5000) }
+    );
+
+    if (!upstream.ok) return null;
+
+    const contentType = upstream.headers.get('content-type') || 'image/x-icon';
+    const data = await upstream.arrayBuffer();
+
+    // Don't accept empty/tiny responses (likely no real favicon or default transparent/missing)
+    if (data.byteLength < 10) return null;
+
+    return { data, contentType };
+  } catch {
+    return null;
+  }
+}
+
+export async function GET(request: NextRequest) {
+  const domain = request.nextUrl.searchParams.get('domain');
+
+  if (!domain || !isValidDomain(domain)) {
+    return new NextResponse(null, {
+      status: 400,
+      headers: { 'Cache-Control': 'public, max-age=86400' },
+    });
+  }
+
+  const rawDomain = domain.trim().toLowerCase();
+  const rootDomain = getRootDomain(rawDomain);
+
+  // Priority 1: mail.{rootDomain}
+  // Priority 2: {rootDomain} (fallback if mail.{rootDomain} favicon is missing)
+  const mailDomain = rootDomain.startsWith('mail.') ? rootDomain : `mail.${rootDomain}`;
+  const candidateDomains: string[] = [mailDomain];
+  if (rootDomain !== mailDomain) {
+    candidateDomains.push(rootDomain);
+  }
+
+  // Check in-memory cache first for any of the candidate domains or rawDomain
+  for (const cand of [rawDomain, ...candidateDomains]) {
+    const cached = cache.get(cand);
+    if (cached && Date.now() - cached.fetchedAt < CACHE_TTL_MS) {
+      return new NextResponse(cached.data, {
+        headers: {
+          'Content-Type': cached.contentType,
+          'Cache-Control': 'public, max-age=1209600', // 2 weeks
+        },
+      });
+    }
+  }
+
+  // Check negative cache
+  const neg = negativeCache.get(rootDomain) || negativeCache.get(mailDomain);
+  if (neg && Date.now() - neg.fetchedAt < NEGATIVE_CACHE_TTL_MS) {
+    return new NextResponse(TRANSPARENT_PNG, { headers: MISSING_FAVICON_HEADERS });
+  }
+
+  // Attempt to fetch from candidates in priority order: mail.rootDomain -> rootDomain
+  for (const cand of candidateDomains) {
+    const result = await fetchSingleFavicon(cand);
+    if (result) {
+      evictOldest();
+      cache.set(cand, { data: result.data, contentType: result.contentType, fetchedAt: Date.now() });
+      cache.set(rawDomain, { data: result.data, contentType: result.contentType, fetchedAt: Date.now() });
+      cache.set(rootDomain, { data: result.data, contentType: result.contentType, fetchedAt: Date.now() });
+
+      return new NextResponse(result.data, {
+        headers: {
+          'Content-Type': result.contentType,
+          'Cache-Control': 'public, max-age=1209600', // 2 weeks
+        },
+      });
+    }
+  }
+
+  // If neither mail.rootDomain nor rootDomain returned a valid favicon
+  evictNegativeOldest();
+  negativeCache.set(rootDomain, { fetchedAt: Date.now() });
+  negativeCache.set(mailDomain, { fetchedAt: Date.now() });
+  negativeCache.set(rawDomain, { fetchedAt: Date.now() });
+
+  return new NextResponse(TRANSPARENT_PNG, { headers: MISSING_FAVICON_HEADERS });
 }
