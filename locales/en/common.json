@@ -34,6 +34,8 @@
   },
   "login": {
     "title": "Webmail",
+    "have_invite_code": "Have an invite code?",
+    "register_link": "Register Account",
     "username_label": "Email",
     "username_placeholder": "user@example.com",
     "password_label": "Password",

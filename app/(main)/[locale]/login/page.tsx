@@ -803,7 +803,7 @@ export default function LoginPage() {
               href={toRouterPath(`${getPathPrefix(params.locale as string)}/${params.locale}/register`)}
               className="text-xs text-muted-foreground/80 hover:text-primary transition-colors font-medium mb-1"
             >
-              {t("have_invite_code") || "Have an invite code?"} <span className="underline underline-offset-2">{t("register_link") || "Register Account"}</span>
+              {t("have_invite_code")} <span className="underline underline-offset-2">{t("register_link")}</span>
             </Link>
             {loginCompanyName && (
               <p className="text-center text-xs text-muted-foreground/60 font-medium">
@@ -1293,8 +1293,8 @@ export default function LoginPage() {
                     href={toRouterPath(`${getPathPrefix(params.locale as string)}/${params.locale}/register`)}
                     className="text-xs text-muted-foreground hover:text-foreground transition-colors font-medium inline-flex items-center gap-1.5"
                   >
-                    <span>{t("have_invite_code") || "有邀请码？"}</span>
-                    <span className="text-primary font-semibold hover:underline underline-offset-4">{t("register_link") || "注册新账号"}</span>
+                    <span>{t("have_invite_code")}</span>
+                    <span className="text-primary font-semibold hover:underline underline-offset-4">{t("register_link")}</span>
                   </Link>
                 </div>
               </form>
