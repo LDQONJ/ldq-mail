@@ -1,8 +1,8 @@
 {
   "meta_description": "使用 JMAP 协议的极简网页邮件客户端",
   "register": {
-    "title": "创建邮箱账号",
-    "subtitle": "使用您的注册邀请码加入",
+    "title": "LDQ Mail",
+    "subtitle": "网页邮箱",
     "invite_code_label": "邀请码",
     "invite_code_placeholder": "例如 INV-88F2A-991",
     "email_label": "邮箱地址",
