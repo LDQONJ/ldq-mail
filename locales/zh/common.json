@@ -173,23 +173,23 @@
     "unified_all_unread": "全部未读",
     "unified_all_starred": "全部加星标",
     "unified_all_mail": "全部邮件",
-    "remove_account": "Remove account",
-    "remove_account_confirm": "Remove {account} from this device? You can add it back later."
+    "remove_account": "删除账号",
+    "remove_account_confirm": "是否从该设备删除 {account}？您可以稍后重新添加。"
   },
   "protocol_handlers": {
     "title": "默认应用",
-    "description": "选择是否在 Bulwark 中打开电子邮件和日历链接。从技术上讲，Bulwark 会注册为 mailto: 和 webcal: 链接的协议处理程序。",
+    "description": "选择是否在 LDQ Mail 中打开电子邮件和日历链接。从技术上讲，LDQ Mail 会注册为 mailto: 和 webcal: 链接的协议处理程序。",
     "unsupported": "此浏览器或连接不支持手动注册协议处理程序。你仍可尝试通过浏览器或系统设置使用已安装的 PWA。",
     "mailto_label": "电子邮件链接",
-    "mailto_description": "在 Bulwark 中打开 mailto: 链接，并预先填好撰写窗口。",
+    "mailto_description": "在 LDQ Mail 中打开 mailto: 链接，并预先填好撰写窗口。",
     "protocol_open_mode_label": "打开协议链接时",
-    "protocol_open_mode_description": "选择 Bulwark 是在新标签页中打开 mailto: 和 webcal: 链接，还是复用已打开的会话。活动会话选项需要通知权限，这样当浏览器阻止聚焦时，你可以点击备用通知将 Bulwark 窗口带到前台。",
+    "protocol_open_mode_description": "选择 LDQ Mail 是在新标签页中打开 mailto: 和 webcal: 链接，还是复用已打开的会话。活动会话选项需要通知权限，这样当浏览器阻止聚焦时，你可以点击备用通知将 LDQ Mail 窗口带到前台。",
     "protocol_open_mode_active_session": "尽可能在活动会话中打开",
     "protocol_open_mode_new_tab": "始终打开新标签页",
-    "focus_notification_title": "打开 Bulwark",
-    "focus_notification_body": "链接已在 Bulwark 中打开。点击可将窗口带到前台。",
+    "focus_notification_title": "打开 LDQ Mail",
+    "focus_notification_body": "链接已在 LDQ Mail 中打开。点击可将窗口带到前台。",
     "webcal_label": "日历链接",
-    "webcal_description": "在 Bulwark 中打开 webcal: 链接，并预先填好日历订阅对话框。",
+    "webcal_description": "在 LDQ Mail 中打开 webcal: 链接，并预先填好日历订阅对话框。",
     "register_mailto": "注册电子邮件应用",
     "register_webcal": "注册日历应用",
     "mailto_registered": "已请求注册电子邮件处理程序",
@@ -197,7 +197,7 @@
     "registration_failed": "协议处理程序注册失败",
     "opening_mailto": "正在打开撰写窗口...",
     "opening_webcal": "正在打开日历...",
-    "browser_note": "你的浏览器或操作系统可能会要求确认，并且可能需要先安装 Bulwark，才能将其选为默认应用。",
+    "browser_note": "你的浏览器或操作系统可能会要求确认，并且可能需要先安装 LDQ Mail，才能将其选为默认应用。",
     "select_account_title": "选择账户",
     "select_mailto_account": "选择用于打开此电子邮件链接的账户。",
     "select_webcal_account": "选择用于打开此日历链接的账户。",
@@ -778,9 +778,9 @@
     "app_title": "网页邮箱",
     "reconnecting": "连接已断开，正在尝试重连…",
     "rate_limited_title": "服务器身份验证暂时受到速率限制。",
-    "rate_limited_detail": "Bulwark 已暂停后台请求以避免账户被锁定。将在 {seconds} 秒后重试。",
+    "rate_limited_detail": "LDQ Mail 已暂停后台请求以避免账户被锁定。将在 {seconds} 秒后重试。",
     "rate_limited_action_title": "请求已暂停以避免账户被锁定。",
-    "rate_limited_action_detail": "Bulwark 正在等待服务器冷却，然后再发送更多请求。请在 {seconds} 秒后重试。"
+    "rate_limited_action_detail": "LDQ Mail 正在等待服务器解除限制，然后再发送更多请求。请在 {seconds} 秒后重试。"
   },
   "notifications": {
     "email_sent": "邮件发送成功",
@@ -1005,10 +1005,10 @@
         }
       },
       "all_mail": {
-        "folders_label": "Folders in All Mail",
-        "folders_description": "Choose which folders are merged into the All Mail view.",
-        "account_hint": "Applies to {account}.",
-        "no_folders": "No folders available."
+        "folders_label": "全部邮件文件夹",
+        "folders_description": "选择要合并到“全部邮件”视图的文件夹。",
+        "account_hint": "应用到 {account}。",
+        "no_folders": "没有可用的文件夹"
       },
       "colorful_sidebar_icons": {
         "label": "彩色侧边栏图标",
@@ -1100,12 +1100,12 @@
       "push": {
         "confirm_disable_message": "当网站关闭时，此设备将停止接收提醒。",
         "confirm_disable_title": "禁用后台通知？",
-        "description": "在此网站关闭时接收新邮件的系统通知。通过 Bulwark 推送中继传送；中继永远不会看到邮件内容。",
+        "description": "在此网站关闭时接收新邮件的系统通知。通过 LDQ Mail 推送中继传送；中继永远不会看到邮件内容。",
         "disable": "禁用",
         "enable": "启用",
         "ios_hint": "在 iOS 上，请先将网站安装到主屏幕 – Safari 仅向已安装的 PWA 发送 Web Push。",
         "reenable": "重新注册",
-        "relay_desc": "默认使用托管的 Bulwark 中继。仅当您自托管时才更改。",
+        "relay_desc": "默认使用托管的 LDQ Mail 中继。仅当您自托管时才更改。",
         "relay_label": "推送中继",
         "relay_locked": "由管理员设置",
         "relay_locked_desc": "推送中继 URL 已由您的管理员设置，无法更改。",
@@ -1137,12 +1137,12 @@
         "preview_older": "更早："
       },
       "date_locale": {
-        "label": "Date format region",
-        "description": "How numeric dates are ordered (day, month, year)",
-        "auto": "Automatic (match language)",
+        "label": "日期格式区域",
+        "description": "数字日期的排序方式（日/月/年）",
+        "auto": "自动（匹配语言）",
         "iso": "ISO 8601 (YYYY-MM-DD)",
-        "dmy": "Day/Month/Year",
-        "mdy": "Month/Day/Year"
+        "dmy": "日/月/年",
+        "mdy": "月/日/年"
       },
       "time_format": {
         "label": "时间格式",
@@ -1554,10 +1554,10 @@
       },
       "link_device": {
         "title": "关联移动应用",
-        "description": "无需输入任何内容即可登录 Bulwark Mail 移动应用。在此生成二维码，然后在应用的登录界面扫描。",
+        "description": "无需输入任何内容即可登录 LDQ Mail 移动应用。在此生成二维码，然后在应用的登录界面扫描。",
         "generate": "显示二维码",
         "regenerate": "显示新的二维码",
-        "instructions": "打开 Bulwark Mail 应用，在登录界面点按\"扫描二维码\"，然后将相机对准此处。",
+        "instructions": "打开 LDQ Mail 应用，在登录界面点按\"扫描二维码\"，然后将相机对准此处。",
         "expires_in": "此二维码将在 {seconds} 秒后过期，且只能使用一次。",
         "expired": "此二维码已过期。",
         "generating": "生成中…",
@@ -1712,9 +1712,9 @@
         "button": "查看快捷方式"
       },
       "refresh_cache": {
-        "label": "Refresh cached data",
-        "description": "Reload contacts, calendars, and folders from the server. Keeps your accounts and sessions — fixes a stale or wrong view without signing out.",
-        "button": "Refresh"
+        "label": "刷新缓存的数据",
+        "description": "从服务器重新加载联系人、日历和文件夹。保留您的账户和会话 - 在不注销的情况下修复过时或错误的视图。",
+        "button": "刷新"
       },
       "reset_settings": {
         "label": "重置设置",
@@ -1732,7 +1732,7 @@
         "button": "导入"
       },
       "about": {
-        "title": "Bulwark 网页邮箱"
+        "title": "LDQ Mail 网页邮箱"
       }
     },
     "sidebar_apps": {
@@ -2369,32 +2369,32 @@
       "calendar_uri": "日历 URL",
       "scheduling_uri": "调度 URL",
       "freebusy_uri": "空闲/忙碌 URL",
-      "section_contact": "Contact details",
-      "section_work": "Work",
-      "section_personal": "Personal",
-      "email_default_label": "Email",
-      "phone_default_label": "Phone",
-      "address_default_label": "Address",
-      "online_service_default_label": "Online",
-      "organization_label": "Organization",
-      "title_label": "Title",
-      "role_label": "Role",
-      "language_label": "Language",
-      "related_default_label": "Related",
+      "section_contact": "联系人详情",
+      "section_work": "工作",
+      "section_personal": "个人",
+      "email_default_label": "邮箱",
+      "phone_default_label": "电话",
+      "address_default_label": "地址",
+      "online_service_default_label": "在线",
+      "organization_label": "组织",
+      "title_label": "标题",
+      "role_label": "角色",
+      "language_label": "语言",
+      "related_default_label": "相关",
       "more_actions": "更多操作",
       "age_years": "{count}岁",
       "years_since": "{count}年前"
     },
     "activity": {
-      "recent_emails": "Recent Emails",
-      "upcoming_events": "Upcoming Events",
-      "no_emails": "No recent emails",
-      "no_events": "No upcoming events",
-      "no_subject": "(No subject)",
-      "no_title": "(No title)",
-      "load_failed": "Failed to load",
-      "unknown_sender": "Unknown sender",
-      "all_day": "All day"
+      "recent_emails": "近期邮件",
+      "upcoming_events": "即将到来的事件",
+      "no_emails": "没有近期邮件",
+      "no_events": "没有即将到来的事件",
+      "no_subject": "(无主题)",
+      "no_title": "(无标题)",
+      "load_failed": "加载失败",
+      "unknown_sender": "未知发件人",
+      "all_day": "全天"
     },
     "form": {
       "create_title": "新联系人",
@@ -2512,11 +2512,11 @@
       "search_members": "搜索联系人以添加...",
       "no_members": "该群组中没有成员",
       "member_count": "{count, plural, =0 {无成员} one {1 位成员} other {# 位成员}}",
-      "send_email": "Send email to group",
-      "send_email_to": "To",
-      "send_email_cc": "Cc",
-      "send_email_bcc": "Bcc",
-      "no_member_emails": "This group has no members with an email address."
+      "send_email": "发送群组邮件",
+      "send_email_to": "收件人",
+      "send_email_cc": "抄送",
+      "send_email_bcc": "密送",
+      "no_member_emails": "该群组中没有成员的邮箱地址。"
     },
     "import": {
       "title": "导入联系人",
@@ -3056,7 +3056,7 @@
     "start_tour": "开始导览"
   },
   "demo_welcome": {
-    "title": "欢迎使用 Bulwark Mail",
+    "title": "欢迎使用 LDQ Mail",
     "description": "探索功能齐全的网页邮件客户端--就在您的浏览器中。所有数据都保留在您的设备上，请随意体验所有功能。",
     "feature_email": "阅读和撰写邮件",
     "feature_organize": "标签、星标和文件夹",
@@ -3128,10 +3128,10 @@
     "duplicate": "创建副本",
     "duplicate_success": "复制成功",
     "duplicate_error": "复制失败",
-    "share": "Share",
-    "shared": "Shared",
-    "shared_with_me": "Shared with me",
-    "shared_by": "Shared by {name}",
+    "share": "分享",
+    "shared": "已分享",
+    "shared_with_me": "与我分享",
+    "shared_by": "由 {name} 分享",
     "create_file_success": "文件已创建",
     "create_file_error": "创建文件失败",
     "favorites": "收藏夹",
