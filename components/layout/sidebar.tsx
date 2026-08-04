@@ -305,8 +305,8 @@ function SidebarRow({
         isVirtual
           ? "text-muted-foreground"
           : isSelected
-            ? "bg-accent text-accent-foreground font-semibold border-s-2 border-primary"
-            : "hover:bg-muted/50 text-foreground border-s-2 border-transparent",
+            ? "bg-accent text-accent-foreground font-semibold border-primary"
+            : "hover:bg-muted/50 text-foreground border-transparent",
         isValidDropTarget && "bg-primary/20 ring-2 ring-primary ring-inset",
         isInvalidDropTarget && "bg-destructive/10 ring-2 ring-destructive/30 ring-inset opacity-50"
       )}
