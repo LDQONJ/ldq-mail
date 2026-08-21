@@ -135,13 +135,13 @@ export function AboutDataSettings() {
           <button onClick={handleLogoClick} className="flex items-center gap-4 flex-1 text-start focus:outline-none group/about cursor-pointer" aria-label="About">
             <div className="shrink-0">
               <img
-                src={`${getPathPrefix()}/branding/Bulwark_Logo_Color.svg`}
-                alt="Bulwark"
+                src={`${getPathPrefix()}/branding/LDQMail.svg`}
+                alt="LDQ Mail"
                 className="w-12 h-12 object-contain dark:hidden group-hover/about:scale-105 group-active/about:scale-95 transition-transform"
               />
               <img
-                src={`${getPathPrefix()}/branding/Bulwark_Logo_White.svg`}
-                alt="Bulwark"
+                src={`${getPathPrefix()}/branding/LDQMail-white.svg`}
+                alt="LDQ Mail"
                 className="w-12 h-12 object-contain hidden dark:block group-hover/about:scale-105 group-active/about:scale-95 transition-transform"
               />
             </div>
