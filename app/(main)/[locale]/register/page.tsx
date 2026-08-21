@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useMemo, useEffect, useRef } from 'react';
 import { useRouter, useParams, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { useTranslations } from 'next-intl';
@@ -11,13 +11,13 @@ import {
   ArrowRight,
   Eye,
   EyeOff,
+  ChevronDown,
+  Check,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useConfig } from '@/hooks/use-config';
 import { useThemeStore } from '@/stores/theme-store';
 import { apiFetch, withBasePath, toRouterPath, getPathPrefix } from '@/lib/browser-navigation';
-
-const FIXED_DOMAIN = 'lidaqian.com';
 
 export default function RegisterPage() {
   const router = useRouter();
@@ -27,14 +27,63 @@ export default function RegisterPage() {
   const locale = (params.locale as string) || 'en';
   const initialCode = searchParams.get('code') || '';
 
-  const { appName, loginLogoLightUrl, loginLogoDarkUrl } = useConfig();
+  const { appName, loginLogoLightUrl, loginLogoDarkUrl, jmapServers } = useConfig();
   const resolvedTheme = useThemeStore((s) => s.resolvedTheme);
+
+  const domainOptions = useMemo(() => {
+    const options: string[] = [];
+    const seen = new Set<string>();
+    for (const server of jmapServers) {
+      if (server.domains && server.domains.length > 0) {
+        for (const d of server.domains) {
+          const clean = d.trim().toLowerCase();
+          if (clean && !seen.has(clean)) {
+            seen.add(clean);
+            options.push(clean);
+          }
+        }
+      } else if (server.url) {
+        try {
+          const u = new URL(server.url);
+          const host = u.hostname.toLowerCase();
+          if (host && !seen.has(host)) {
+            seen.add(host);
+            options.push(host);
+          }
+        } catch {
+          // ignore
+        }
+      }
+    }
+    return options;
+  }, [jmapServers]);
+
+  const [selectedDomain, setSelectedDomain] = useState<string>('');
+  const [showDomainDropdown, setShowDomainDropdown] = useState(false);
+  const domainDropdownRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (domainOptions.length > 0) {
+      if (!selectedDomain || !domainOptions.includes(selectedDomain)) {
+        setSelectedDomain(domainOptions[0]);
+      }
+    }
+  }, [domainOptions, selectedDomain]);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (domainDropdownRef.current && !domainDropdownRef.current.contains(event.target as Node)) {
+        setShowDomainDropdown(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
 
   const [formData, setFormData] = useState({
     inviteCode: initialCode,
     username: '',
     displayName: '',
-    domain: FIXED_DOMAIN,
     password: '',
     confirmPassword: '',
   });
@@ -45,10 +94,25 @@ export default function RegisterPage() {
   const [shakeError, setShakeError] = useState(false);
   const [successEmail, setSuccessEmail] = useState<string | null>(null);
 
+  const handleUsernameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    let val = e.target.value;
+    if (val.includes('@')) {
+      const [prefix, ...domainParts] = val.split('@');
+      const typedDomain = domainParts.join('@').trim().toLowerCase();
+      if (domainOptions.includes(typedDomain)) {
+        setSelectedDomain(typedDomain);
+      }
+      val = prefix.trim();
+    }
+    setFormData((prev) => ({ ...prev, username: val }));
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
     setShakeError(false);
+
+    const effectiveDomain = selectedDomain || domainOptions[0] || 'localhost';
 
     if (!formData.inviteCode.trim()) {
       setError(t('error.invite_required'));
@@ -91,7 +155,7 @@ export default function RegisterPage() {
           inviteCode: formData.inviteCode.trim(),
           username: formData.username.trim(),
           displayName: formData.displayName.trim() || undefined,
-          domain: FIXED_DOMAIN,
+          domain: effectiveDomain,
           password: formData.password,
         }),
       });
@@ -101,7 +165,7 @@ export default function RegisterPage() {
         throw new Error(data.error || 'Registration failed.');
       }
 
-      setSuccessEmail(data.email || `${formData.username.trim()}@${FIXED_DOMAIN}`);
+      setSuccessEmail(data.email || `${formData.username.trim()}@${effectiveDomain}`);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Registration failed.');
       setShakeError(true);
@@ -190,22 +254,74 @@ export default function RegisterPage() {
                   />
                 </div>
 
-                {/* Username & Fixed Domain */}
+                {/* Username & Domain */}
                 <div className="space-y-1.5">
                   <label className="block text-sm font-medium text-foreground">
                     {t('email_label')}
                   </label>
-                  <div className="flex items-center gap-1.5 sm:gap-2">
-                    <input
-                      type="text"
-                      required
-                      placeholder={t('username_placeholder')}
-                      value={formData.username}
-                      onChange={(e) => setFormData({ ...formData, username: e.target.value })}
-                      className="h-11 flex-1 min-w-0 px-3 sm:px-3.5 bg-muted/40 border border-border/60 rounded-xl focus:bg-background focus:border-primary/50 transition-all duration-200 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20"
-                    />
-                    <div className="h-11 px-2.5 sm:px-3 bg-muted/40 border border-border/60 rounded-xl flex items-center text-xs sm:text-sm font-medium text-muted-foreground select-none shrink-0">
-                      @{FIXED_DOMAIN}
+                  <div className="relative z-20">
+                    <div className="flex items-center h-11 w-full bg-muted/40 border border-border/60 rounded-xl focus-within:bg-background focus-within:border-primary/50 transition-all duration-200">
+                      <input
+                        type="text"
+                        required
+                        placeholder={t('username_placeholder')}
+                        value={formData.username}
+                        onChange={handleUsernameChange}
+                        className="h-full px-3.5 bg-transparent border-0 rounded-l-xl shadow-none outline-none focus:outline-none focus:ring-0 text-sm text-foreground placeholder:text-muted-foreground flex-1 min-w-0"
+                      />
+                    <div className="h-5 w-[1px] bg-border/80 flex-shrink-0" />
+                    <div className="relative flex items-center flex-shrink-0" ref={domainDropdownRef}>
+                      {domainOptions.length > 1 ? (
+                        <>
+                          <button
+                            type="button"
+                            onClick={() => setShowDomainDropdown((prev) => !prev)}
+                            className="flex items-center gap-1.5 h-11 px-3 bg-transparent hover:bg-muted/60 text-sm font-medium text-foreground rounded-r-xl transition-colors cursor-pointer select-none"
+                            aria-expanded={showDomainDropdown}
+                            aria-haspopup="listbox"
+                          >
+                            <span>@{selectedDomain}</span>
+                            <ChevronDown className={cn("w-3.5 h-3.5 text-muted-foreground transition-transform duration-200", showDomainDropdown && "rotate-180")} />
+                          </button>
+
+                          {showDomainDropdown && (
+                            <div
+                              className="absolute right-0 top-full mt-1.5 min-w-[180px] w-max max-w-[280px] rounded-xl border border-border/70 bg-popover text-popover-foreground shadow-xl p-1.5 z-50 animate-in fade-in-0 zoom-in-95 duration-100"
+                              role="listbox"
+                            >
+                              {domainOptions.map((d) => {
+                                const isSelected = d === selectedDomain;
+                                return (
+                                  <button
+                                    key={d}
+                                    type="button"
+                                    role="option"
+                                    aria-selected={isSelected}
+                                    onClick={() => {
+                                      setSelectedDomain(d);
+                                      setShowDomainDropdown(false);
+                                    }}
+                                    className={cn(
+                                      "w-full flex items-center justify-between px-3 py-2 text-sm rounded-lg transition-colors text-left",
+                                      isSelected
+                                        ? "bg-primary/10 text-primary font-semibold"
+                                        : "text-foreground hover:bg-muted/80 font-medium"
+                                    )}
+                                  >
+                                    <span className="truncate">@{d}</span>
+                                    {isSelected && <Check className="w-4 h-4 text-primary shrink-0 ml-2" />}
+                                  </button>
+                                );
+                              })}
+                            </div>
+                          )}
+                        </>
+                      ) : (
+                        <div className="flex items-center h-11 px-3 text-sm font-medium text-muted-foreground select-none">
+                          @{selectedDomain || domainOptions[0] || 'localhost'}
+                        </div>
+                      )}
+                      </div>
                     </div>
                   </div>
                 </div>

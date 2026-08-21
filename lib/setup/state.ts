@@ -23,7 +23,10 @@ export type SetupState = 'bootstrap' | 'configured' | 'env-managed';
  */
 export function detectSetupState(): SetupState {
   if (configManager.isSetupComplete()) return 'configured';
-  if (process.env.JMAP_SERVER_URL && process.env.JMAP_SERVER_URL.trim() !== '') {
+  if (
+    (process.env.JMAP_SERVER_URL && process.env.JMAP_SERVER_URL.trim() !== '') ||
+    (process.env.JMAP_SERVERS && process.env.JMAP_SERVERS.trim() !== '' && process.env.JMAP_SERVERS.trim() !== '[]')
+  ) {
     return 'env-managed';
   }
   // Read-only config dir + no setupComplete flag means the volume was

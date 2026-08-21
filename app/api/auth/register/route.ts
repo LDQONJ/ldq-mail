@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { verifyInviteCode, consumeInviteCode } from '@/lib/admin/invite-manager';
 import { getClientIP } from '@/lib/admin/session';
 import { configManager } from '@/lib/admin/config-manager';
+import { parseJmapServers } from '@/lib/admin/jmap-servers';
 import { logger } from '@/lib/logger';
 
 export async function POST(request: NextRequest) {
@@ -43,25 +44,37 @@ export async function POST(request: NextRequest) {
     const targetEmail = `${cleanUsername}@${cleanDomain}`;
     const clientIp = getClientIP(request);
 
-    // 3. Resolve Stalwart Admin JMAP URL & Token
+    // 3. Resolve Stalwart Admin JMAP URL & Token for the requested domain
     await configManager.ensureLoaded();
-    const configuredJmapUrl = configManager.get<string>('jmapServerUrl', '') || process.env.JMAP_SERVER_URL || '';
-    let adminUrl = process.env.STALWART_ADMIN_URL || configManager.get<string>('stalwartAdminUrl', '');
+    const rawServers = configManager.get('jmapServers', []) || process.env.JMAP_SERVERS;
+    const servers = parseJmapServers(rawServers);
 
-    let jmapEndpoint = '';
-    if (adminUrl) {
-      const cleanAdmin = adminUrl.replace(/\/+$/, '');
-      jmapEndpoint = cleanAdmin.endsWith('/jmap') ? cleanAdmin : `${cleanAdmin}/jmap`;
-    } else if (configuredJmapUrl) {
-      const cleanJmap = configuredJmapUrl.replace(/\/+$/, '');
-      jmapEndpoint = cleanJmap.endsWith('/jmap') ? cleanJmap : `${cleanJmap}/jmap`;
+    // Match server whose domains list contains cleanDomain
+    const matchedServer = servers.find((s) =>
+      (s.domains ?? []).some((d) => d.toLowerCase() === cleanDomain)
+    );
+
+    let serverBaseUrl = '';
+    let adminToken = '';
+
+    if (matchedServer) {
+      serverBaseUrl = matchedServer.url;
+      adminToken = matchedServer.adminToken || process.env.STALWART_ADMIN_TOKEN || configManager.get<string>('stalwartAdminToken', '') || '';
+    } else {
+      // Fallback to global config or STALWART_ADMIN_URL / JMAP_SERVER_URL
+      serverBaseUrl = process.env.STALWART_ADMIN_URL || configManager.get<string>('stalwartAdminUrl', '') || configManager.get<string>('jmapServerUrl', '') || process.env.JMAP_SERVER_URL || '';
+      adminToken = process.env.STALWART_ADMIN_TOKEN || configManager.get<string>('stalwartAdminToken', '') || '';
     }
 
-    const adminToken = process.env.STALWART_ADMIN_TOKEN || configManager.get<string>('stalwartAdminToken', '');
+    let jmapEndpoint = '';
+    if (serverBaseUrl) {
+      const cleanBase = serverBaseUrl.replace(/\/+$/, '');
+      jmapEndpoint = cleanBase.endsWith('/jmap') ? cleanBase : `${cleanBase}/jmap`;
+    }
 
     if (!jmapEndpoint) {
       return NextResponse.json({
-        error: 'Stalwart API is not configured on the server. Please contact administrator (STALWART_ADMIN_URL missing).',
+        error: `Stalwart API is not configured for domain @${cleanDomain}. Please contact administrator.`,
       }, { status: 500 });
     }
 

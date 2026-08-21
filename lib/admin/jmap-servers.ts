@@ -14,6 +14,7 @@ export interface JmapServerEntry {
   url: string;
   domains?: string[];
   oauth?: JmapServerOAuthConfig;
+  adminToken?: string;
 }
 
 export interface PublicJmapServerEntry {
@@ -63,6 +64,7 @@ export function parseJmapServers(raw: unknown): JmapServerEntry[] {
     const id = typeof e.id === 'string' ? e.id.trim() : '';
     const label = typeof e.label === 'string' ? e.label.trim() : '';
     const url = typeof e.url === 'string' ? trimUrl(e.url) : '';
+    const adminToken = typeof e.adminToken === 'string' ? e.adminToken.trim() : '';
     if (!id || !ID_RE.test(id) || seen.has(id)) continue;
     if (!url || !isHttpUrl(url)) continue;
     seen.add(id);
@@ -91,6 +93,7 @@ export function parseJmapServers(raw: unknown): JmapServerEntry[] {
       url,
       ...(domains.length > 0 ? { domains } : {}),
       ...(oauth ? { oauth } : {}),
+      ...(adminToken ? { adminToken } : {}),
     });
   }
   return out;

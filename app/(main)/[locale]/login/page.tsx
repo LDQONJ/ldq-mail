@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import { useRouter } from "@/i18n/navigation";
 import { useParams, useSearchParams } from "next/navigation";
 import Link from "next/link";
@@ -14,7 +14,7 @@ import { useShallow } from "zustand/react/shallow";
 import { useConfig } from "@/hooks/use-config";
 import { apiFetch, getPathPrefix, toRouterPath, withBasePath } from "@/lib/browser-navigation";
 import { cn } from "@/lib/utils";
-import { AlertCircle, Loader2, X, Info, Eye, EyeOff, LogIn, Sun, Moon, Monitor, Check, Shield, Play, Copy } from "lucide-react";
+import { AlertCircle, Loader2, X, Info, Eye, EyeOff, LogIn, Sun, Moon, Monitor, Check, Shield, Play, Copy, ChevronDown } from "lucide-react";
 import { type OAuthMetadata } from "@/lib/oauth/discovery";
 import { generateCodeVerifier, generateCodeChallenge, generateState } from "@/lib/oauth/pkce";
 import { useUpdateStore, selectBanner } from "@/stores/update-store";
@@ -153,6 +153,64 @@ export default function LoginPage() {
   const [domainAutoLocked, setDomainAutoLocked] = useState(false);
 
   const hasServerList = jmapServers.length > 0;
+
+  const domainOptions = useMemo(() => {
+    const options: { domain: string; serverId: string; serverLabel: string }[] = [];
+    const seen = new Set<string>();
+    for (const server of jmapServers) {
+      if (server.domains && server.domains.length > 0) {
+        for (const d of server.domains) {
+          const clean = d.trim().toLowerCase();
+          if (clean && !seen.has(clean)) {
+            seen.add(clean);
+            options.push({
+              domain: clean,
+              serverId: server.id,
+              serverLabel: server.label,
+            });
+          }
+        }
+      } else if (server.url) {
+        try {
+          const u = new URL(server.url);
+          const host = u.hostname.toLowerCase();
+          if (host && !seen.has(host)) {
+            seen.add(host);
+            options.push({
+              domain: host,
+              serverId: server.id,
+              serverLabel: server.label,
+            });
+          }
+        } catch {
+          // ignore
+        }
+      }
+    }
+    return options;
+  }, [jmapServers]);
+
+  const hasDomainOptions = domainOptions.length > 0;
+  const [selectedDomain, setSelectedDomain] = useState<string>("");
+  const [showDomainDropdown, setShowDomainDropdown] = useState(false);
+  const domainDropdownRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!hasDomainOptions) return;
+    if (selectedDomain && domainOptions.some((o) => o.domain === selectedDomain)) return;
+    const initial = domainOptions[0];
+    setSelectedDomain(initial.domain);
+    setSelectedServerId(initial.serverId);
+  }, [hasDomainOptions, domainOptions, selectedDomain]);
+
+  const handleDomainChange = (domain: string) => {
+    setSelectedDomain(domain);
+    const matched = domainOptions.find((o) => o.domain === domain);
+    if (matched) {
+      setSelectedServerId(matched.serverId);
+    }
+  };
+
   const selectedServer = hasServerList
     ? jmapServers.find((s) => s.id === selectedServerId) ?? jmapServers[0]
     : undefined;
@@ -326,6 +384,9 @@ export default function LoginPage() {
       }
       if (themeMenuRef.current && !themeMenuRef.current.contains(event.target as Node)) {
         setShowThemeMenu(false);
+      }
+      if (domainDropdownRef.current && !domainDropdownRef.current.contains(event.target as Node)) {
+        setShowDomainDropdown(false);
       }
     };
 
@@ -516,7 +577,18 @@ export default function LoginPage() {
   };
 
   const handleUsernameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setFormData({ ...formData, username: e.target.value });
+    let val = e.target.value;
+    if (hasDomainOptions && val.includes("@")) {
+      const [prefix, ...domainParts] = val.split("@");
+      const typedDomain = domainParts.join("@").trim().toLowerCase();
+      const matchedOpt = domainOptions.find((opt) => opt.domain === typedDomain);
+      if (matchedOpt) {
+        setSelectedDomain(matchedOpt.domain);
+        setSelectedServerId(matchedOpt.serverId);
+      }
+      val = prefix.trim();
+    }
+    setFormData({ ...formData, username: val });
   };
 
   const handleUsernameFocus = () => {
@@ -528,9 +600,20 @@ export default function LoginPage() {
     }
   };
 
-  const selectSuggestion = (username: string) => {
+  const selectSuggestion = (savedUsername: string) => {
     justSelectedSuggestion.current = true;
-    setFormData({ ...formData, username });
+    if (hasDomainOptions && savedUsername.includes("@")) {
+      const [prefix, ...domainParts] = savedUsername.split("@");
+      const savedDomain = domainParts.join("@").trim().toLowerCase();
+      const matchedOpt = domainOptions.find((opt) => opt.domain === savedDomain);
+      if (matchedOpt) {
+        setSelectedDomain(matchedOpt.domain);
+        setSelectedServerId(matchedOpt.serverId);
+      }
+      setFormData({ ...formData, username: prefix.trim() });
+    } else {
+      setFormData({ ...formData, username: savedUsername });
+    }
     setShowSuggestions(false);
     document.getElementById("password")?.focus();
   };
@@ -616,6 +699,11 @@ export default function LoginPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
+    const rawUsername = formData.username.trim();
+    const fullUsername = hasDomainOptions && selectedDomain
+      ? (rawUsername.includes("@") ? rawUsername : `${rawUsername}@${selectedDomain}`)
+      : rawUsername;
+
     // Server-list entries always win - `allowCustomJmapEndpoint` is only honored
     // when the admin hasn't configured a server list.
     const effectiveServerUrl = selectedServer?.url
@@ -626,20 +714,20 @@ export default function LoginPage() {
     if (isMobileHandoff) {
       mobileHandoffPayloadRef.current = {
         server_url: effectiveServerUrl,
-        username: formData.username,
+        username: fullUsername,
         password: formData.password,
       };
     }
     const success = await login(
       effectiveServerUrl,
-      formData.username,
+      fullUsername,
       formData.password,
       totpCode || undefined,
       rememberMe
     );
 
     if (success) {
-      saveUsername(formData.username);
+      saveUsername(fullUsername);
       if (isMobileHandoff) {
         // The isAuthenticated effect handles the redirect; nothing else to
         // do here. Don't push to / - that would race the deep link.
@@ -1030,8 +1118,8 @@ export default function LoginPage() {
               /* Login Form */
               <form onSubmit={handleSubmit} className="space-y-5">
                 <fieldset disabled={isLoading} className="space-y-4">
-                  {/* Server picker (when admin has configured a server list) */}
-                  {hasServerList && jmapServers.length > 1 && (
+                  {/* Server picker: only shown if no domain options exist and multiple servers configured */}
+                  {!hasDomainOptions && hasServerList && jmapServers.length > 1 && (
                     <div className="space-y-1.5">
                       <label htmlFor="jmap-server-select" className="block text-sm font-medium text-foreground">
                         {t("jmap_server_label")}
@@ -1080,23 +1168,100 @@ export default function LoginPage() {
                     <label htmlFor="username" className="block text-sm font-medium text-foreground">
                       {t("username_label")}
                     </label>
-                    <div className="relative">
-                      <Input
-                        ref={inputRef}
-                        id="username"
-                        type="text"
-                        value={formData.username}
-                        onChange={handleUsernameChange}
-                        onFocus={handleUsernameFocus}
-                        onKeyDown={handleKeyDown}
-                        className="h-11 px-3.5 bg-muted/40 border-border/60 rounded-xl focus:bg-background focus:border-primary/50 transition-all duration-200"
-                        placeholder={t("username_placeholder")}
-                        required
-                        autoComplete="off"
-                        data-form-type="other"
-                        data-lpignore="true"
-                        autoFocus
-                      />
+                    <div className="relative z-20">
+                      {hasDomainOptions ? (
+                        <div className="flex items-center h-11 w-full bg-muted/40 border border-border/60 rounded-xl focus-within:bg-background focus-within:border-primary/50 transition-all duration-200">
+                          <input
+                            ref={inputRef}
+                            id="username"
+                            type="text"
+                            value={formData.username}
+                            onChange={handleUsernameChange}
+                            onFocus={handleUsernameFocus}
+                            onKeyDown={handleKeyDown}
+                            className="h-full px-3.5 bg-transparent border-0 rounded-l-xl shadow-none outline-none focus:outline-none focus:ring-0 focus-visible:ring-0 focus-visible:ring-offset-0 flex-1 min-w-0 text-sm text-foreground placeholder:text-muted-foreground"
+                            placeholder="username"
+                            required
+                            autoComplete="off"
+                            data-form-type="other"
+                            data-lpignore="true"
+                            autoFocus
+                          />
+                          <div className="h-5 w-[1px] bg-border/80 flex-shrink-0" />
+                          <div className="relative flex items-center flex-shrink-0" ref={domainDropdownRef}>
+                            {domainOptions.length > 1 ? (
+                              <>
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    setShowDomainDropdown((prev) => !prev);
+                                    setShowSuggestions(false);
+                                  }}
+                                  className="flex items-center gap-1.5 h-11 px-3 bg-transparent hover:bg-muted/60 text-sm font-medium text-foreground rounded-r-xl transition-colors cursor-pointer select-none"
+                                  aria-expanded={showDomainDropdown}
+                                  aria-haspopup="listbox"
+                                >
+                                  <span>@{selectedDomain}</span>
+                                  <ChevronDown className={cn("w-3.5 h-3.5 text-muted-foreground transition-transform duration-200", showDomainDropdown && "rotate-180")} />
+                                </button>
+
+                                {showDomainDropdown && (
+                                  <div
+                                    className="absolute right-0 top-full mt-1.5 min-w-[180px] w-max max-w-[280px] rounded-xl border border-border/70 bg-popover text-popover-foreground shadow-xl p-1.5 z-50 animate-in fade-in-0 zoom-in-95 duration-100"
+                                    role="listbox"
+                                  >
+                                    {domainOptions.map((opt) => {
+                                      const isSelected = opt.domain === selectedDomain;
+                                      return (
+                                        <button
+                                          key={opt.domain}
+                                          type="button"
+                                          role="option"
+                                          aria-selected={isSelected}
+                                          onClick={() => {
+                                            handleDomainChange(opt.domain);
+                                            setShowDomainDropdown(false);
+                                          }}
+                                          className={cn(
+                                            "w-full flex items-center justify-between px-3 py-2 text-sm rounded-lg transition-colors text-left",
+                                            isSelected
+                                              ? "bg-primary/10 text-primary font-semibold"
+                                              : "text-foreground hover:bg-muted/80 font-medium"
+                                          )}
+                                        >
+                                          <span className="truncate">@{opt.domain}</span>
+                                          {isSelected && <Check className="w-4 h-4 text-primary shrink-0 ml-2" />}
+                                        </button>
+                                      );
+                                    })}
+                                  </div>
+                                )}
+                              </>
+                            ) : (
+                              <div className="flex items-center h-11 px-3 text-sm font-medium text-muted-foreground select-none">
+                                @{selectedDomain || domainOptions[0]?.domain}
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      ) : (
+                        <Input
+                          ref={inputRef}
+                          id="username"
+                          type="text"
+                          value={formData.username}
+                          onChange={handleUsernameChange}
+                          onFocus={handleUsernameFocus}
+                          onKeyDown={handleKeyDown}
+                          className="h-11 px-3.5 bg-muted/40 border-border/60 rounded-xl focus:bg-background focus:border-primary/50 transition-all duration-200"
+                          placeholder={t("username_placeholder")}
+                          required
+                          autoComplete="off"
+                          data-form-type="other"
+                          data-lpignore="true"
+                          autoFocus
+                        />
+                      )}
 
                       {/* Custom autocomplete dropdown */}
                       {showSuggestions && filteredSuggestions.length > 0 && (
