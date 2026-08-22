@@ -31,7 +31,7 @@
     "test:integration": "bash integration/run-tests.sh",
     "prepare": "husky",
     "typecheck": "tsc --noEmit",
-    "deploy": "next build --turbopack && 7z a -ttar .next.tar .next && rclone copy .next.tar LA-1:/usr/local/src/webmail/ -P"
+    "deploy": "next build --turbopack && 7z a -ttar .next.tar .next && rclone copy .next.tar LA-3:/usr/local/src/webmail/ -P"
   },
   "dependencies": {
     "@dnd-kit/core": "^6.3.1",

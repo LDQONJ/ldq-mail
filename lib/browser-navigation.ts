@@ -1,4 +1,6 @@
-import { locales } from '@/i18n/routing';
+import { locales, defaultLocale } from '@/i18n/routing';
+import { useLocaleStore } from '@/stores/locale-store';
+import { detectBrowserLocale } from '@/i18n/detect-locale';
 
 export function replaceWindowLocation(url: string): void {
   if (typeof window === 'undefined') {
@@ -67,9 +69,10 @@ export function getPathPrefix(locale?: string): string {
  *   // Browser at /webmail/en/inbox  → /webmail/api/jmap
  *   // Browser at /en/inbox          → /api/jmap
  */
-export function apiFetch(input: string, init?: RequestInit): Promise<Response> {
-  if (input.startsWith('/') && !input.startsWith('//')) {
-    return fetch(getPathPrefix() + input, init);
+export function apiFetch(input: string | URL | Request, init?: RequestInit): Promise<Response> {
+  if (typeof input === 'string' && input.startsWith('/') && !input.startsWith('//')) {
+    const prefix = getPathPrefix();
+    return fetch(`${prefix}${input}`, init);
   }
   return fetch(input, init);
 }
@@ -118,14 +121,25 @@ export function toRouterPath(path: string): string {
 
 /**
  * Extracts the locale from the current URL, skipping any mount prefix.
- * Falls back to 'en' when no known locale segment is found.
+ * Falls back to user choice, browser language, or configured default locale.
  */
 export function getLocaleFromPath(): string {
-  if (typeof window === 'undefined') return 'en';
+  if (typeof window === 'undefined') return defaultLocale;
 
   const segments = window.location.pathname.split('/').filter(Boolean);
   const locale = segments.find(s =>
     (locales as readonly string[]).includes(s)
   );
-  return locale || 'en';
+  if (locale) return locale;
+
+  try {
+    const userChoice = useLocaleStore.getState().locale;
+    if (userChoice && userChoice !== 'auto' && (locales as readonly string[]).includes(userChoice)) {
+      return userChoice;
+    }
+  } catch {
+    // ignore
+  }
+
+  return detectBrowserLocale(defaultLocale);
 }

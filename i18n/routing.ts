@@ -7,7 +7,7 @@ import { defineRouting } from 'next-intl/routing';
 // When proxying Bulwark under a sub-path (NEXT_PUBLIC_BASE_PATH), "always" is
 // recommended to avoid next-intl rewrite loops caused by locale detection
 // conflicting with the proxy's path rewriting.
-const localePrefix = (process.env.NEXT_PUBLIC_LOCALE_PREFIX ?? 'never') as
+const localePrefix = ((process.env.NEXT_PUBLIC_LOCALE_PREFIX || process.env.LOCALE_PREFIX) ?? 'never') as
   | 'never'
   | 'always'
   | 'as-needed';
@@ -16,9 +16,14 @@ const SUPPORTED_LOCALES = ['ar', 'ca', 'cs', 'da', 'de', 'en', 'es', 'fa', 'fr',
 
 // Fallback locale used when the visitor's Accept-Language header does not
 // match any supported locale (and no NEXT_LOCALE cookie is set yet). Admins
-// set this via NEXT_PUBLIC_DEFAULT_LOCALE at build time to localise greenfield
-// deployments without having every user change their preference manually.
-const envDefaultLocale = process.env.NEXT_PUBLIC_DEFAULT_LOCALE?.trim();
+// set this via NEXT_PUBLIC_DEFAULT_LOCALE or DEFAULT_LOCALE in .env.
+const envDefaultLocale = (
+  process.env.NEXT_PUBLIC_DEFAULT_LOCALE ||
+  process.env.DEFAULT_LOCALE ||
+  process.env.NEXT_PUBLIC_LOCALE ||
+  process.env.LOCALE
+)?.trim().toLowerCase();
+
 const resolvedDefaultLocale =
   envDefaultLocale && (SUPPORTED_LOCALES as readonly string[]).includes(envDefaultLocale)
     ? (envDefaultLocale as (typeof SUPPORTED_LOCALES)[number])
