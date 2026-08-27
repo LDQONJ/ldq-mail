@@ -55,6 +55,8 @@ vi.mock("@/lib/web-push", () => ({
   isWebPushSupported: () => mocks.supported,
   isWebPushEnabled: mocks.isWebPushEnabled,
   resyncWebPush: mocks.resyncWebPush,
+  getPushAccountKey: (client: { getAccountId?: () => string } | string) =>
+    typeof client === "string" ? client : client?.getAccountId?.() ?? "account-1",
 }));
 
 function setNotificationPermission(permission: NotificationPermission) {

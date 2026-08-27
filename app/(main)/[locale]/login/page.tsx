@@ -748,35 +748,6 @@ export default function LoginPage() {
   const currentThemeOption = THEME_OPTIONS.find(o => o.value === theme) || THEME_OPTIONS[2];
   const CurrentThemeIcon = currentThemeOption.icon;
 
-  // Server picker (when admin has configured a server list). Rendered by both
-  // the password form and the OAuth-only branch - with several servers the user
-  // has to pick which one SSO targets before the button starts the flow, since
-  // the selection drives OAuth discovery and the server_id sent to the callback
-  // (issue #799).
-  const serverPicker = hasServerList && jmapServers.length > 1 ? (
-    <div className="space-y-1.5">
-      <label htmlFor="jmap-server-select" className="block text-sm font-medium text-foreground">
-        {t("jmap_server_label")}
-      </label>
-      <select
-        id="jmap-server-select"
-        value={selectedServer?.id ?? ""}
-        onChange={(e) => setSelectedServerId(e.target.value)}
-        disabled={domainAutoLocked || oauthLoading}
-        className="h-11 w-full px-3.5 bg-muted/40 border border-border/60 rounded-xl focus:bg-background focus:border-primary/50 transition-all duration-200 text-sm text-foreground disabled:opacity-70 disabled:cursor-not-allowed"
-      >
-        {jmapServers.map((s) => (
-          <option key={s.id} value={s.id}>{s.label}</option>
-        ))}
-      </select>
-      {domainAutoLocked && (
-        <p className="text-[11px] text-muted-foreground leading-snug">
-          {t("jmap_server_auto_picked")}
-        </p>
-      )}
-    </div>
-  ) : null;
-
   // Demo-only mode: show only a large demo login button
   if (demoMode && !isAddAccountMode) {
     return (
@@ -1092,9 +1063,8 @@ export default function LoginPage() {
                 </p>
               </div>
             ) : oauthOnly ? (
-              /* OAuth-only mode: server picker (if any) plus the SSO button */
+              /* OAuth-only mode: SSO button */
               <div className="space-y-4">
-                {serverPicker}
                 {oauthMetadata ? (
                   <Button
                     type="button"
@@ -1135,30 +1105,6 @@ export default function LoginPage() {
               /* Login Form */
               <form onSubmit={handleSubmit} className="space-y-5">
                 <fieldset disabled={isLoading} className="space-y-4">
-                  {/* Server picker (when admin has configured a server list) */}
-                  {hasServerList && jmapServers.length > 1 && (
-                    <div className="space-y-1.5">
-                      <label htmlFor="jmap-server-select" className="block text-sm font-medium text-foreground">
-                        {t("jmap_server_label")}
-                      </label>
-                      <select
-                        id="jmap-server-select"
-                        value={selectedServer?.id ?? ""}
-                        onChange={(e) => setSelectedServerId(e.target.value)}
-                        disabled={domainAutoLocked}
-                        className="h-11 w-full px-3.5 bg-muted/40 border border-border/60 rounded-xl focus:bg-background focus:border-primary/50 transition-all duration-200 text-sm text-foreground disabled:opacity-70 disabled:cursor-not-allowed"
-                      >
-                        {jmapServers.map((s) => (
-                          <option key={s.id} value={s.id}>{s.label}</option>
-                        ))}
-                      </select>
-                      {domainAutoLocked && (
-                        <p className="text-[11px] text-muted-foreground leading-snug">
-                          {t("jmap_server_auto_picked")}
-                        </p>
-                      )}
-                    </div>
-                  )}
                   {/* JMAP Endpoint field (only when no server list and custom endpoints are allowed) */}
                   {!hasServerList && allowCustomJmapEndpoint && (
                     <div className="space-y-1.5">

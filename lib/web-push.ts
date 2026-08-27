@@ -16,13 +16,33 @@ import { DEFAULT_RELAY_BASE_URL } from '@/lib/push-relays';
 const DEVICE_CLIENT_ID_PREFIX = 'bulwark.push.deviceClientId.v1.';
 const SUBSCRIPTION_ID_PREFIX = 'bulwark.push.subscriptionId.v1.';
 
-function deviceClientIdKey(accountId: string): string {
-  return DEVICE_CLIENT_ID_PREFIX + accountId;
+export function getPushAccountKey(client: IJMAPClient | string): string {
+  if (typeof client === 'string') return client;
+  if (!client || typeof client !== 'object') return String(client ?? '');
+  try {
+    const rawUrl = typeof client.getServerUrl === 'function' ? client.getServerUrl() : '';
+    const username = typeof client.getUsername === 'function' ? client.getUsername() : '';
+    const jmapAccountId = typeof client.getAccountId === 'function' ? client.getAccountId() : '';
+    if (rawUrl && username) {
+      const host = new URL(rawUrl, typeof window !== 'undefined' ? window.location.origin : 'http://localhost').hostname;
+      return `${username}@${host}`;
+    }
+    if (username) return username;
+    if (jmapAccountId) return jmapAccountId;
+  } catch {
+    // fallback
+  }
+  return typeof client.getAccountId === 'function' ? client.getAccountId() : '';
 }
 
-function subscriptionIdKey(accountId: string): string {
-  return SUBSCRIPTION_ID_PREFIX + accountId;
+function deviceClientIdKey(accountKey: string): string {
+  return DEVICE_CLIENT_ID_PREFIX + accountKey;
 }
+
+function subscriptionIdKey(accountKey: string): string {
+  return SUBSCRIPTION_ID_PREFIX + accountKey;
+}
+
 
 const BASE_PATH = (process.env.NEXT_PUBLIC_BASE_PATH ?? '').replace(/\/+$/, '');
 const SW_SCOPE = `${BASE_PATH}/`;
@@ -269,6 +289,7 @@ async function registerWithRelay(params: {
     keys: { p256dh: string; auth: string };
   };
   accountLabel?: string;
+  serverUrl?: string;
 }): Promise<void> {
   const { endpoint, keys } = params.subscription;
   if (!endpoint || !keys?.p256dh || !keys?.auth) {
@@ -281,6 +302,7 @@ async function registerWithRelay(params: {
       subscriptionId: params.subscriptionId,
       subscription: { endpoint, keys: { p256dh: keys.p256dh, auth: keys.auth } },
       accountLabel: params.accountLabel,
+      serverUrl: params.serverUrl,
     }),
   });
   if (!res.ok) {
@@ -423,8 +445,20 @@ export async function enableWebPush(
     });
   }
 
-  const accountId = params.client.getAccountId();
-  const deviceClientId = getOrCreateDeviceClientId(accountId);
+  const accountKey = getPushAccountKey(params.client);
+  const deviceClientId = getOrCreateDeviceClientId(accountKey);
+  const clientUsername = typeof params.client?.getUsername === 'function' ? params.client.getUsername() : undefined;
+  const clientServerUrl = typeof params.client?.getServerUrl === 'function' ? params.client.getServerUrl() : undefined;
+
+  let effectiveLabel = params.accountLabel || clientUsername;
+  if (effectiveLabel && !effectiveLabel.includes('@') && clientServerUrl) {
+    try {
+      const host = new URL(clientServerUrl, typeof window !== 'undefined' ? window.location.origin : 'http://localhost').hostname;
+      effectiveLabel = `${effectiveLabel}@${host}`;
+    } catch {
+      // ignore
+    }
+  }
 
   await registerWithRelay({
     relayBaseUrl,
@@ -436,7 +470,8 @@ export async function enableWebPush(
         auth: readPushKey(pushSubscription, 'auth'),
       },
     },
-    accountLabel: params.accountLabel,
+    accountLabel: effectiveLabel,
+    serverUrl: clientServerUrl,
   });
 
   // Reuse the JMAP-side PushSubscription if the server still has it, just
@@ -449,18 +484,23 @@ export async function enableWebPush(
   const emailPush = serverSupportsEmailPush(params.client)
     ? await buildEmailPushConfig(params.client)
     : null;
-  const subIdKey = subscriptionIdKey(accountId);
-  const storedServerId = localStorage.getItem(subIdKey);
+  const subIdKey = subscriptionIdKey(accountKey);
+  const storedServerId = localStorage.getItem(subIdKey)
+    || localStorage.getItem(subscriptionIdKey(params.client.getAccountId()));
   if (storedServerId) {
     const match = existingSubs.find((s) => s.id === storedServerId);
     if (match) {
       if (!params.forceRecreate) {
         const refreshed = await refreshSubscriptionExpires(params.client, match, emailPush);
-        if (refreshed) return { subscriptionId: storedServerId };
+        if (refreshed) {
+          localStorage.setItem(subIdKey, storedServerId);
+          return { subscriptionId: storedServerId };
+        }
       }
       await params.client.destroyPushSubscription(storedServerId).catch(() => undefined);
     }
     localStorage.removeItem(subIdKey);
+    localStorage.removeItem(subscriptionIdKey(params.client.getAccountId()));
   }
 
   // Reap leftover subscriptions that would otherwise starve the new one's
@@ -514,13 +554,16 @@ export interface DisableWebPushParams {
 // up in a "disabled" state locally.
 export async function disableWebPush(params: DisableWebPushParams): Promise<void> {
   const relayBaseUrl = (params.relayBaseUrl ?? DEFAULT_RELAY_BASE_URL).replace(/\/+$/, '');
-  const accountId = params.client.getAccountId();
+  const accountKey = getPushAccountKey(params.client);
+  const rawAccountId = params.client.getAccountId();
 
-  const subIdKey = subscriptionIdKey(accountId);
-  const devIdKey = deviceClientIdKey(accountId);
+  const subIdKey = subscriptionIdKey(accountKey);
+  const devIdKey = deviceClientIdKey(accountKey);
 
-  const storedServerId = localStorage.getItem(subIdKey);
-  const deviceClientId = localStorage.getItem(devIdKey);
+  const storedServerId = localStorage.getItem(subIdKey)
+    || localStorage.getItem(subscriptionIdKey(rawAccountId));
+  const deviceClientId = localStorage.getItem(devIdKey)
+    || localStorage.getItem(deviceClientIdKey(rawAccountId));
 
   // Destroy every subscription the server holds for this device, not just the
   // id we happen to have recorded. A destroy that lost its round-trip, a failed
@@ -539,6 +582,7 @@ export async function disableWebPush(params: DisableWebPushParams): Promise<void
     await params.client.destroyPushSubscription(id).catch(() => undefined);
   }
   localStorage.removeItem(subIdKey);
+  localStorage.removeItem(subscriptionIdKey(rawAccountId));
 
   if (deviceClientId && relayBaseUrl) {
     await fetch(
@@ -552,7 +596,7 @@ export async function disableWebPush(params: DisableWebPushParams): Promise<void
   // The browser-wide PushSubscription is shared by every account on this
   // origin, so only tear it down if no other account is still using it.
   if (
-    !anyOtherAccountHasSubscription(accountId)
+    !anyOtherAccountHasSubscription(accountKey)
     && typeof navigator !== 'undefined'
     && 'serviceWorker' in navigator
   ) {
@@ -589,10 +633,12 @@ export async function listPushDevices(params: {
   relayBaseUrl?: string;
 }): Promise<PushDevice[]> {
   const relayBaseUrl = (params.relayBaseUrl ?? DEFAULT_RELAY_BASE_URL).replace(/\/+$/, '');
-  const accountId = params.client.getAccountId();
+  const accountKey = getPushAccountKey(params.client);
+  const rawAccountId = params.client.getAccountId();
   const thisDeviceClientId = typeof localStorage === 'undefined'
     ? null
-    : localStorage.getItem(deviceClientIdKey(accountId));
+    : (localStorage.getItem(deviceClientIdKey(accountKey))
+       || localStorage.getItem(deviceClientIdKey(rawAccountId)));
 
   const subs = await params.client.listPushSubscriptions();
   return Promise.all(
@@ -638,13 +684,35 @@ export async function revokePushDevice(params: {
   }
 }
 
-export async function isWebPushEnabled(accountId: string): Promise<boolean> {
+export async function isWebPushEnabled(target?: IJMAPClient | string): Promise<boolean> {
   if (!isWebPushSupported()) return false;
   if (Notification.permission !== 'granted') return false;
   const registration = await navigator.serviceWorker.getRegistration(SW_SCOPE);
   if (!registration) return false;
   const sub = await registration.pushManager.getSubscription();
-  return sub !== null && localStorage.getItem(subscriptionIdKey(accountId)) !== null;
+  if (!sub) return false;
+  if (!target) return true;
+
+  const key = typeof target === 'string' ? target : getPushAccountKey(target);
+  const rawAccountId = typeof target === 'object' && target && typeof target.getAccountId === 'function'
+    ? target.getAccountId()
+    : (typeof target === 'string' ? target : null);
+
+  const storedServerId = localStorage.getItem(subscriptionIdKey(key))
+    || (rawAccountId ? localStorage.getItem(subscriptionIdKey(rawAccountId)) : null);
+  if (storedServerId !== null) return true;
+
+  // If target was raw "0", check if any scoped subscription exists in localStorage
+  if (typeof target === 'string' && target === '0') {
+    for (let i = 0; i < localStorage.length; i++) {
+      const k = localStorage.key(i);
+      if (k && k.startsWith(SUBSCRIPTION_ID_PREFIX) && localStorage.getItem(k)) {
+        return true;
+      }
+    }
+  }
+
+  return false;
 }
 
 // Accounts already re-synced during this page load. One pass per account is
@@ -666,20 +734,16 @@ export interface ResyncWebPushParams {
  * background touch-up worked. Returns true when a re-sync actually ran.
  */
 export async function resyncWebPush(params: ResyncWebPushParams): Promise<boolean> {
-  let accountId: string;
+  const accountKey = getPushAccountKey(params.client);
+  if (!accountKey || resyncedAccountIds.has(accountKey)) return false;
   try {
-    accountId = params.client.getAccountId();
-  } catch {
-    return false;
-  }
-  if (!accountId || resyncedAccountIds.has(accountId)) return false;
-  try {
-    if (!(await isWebPushEnabled(accountId))) return false;
-    resyncedAccountIds.add(accountId);
+    if (!(await isWebPushEnabled(params.client))) return false;
+    resyncedAccountIds.add(accountKey);
+    const clientUsername = typeof params.client?.getUsername === 'function' ? params.client.getUsername() : undefined;
     await enableWebPush({
       client: params.client,
       relayBaseUrl: params.relayBaseUrl,
-      accountLabel: params.accountLabel,
+      accountLabel: params.accountLabel || clientUsername,
     });
     return true;
   } catch {
@@ -691,3 +755,4 @@ export async function resyncWebPush(params: ResyncWebPushParams): Promise<boolea
 export function resetWebPushResyncState(): void {
   resyncedAccountIds.clear();
 }
+

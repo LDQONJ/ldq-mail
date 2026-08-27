@@ -22,8 +22,8 @@
     "typescript"
   ],
   "scripts": {
-    "dev": "next dev --turbopack",
-    "build": "next build --turbopack",
+    "dev": "next dev --webpack",
+    "build": "next build --webpack",
     "start": "next start",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
@@ -31,7 +31,7 @@
     "test:integration": "bash integration/run-tests.sh",
     "prepare": "husky",
     "typecheck": "next typegen && tsc --noEmit",
-    "deploy": "next build --turbopack && 7z a -ttar .next.tar .next && rclone copy .next.tar LA-3:/usr/local/src/webmail/ -P"
+    "deploy": "next build --webpack && rm .next.tar & 7z a -ttar .next.tar .next '-xr!.next/cache'  && rclone copy .next.tar LA-3:/usr/local/src/webmail/ -P"
   },
   "dependencies": {
     "@dnd-kit/core": "^6.3.1",

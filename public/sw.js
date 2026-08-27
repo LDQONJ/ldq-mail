@@ -94,8 +94,13 @@ async function handlePush(event) {
     payload = null;
   }
 
+  console.log("[SW] handlePush payload:", JSON.stringify(payload).slice(0, 500));
+
   const accountLabel = (payload && typeof payload.accountLabel === "string")
     ? payload.accountLabel
+    : "";
+  const serverUrl = (payload && typeof payload.serverUrl === "string")
+    ? payload.serverUrl
     : "";
 
   // Two payload shapes reach us from the relay:
@@ -115,12 +120,10 @@ async function handlePush(event) {
     ? payload.emailIds.filter((id) => typeof id === "string" && id)
     : [];
 
-  // Never notify twice for the same message. A push can be redelivered (relay
-  // retry, browser replay after coming back online) and, on the older
-  // state-change path, a junk delivery wakes us while an unread message we
-  // already announced is still sitting in the Inbox - without this we would
-  // re-buzz for that old message.
-  const notified = await readNotifiedIds(accountId);
+  // Scoped key for notified cache: prevents account A's message IDs colliding
+  // with account B's cache when both accounts share accountId "0".
+  const notifiedScope = accountLabel || serverUrl || accountId || "default";
+  const notified = await readNotifiedIds(notifiedScope);
   const freshIds = emailIds.filter((id) => !notified.includes(id));
   if (emailIds.length > 0 && freshIds.length === 0) {
     return;
@@ -136,18 +139,30 @@ async function handlePush(event) {
   try {
     const query = new URLSearchParams();
     if (accountId) query.set("accountId", accountId);
+    if (accountLabel) query.set("accountLabel", accountLabel);
+    if (serverUrl) query.set("serverUrl", serverUrl);
     if (freshIds.length > 0) query.set("emailId", freshIds[freshIds.length - 1]);
     const qs = query.toString();
     const previewUrl = `${BASE_PATH}/api/push/preview${qs ? `?${qs}` : ""}`;
+    console.log("[SW] push-preview fetch:", previewUrl);
     const res = await fetch(previewUrl, {
       credentials: "include",
       cache: "no-store",
     });
+    console.log("[SW] push-preview response:", res.status, res.ok);
     if (res.ok) {
       preview = await res.json();
       previewOk = true;
+      console.log("[SW] push-preview data:", JSON.stringify(preview).slice(0, 300));
+    } else {
+      // Non-ok response: still try to parse for debugging
+      try {
+        const errBody = await res.text();
+        console.log("[SW] push-preview error body:", errBody.slice(0, 200));
+      } catch (_) { /* ignore */ }
     }
-  } catch (_) {
+  } catch (err) {
+    console.log("[SW] push-preview fetch error:", err);
     preview = null;
   }
 
@@ -158,11 +173,12 @@ async function handlePush(event) {
 
   // Push subscription is scoped to EmailDelivery, but stragglers from the
   // older broader-types subscription, marking-as-read races and verification
-  // pings can still wake us with no actual unread mail. When the preview API
-  // succeeded and reports zero unread, stay silent. When the preview API
-  // failed (network/auth/server down) we cannot tell, so fall through to the
-  // generic "New mail" toast rather than miss a real delivery.
-  if (previewOk && !email && unreadTotal === 0) {
+  // pings can still wake us with no actual unread mail.
+  // Only stay silent when there are NO explicit emailIds provided (legacy state-change ping)
+  // and preview confirmed 0 unread messages. If emailIds were delivered by emailPush (freshIds > 0),
+  // a new message definitely arrived, so always notify (fallback to generic if preview details missing).
+  if (emailIds.length === 0 && previewOk && !email && unreadTotal === 0) {
+    console.log("[SW] suppressed: previewOk=true, no email, unreadTotal=0");
     return;
   }
 
@@ -179,28 +195,28 @@ async function handlePush(event) {
   // used to stack 50 toasts). The newest message is the headline and a
   // Gmail-style "+N more" line carries the rest, counted from the account's
   // unread total.
-  const groupTag = "bulwark-mail:" + (accountId || "default");
+  const groupTag = "bulwark-mail:" + (accountLabel || accountId || "default");
   let title;
   let body;
-  let data = { kind: "mail-list", accountId };
+  let data = { kind: "mail-list", accountId, accountLabel, serverUrl };
 
   if (email) {
     const sender = email.from && email.from[0];
-    const senderName = (sender && sender.name) || (sender && sender.email) || "New mail";
+    const senderName = (sender && sender.name) || (sender && sender.email) || "新邮件";
     title = senderName + (accountLabel ? ` (${accountLabel})` : "");
-    body = email.subject || email.preview || "(no subject)";
+    body = email.subject || email.preview || "(无主题)";
     const more = unreadTotal > 1 ? unreadTotal - 1 : 0;
     if (more > 0) {
       // Several unread: this is a group. Keep the newest as the headline, add
       // the "+N more" count, and open the inbox (not one message) on click.
-      body += "\n" + (more === 1 ? "+1 more message" : `+${more} more messages`);
+      body += "\n" + `+${more} 封新邮件`;
     } else {
       // Exactly one unread: deep-link straight to that message on click.
-      data = { kind: "email", emailId: email.id, threadId: email.threadId };
+      data = { kind: "email", emailId: email.id, threadId: email.threadId, accountLabel, serverUrl };
     }
   } else {
-    title = accountLabel ? `New mail (${accountLabel})` : "New mail";
-    body = unreadTotal > 1 ? `${unreadTotal} unread messages` : "You have new mail";
+    title = accountLabel ? `新邮件 (${accountLabel})` : "新邮件";
+    body = unreadTotal > 1 ? `${unreadTotal} 封未读邮件` : "您收到了一封新邮件";
   }
 
   await self.registration.showNotification(title, {
@@ -218,7 +234,7 @@ async function handlePush(event) {
 
   const announced = freshIds.length > 0 ? freshIds : (email ? [email.id] : []);
   if (announced.length > 0) {
-    await writeNotifiedIds(accountId, notified.concat(announced));
+    await writeNotifiedIds(notifiedScope, notified.concat(announced));
   }
 }
 
@@ -437,14 +453,18 @@ function getReusableClientScore(state) {
 }
 
 function buildClickUrl(data) {
-  if (!data) return `${BASE_PATH}/`;
-  if (data.kind === "email" && data.emailId) {
-    // Permalink (#733). Under NEXT_PUBLIC_LOCALE_PREFIX=always the proxy
-    // redirects this to the localised path; the worker has no locale to add.
-    return `${BASE_PATH}/mail/message/${encodeURIComponent(data.emailId)}`;
+  const base = !data ? `${BASE_PATH}/` : 
+               (data.kind === "email" && data.emailId) ? `${BASE_PATH}/mail/message/${encodeURIComponent(data.emailId)}` :
+               `${BASE_PATH}/?openLatestUnread=1`;
+  
+  if (!data || (!data.accountLabel && !data.serverUrl)) {
+    return new URL(base, self.location.origin).href;
   }
-  // Generic "New mail" toast (preview API failed or returned no email): land
-  // the user on the latest unread message in their Inbox rather than just the
-  // app shell, so the click still feels purposeful.
-  return `${BASE_PATH}/?openLatestUnread=1`;
+  
+  const url = new URL(`${BASE_PATH}/push-redirect`, self.location.origin);
+  if (data.accountLabel) url.searchParams.set("accountLabel", data.accountLabel);
+  if (data.serverUrl) url.searchParams.set("serverUrl", data.serverUrl);
+  url.searchParams.set("to", base);
+  
+  return url.href;
 }

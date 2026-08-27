@@ -48,9 +48,13 @@ export function parseJmapServers(raw: unknown): JmapServerEntry[] {
   if (!raw) return [];
   let value = raw;
   if (typeof value === 'string') {
-    if (!value.trim()) return [];
+    let str = value.trim();
+    if (!str) return [];
+    if (str.startsWith("'") && str.endsWith("'")) {
+      str = str.slice(1, -1).trim();
+    }
     try {
-      value = JSON.parse(value);
+      value = JSON.parse(str);
     } catch {
       return [];
     }

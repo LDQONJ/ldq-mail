@@ -80,7 +80,7 @@ export function NotificationSettings() {
     const accountId = client.getAccountId();
     if (!accountId) return;
     void (async () => {
-      const enabled = await isWebPushEnabled(accountId);
+      const enabled = await isWebPushEnabled(client);
       setPushStatus(enabled ? { kind: 'enabled' } : { kind: 'idle' });
     })();
   }, [supported, client]);

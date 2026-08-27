@@ -1,6 +1,7 @@
 import { cookies } from 'next/headers';
-import { decryptPayload, encryptPayload } from '@/lib/auth/crypto';
+import { decryptPayload, encryptPayload, decryptSession } from '@/lib/auth/crypto';
 import { getCookieOptions } from '@/lib/oauth/cookie-config';
+import { sessionCookieName } from '@/lib/auth/session-cookie';
 
 const STALWART_AUTH_CONTEXT_COOKIE = 'jmap_stalwart_ctx';
 
@@ -28,8 +29,7 @@ function isValidContext(payload: unknown): payload is StalwartAuthContext {
 }
 
 function getSessionCookieOptions() {
-  const { maxAge: _maxAge, ...cookieOptions } = getCookieOptions();
-  return cookieOptions;
+  return getCookieOptions();
 }
 
 export function readStalwartAuthContextFromStore(
@@ -37,10 +37,25 @@ export function readStalwartAuthContextFromStore(
   slot: number,
 ): StalwartAuthContext | null {
   const token = cookieStore.get(stalwartAuthContextCookieName(slot))?.value;
-  if (!token) return null;
+  if (token) {
+    const payload = decryptPayload(token);
+    if (isValidContext(payload)) return payload;
+  }
 
-  const payload = decryptPayload(token);
-  return isValidContext(payload) ? payload : null;
+  // Fallback to persistent session cookie if stalwart context cookie was missing or expired
+  const sessionToken = cookieStore.get(sessionCookieName(slot))?.value;
+  if (sessionToken) {
+    const session = decryptSession(sessionToken);
+    if (session) {
+      return {
+        serverUrl: session.serverUrl,
+        username: session.username,
+        authHeader: `Basic ${Buffer.from(`${session.username}:${session.password}`).toString('base64')}`,
+      };
+    }
+  }
+
+  return null;
 }
 
 export async function readStalwartAuthContext(slot: number): Promise<StalwartAuthContext | null> {

@@ -11,7 +11,11 @@ function parseEnvValue(value: string, type: string): unknown {
       return value === 'true';
     case 'json':
       try {
-        return JSON.parse(value);
+        let str = value.trim();
+        if (str.startsWith("'") && str.endsWith("'")) {
+          str = str.slice(1, -1).trim();
+        }
+        return JSON.parse(str);
       } catch {
         return null;
       }

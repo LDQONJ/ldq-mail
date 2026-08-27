@@ -9,6 +9,7 @@ import { usePolicyStore } from "@/stores/policy-store";
 import { useSettingsStore } from "@/stores/settings-store";
 import {
   enableWebPush,
+  getPushAccountKey,
   isWebPushEnabled,
   isWebPushSupported,
   resyncWebPush,
@@ -77,7 +78,7 @@ export function PushNotificationPrompt() {
     isPWAInstallPromptVisible,
   );
 
-  const accountId = client?.getAccountId() ?? null;
+  const accountId = client ? getPushAccountKey(client) : null;
   const relayBaseUrl = resolveActiveRelayUrl(policy, userPushRelayUrl);
 
   const dismissForSession = useCallback((id: string) => {

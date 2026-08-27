@@ -8,6 +8,7 @@ import {
   type StalwartCredentials,
 } from '@/lib/stalwart/credentials';
 import { fetchJmapServer, isTrustedJmapServerUrl } from '@/lib/stalwart/server-fetch';
+import { rebaseApiUrl } from '@/lib/stalwart/jmap-api';
 import { DisallowedUrlError } from '@/lib/security/url-guard';
 
 export const runtime = 'nodejs';
@@ -21,41 +22,167 @@ interface ResolvedTarget {
   trusted: boolean;
 }
 
-// When the SW passes ?accountId=, we need the slot whose JMAP session owns
-// that account - not just "the first signed-in slot", which is what
-// getStalwartCredentials() defaults to. Probe each candidate's session in
-// parallel and return the first match.
-async function resolveTargetForAccount(accountId: string): Promise<ResolvedTarget | null> {
+interface ResolveTargetOptions {
+  accountId?: string | null;
+  accountLabel?: string | null;
+  serverUrl?: string | null;
+  emailId?: string | null;
+}
+
+interface ProbeResult extends ResolvedTarget {
+  hasTargetEmail?: boolean;
+}
+
+// When the SW passes ?serverUrl=, ?accountId=, or ?accountLabel=, we need the slot whose
+// JMAP session owns that account - not just "the first signed-in slot", which is
+// what getStalwartCredentials() defaults to. Probe candidate sessions in
+// parallel and return the best match.
+async function resolveTargetForAccount(
+  options: ResolveTargetOptions,
+): Promise<ResolvedTarget | null> {
+  const { accountId, accountLabel, serverUrl, emailId } = options;
   const cookieStore = await cookies();
-  const probes: Promise<ResolvedTarget | null>[] = [];
+  const probes: Promise<ProbeResult | null>[] = [];
+
+  logger.info('push-preview: resolveTargetForAccount', {
+    accountId, accountLabel, serverUrl, emailId,
+  });
+
   for (let slot = 0; slot < MAX_ACCOUNT_SLOTS; slot++) {
     const ctx = readStalwartAuthContextFromStore(cookieStore, slot);
-    if (!ctx) continue;
-    const serverUrl = ctx.serverUrl.replace(/\/+$/, '');
-    probes.push(
-      (async () => {
+    if (!ctx) {
+      if (slot < 5) logger.info('push-preview: slot empty', { slot });
+      continue;
+    }
+
+    logger.info('push-preview: slot found', {
+      slot,
+      ctxServerUrl: ctx.serverUrl,
+      ctxUsername: ctx.username,
+    });
+
+    const ctxServerUrl = ctx.serverUrl.replace(/\/+$/, '');
+    const ctxUsername = ctx.username.toLowerCase().trim();
+
+    // 1. Match by serverUrl if provided (highest precision across separate Stalwart instances)
+    if (serverUrl) {
+      const normalizedServer = serverUrl.replace(/\/+$/, '').toLowerCase();
+      let serverMatch = ctxServerUrl.toLowerCase() === normalizedServer;
+      if (!serverMatch) {
         try {
-          const trusted = await isTrustedJmapServerUrl(serverUrl);
-          const res = await fetchJmapServer(`${serverUrl}/.well-known/jmap`, {
+          const u1 = new URL(ctxServerUrl).hostname.toLowerCase();
+          const u2 = new URL(normalizedServer.startsWith('http') ? normalizedServer : `https://${normalizedServer}`).hostname.toLowerCase();
+          serverMatch = u1 === u2;
+        } catch {
+          // ignore
+        }
+      }
+      if (!serverMatch) continue;
+    }
+
+    // 2. If accountLabel is provided, match by accountLabel domain or full username
+    if (accountLabel) {
+      const normalizedLabel = accountLabel.toLowerCase().trim();
+      const labelUser = normalizedLabel.includes('@') ? normalizedLabel.split('@')[0] : normalizedLabel;
+      const labelDomain = normalizedLabel.includes('@') ? normalizedLabel.split('@')[1] : '';
+
+      const ctxUser = ctxUsername.includes('@') ? ctxUsername.split('@')[0] : ctxUsername;
+      const ctxDomain = ctxUsername.includes('@') ? ctxUsername.split('@')[1] : '';
+      let ctxServerHostname = '';
+      try {
+        ctxServerHostname = new URL(ctxServerUrl).hostname.toLowerCase();
+      } catch {
+        ctxServerHostname = ctxServerUrl.toLowerCase();
+      }
+
+      if (labelDomain) {
+        // Domain was specified: it MUST match either the context domain or server hostname
+        const domainMatches = (ctxDomain && ctxDomain === labelDomain) || ctxServerHostname.includes(labelDomain);
+        if (!domainMatches) continue;
+      } else if (!serverUrl) {
+        // No domain in accountLabel AND no serverUrl from relay → legacy registration.
+        // Cannot safely distinguish between slots that share the same username (e.g. "admin"
+        // on ldqmail.com vs lidaqian.com). Skip ALL slots to avoid cross-account leaks.
+        // The SW will show a safe generic "New mail" notification instead.
+        logger.info('push-preview: skipping slot (ambiguous legacy label)', {
+          slot, labelUser, ctxServerUrl,
+        });
+        continue;
+      }
+
+      // Username part must match
+      if (labelUser && labelUser !== ctxUser && ctxUsername !== normalizedLabel) {
+        continue;
+      }
+    }
+
+    probes.push(
+      (async (): Promise<ProbeResult | null> => {
+        try {
+          const trusted = await isTrustedJmapServerUrl(ctxServerUrl);
+          const res = await fetchJmapServer(`${ctxServerUrl}/.well-known/jmap`, {
             headers: { Authorization: ctx.authHeader },
           }, trusted);
-          if (!res.ok) return null;
+          
+          if (!res.ok) {
+            logger.warn('push-preview: probe well-known failed', { slot, ctxServerUrl, status: res.status });
+            return null;
+          }
           const session = (await res.json()) as {
             apiUrl?: string;
             primaryAccounts?: Record<string, string>;
           };
           const mailAccountId = session.primaryAccounts?.['urn:ietf:params:jmap:mail'];
-          if (!session.apiUrl || !mailAccountId) return null;
-          if (mailAccountId !== accountId) return null;
-          return { authHeader: ctx.authHeader, apiUrl: session.apiUrl, accountId: mailAccountId, trusted };
-        } catch {
+          if (!mailAccountId) {
+            logger.warn('push-preview: probe no mail account in session', { slot, ctxServerUrl });
+            return null;
+          }
+
+          const absoluteApiUrl = rebaseApiUrl(session, ctxServerUrl)
+            ?? (session.apiUrl?.startsWith('http') ? session.apiUrl : `${ctxServerUrl}/jmap`);
+          if (!absoluteApiUrl) {
+            logger.warn('push-preview: probe no absolute api url', { slot, ctxServerUrl });
+            return null;
+          }
+
+          let hasTargetEmail = false;
+          if (emailId) {
+            try {
+              const checkRes = await fetchJmapServer(absoluteApiUrl, {
+                method: 'POST',
+                headers: { Authorization: ctx.authHeader, 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                  using: ['urn:ietf:params:jmap:core', 'urn:ietf:params:jmap:mail'],
+                  methodCalls: [
+                    ['Email/get', { accountId: mailAccountId, ids: [emailId], properties: ['id'] }, '0'],
+                  ],
+                }),
+              }, trusted);
+              if (checkRes.ok) {
+                const checkData = (await checkRes.json()) as {
+                  methodResponses?: [string, { list?: unknown[] }, string][];
+                };
+                hasTargetEmail = ((checkData?.methodResponses?.[0]?.[1] as { list?: unknown[] })?.list?.length ?? 0) > 0;
+              }
+            } catch (err) {
+              logger.warn('push-preview: probe target email check failed', { slot, err: String(err) });
+            }
+          }
+
+          logger.info('push-preview: probe success', { slot, ctxServerUrl, hasTargetEmail, trusted });
+          return { authHeader: ctx.authHeader, apiUrl: absoluteApiUrl, accountId: mailAccountId, trusted, hasTargetEmail };
+        } catch (err) {
+          logger.warn('push-preview: probe exception', { slot, ctxServerUrl, err: String(err) });
           return null;
         }
       })(),
     );
   }
   const results = await Promise.all(probes);
-  return results.find((r): r is ResolvedTarget => r !== null) ?? null;
+  const valid = results.filter((r): r is ProbeResult => r !== null);
+  if (valid.length === 0) return null;
+  const foundWithEmail = valid.find((r) => r.hasTargetEmail);
+  return foundWithEmail ?? valid[0] ?? null;
 }
 
 async function resolveDefaultTarget(creds: StalwartCredentials): Promise<ResolvedTarget | null> {
@@ -67,7 +194,8 @@ async function resolveDefaultTarget(creds: StalwartCredentials): Promise<Resolve
     apiUrl?: string;
     primaryAccounts?: Record<string, string>;
   };
-  const apiUrl = session.apiUrl;
+  const apiUrl = rebaseApiUrl(session, creds.serverUrl)
+    ?? (session.apiUrl?.startsWith('http') ? session.apiUrl : `${creds.serverUrl}/jmap`);
   const accountId = session.primaryAccounts?.['urn:ietf:params:jmap:mail'];
   if (!apiUrl || !accountId) return null;
   return { authHeader: creds.authHeader, apiUrl, accountId, trusted: creds.trusted };
@@ -87,11 +215,12 @@ async function resolveDefaultTarget(creds: StalwartCredentials): Promise<Resolve
  */
 export async function GET(request: NextRequest) {
   try {
-    // SW passes ?accountId=<jmap-account-id> derived from the push payload's
-    // StateChange so multi-account browsers fetch from the right slot. Older
-    // clients (and the manual /api/push/preview probe) omit it and fall back
-    // to the first signed-in slot.
+    // SW passes ?accountId=<jmap-account-id>, ?accountLabel=<user@domain>, and ?serverUrl=<url>
+    // derived from the push payload so multi-account/multi-server browsers fetch
+    // from the right slot.
     const requestedAccountId = request.nextUrl.searchParams.get('accountId');
+    const requestedAccountLabel = request.nextUrl.searchParams.get('accountLabel');
+    const requestedServerUrl = request.nextUrl.searchParams.get('serverUrl');
     // With a server-side delivery filter (draft-ietf-jmap-emailpush) the push
     // carries the id of the message that was actually delivered, so the SW
     // asks for that one instead of guessing "newest unread in the Inbox" -
@@ -100,10 +229,18 @@ export async function GET(request: NextRequest) {
 
     let target: ResolvedTarget | null = null;
     let authHeader: string;
-    if (requestedAccountId) {
-      target = await resolveTargetForAccount(requestedAccountId);
+    if (requestedAccountId || requestedAccountLabel || requestedServerUrl) {
+      target = await resolveTargetForAccount({
+        accountId: requestedAccountId,
+        accountLabel: requestedAccountLabel,
+        serverUrl: requestedServerUrl,
+        emailId: requestedEmailId,
+      });
       if (!target) {
-        return NextResponse.json({ error: 'Not authenticated' }, { status: 401 });
+        // Return 401 so the service worker knows the account is not authenticated,
+        // which triggers the safe fallback notification ("You have new mail") instead
+        // of falsely dropping the notification.
+        return NextResponse.json({ error: 'Account not authenticated' }, { status: 401 });
       }
       authHeader = target.authHeader;
     } else {
@@ -117,6 +254,7 @@ export async function GET(request: NextRequest) {
       }
       authHeader = creds.authHeader;
     }
+
 
     const { apiUrl, accountId, trusted } = target;
 
@@ -256,6 +394,8 @@ export async function GET(request: NextRequest) {
         unreadTotal = Math.max(unreadTotal, 1);
       }
       email = delivered;
+    } else if (requestedEmailId) {
+      email = null;
     }
 
     return NextResponse.json({
