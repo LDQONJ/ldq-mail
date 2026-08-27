@@ -22,7 +22,7 @@ import type { CalendarEvent } from '@/lib/jmap/types';
  */
 
 const CALENDAR_CAP = 'urn:ietf:params:jmap:calendars';
-const PRINCIPALS_CAP = 'urn:ietf:params:jmap:principals';
+const PRINCIPALS_OWNER_CAP = 'urn:ietf:params:jmap:principals:owner';
 
 // Mirror of lib/jmap/client.ts CALENDAR_EVENT_PROPERTIES, trimmed to what the
 // agenda actually needs (start/recurrence/display fields).
@@ -121,7 +121,8 @@ export async function POST(request: NextRequest) {
     // configured public hostname, which the host process may not be able to
     // resolve (the browser client rewrites those URLs back to the origin for
     // the same reason). Fall back to /.well-known/jmap for non-Stalwart servers.
-    const session = await fetchJmapSession(creds.serverUrl, creds.authHeader);
+    const fetchOptions = { trusted: creds.trusted };
+    const session = await fetchJmapSession(creds.serverUrl, creds.authHeader, fetchOptions);
     if (!session) {
       return NextResponse.json({ error: 'JMAP session fetch failed' }, { status: 502 });
     }
@@ -132,8 +133,8 @@ export async function POST(request: NextRequest) {
     }
 
     const using = ['urn:ietf:params:jmap:core', CALENDAR_CAP];
-    if (session.capabilities && PRINCIPALS_CAP in session.capabilities) {
-      using.push('urn:ietf:params:jmap:principals:owner');
+    if (session.capabilities && PRINCIPALS_OWNER_CAP in session.capabilities) {
+      using.push(PRINCIPALS_OWNER_CAP);
     }
 
     // Send method calls to the session's apiUrl rebased onto serverUrl's host
@@ -171,7 +172,7 @@ export async function POST(request: NextRequest) {
       ],
     };
 
-    const queryRes = await jmapPost(apiUrl, creds.authHeader, queryReq);
+    const queryRes = await jmapPost(apiUrl, creds.authHeader, queryReq, fetchOptions);
     const queryResp = findResponse(queryRes, 'CalendarEvent/query', '0');
     if (!queryResp) {
       const err = findResponse(queryRes, 'error', '0');
@@ -207,7 +208,7 @@ export async function POST(request: NextRequest) {
         methodCalls: [
           ['CalendarEvent/get', { accountId, ids: batch, properties: EVENT_PROPERTIES }, '0'],
         ],
-      });
+      }, fetchOptions);
       const getResp = findResponse(getRes, 'CalendarEvent/get', '0');
       if (getResp?.list) raw.push(...(getResp.list as Array<Record<string, unknown>>));
     }
@@ -272,8 +273,9 @@ async function jmapPost(
   apiUrl: string,
   authHeader: string,
   payload: unknown,
+  options: { trusted?: boolean } = {},
 ): Promise<unknown> {
-  const res = await postJmap(apiUrl, authHeader, JSON.stringify(payload));
+  const res = await postJmap(apiUrl, authHeader, JSON.stringify(payload), options);
   if (!res.ok) {
     throw new Error(`JMAP request failed (${res.status})`);
   }

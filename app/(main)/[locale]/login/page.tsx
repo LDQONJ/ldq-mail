@@ -12,6 +12,7 @@ import { useAccountStore } from "@/stores/account-store";
 import { useThemeStore } from "@/stores/theme-store";
 import { useShallow } from "zustand/react/shallow";
 import { useConfig } from "@/hooks/use-config";
+import { useMenuNavigation } from "@/hooks/use-menu-navigation";
 import { apiFetch, getPathPrefix, toRouterPath, withBasePath } from "@/lib/browser-navigation";
 import { cn } from "@/lib/utils";
 import { AlertCircle, Loader2, X, Info, Eye, EyeOff, LogIn, Sun, Moon, Monitor, Check, Shield, Play, Copy, ChevronDown } from "lucide-react";
@@ -205,6 +206,13 @@ export default function LoginPage() {
   const totpInputRef = useRef<HTMLInputElement>(null);
   const prevError = useRef<string | null>(null);
   const themeMenuRef = useRef<HTMLDivElement>(null);
+  const themeButtonRef = useRef<HTMLButtonElement>(null);
+  const closeThemeMenu = useCallback(() => setShowThemeMenu(false), []);
+  const { menuRef: themeListRef, onKeyDown: onThemeMenuKeyDown } = useMenuNavigation<HTMLDivElement>({
+    open: showThemeMenu,
+    onClose: closeThemeMenu,
+    triggerRef: themeButtonRef,
+  });
   // Captured by handleSubmit when in mobile handoff mode; consumed by the
   // isAuthenticated effect to build the deep-link fragment.
   const mobileHandoffPayloadRef = useRef<{ server_url: string; username: string; password: string } | null>(null);
@@ -445,6 +453,10 @@ export default function LoginPage() {
     if (!autoSsoEnabled || !oauthOnly || !oauthDiscoveryDone || !oauthMetadata) return;
     if (ssoError || isAddAccountMode || isAuthenticated) return;
     if (autoSsoTriggered.current) return;
+    // With a multi-server list the target isn't implied - auto-redirecting
+    // would silently pin every user to the first entry and make the picker
+    // unreachable. Let them choose and press the button instead (issue #799).
+    if (jmapServers.length > 1) return;
 
     // Guard against redirect loops
     try {
@@ -456,7 +468,7 @@ export default function LoginPage() {
 
     autoSsoTriggered.current = true;
     startServerSideSso();
-  }, [autoSsoEnabled, oauthOnly, oauthDiscoveryDone, oauthMetadata, ssoError, isAddAccountMode, isAuthenticated, startServerSideSso]);
+  }, [autoSsoEnabled, oauthOnly, oauthDiscoveryDone, oauthMetadata, ssoError, isAddAccountMode, isAuthenticated, jmapServers.length, startServerSideSso]);
 
   const handleThemeSelect = useCallback((newTheme: "light" | "dark" | "system") => {
     setTheme(newTheme);
@@ -686,7 +698,10 @@ export default function LoginPage() {
       fullUsername,
       formData.password,
       totpCode || undefined,
-      rememberMe
+      // Only persist credentials when the server actually supports it
+      // (a SESSION_SECRET is configured). Prevents a broken cookie write
+      // when the remember-me feature is disabled server-side.
+      rememberMeEnabled && rememberMe
     );
 
     if (success) {
@@ -704,7 +719,10 @@ export default function LoginPage() {
   };
 
   const handleDevLogin = async () => {
-    const success = await login(serverUrl, "dev@localhost", "dev");
+    // Remember the session when the server supports it so dev reloads restore
+    // through the same cookie path production remember-me/OAuth users take,
+    // instead of bouncing to the login page.
+    const success = await login(serverUrl, "dev@localhost", "dev", undefined, rememberMeEnabled);
     if (success) {
       let redirectTo = '/';
       try {
@@ -730,6 +748,35 @@ export default function LoginPage() {
   const currentThemeOption = THEME_OPTIONS.find(o => o.value === theme) || THEME_OPTIONS[2];
   const CurrentThemeIcon = currentThemeOption.icon;
 
+  // Server picker (when admin has configured a server list). Rendered by both
+  // the password form and the OAuth-only branch - with several servers the user
+  // has to pick which one SSO targets before the button starts the flow, since
+  // the selection drives OAuth discovery and the server_id sent to the callback
+  // (issue #799).
+  const serverPicker = hasServerList && jmapServers.length > 1 ? (
+    <div className="space-y-1.5">
+      <label htmlFor="jmap-server-select" className="block text-sm font-medium text-foreground">
+        {t("jmap_server_label")}
+      </label>
+      <select
+        id="jmap-server-select"
+        value={selectedServer?.id ?? ""}
+        onChange={(e) => setSelectedServerId(e.target.value)}
+        disabled={domainAutoLocked || oauthLoading}
+        className="h-11 w-full px-3.5 bg-muted/40 border border-border/60 rounded-xl focus:bg-background focus:border-primary/50 transition-all duration-200 text-sm text-foreground disabled:opacity-70 disabled:cursor-not-allowed"
+      >
+        {jmapServers.map((s) => (
+          <option key={s.id} value={s.id}>{s.label}</option>
+        ))}
+      </select>
+      {domainAutoLocked && (
+        <p className="text-[11px] text-muted-foreground leading-snug">
+          {t("jmap_server_auto_picked")}
+        </p>
+      )}
+    </div>
+  ) : null;
+
   // Demo-only mode: show only a large demo login button
   if (demoMode && !isAddAccountMode) {
     return (
@@ -738,6 +785,7 @@ export default function LoginPage() {
         <div className="absolute top-5 right-5" ref={themeMenuRef} suppressHydrationWarning>
           <button
             type="button"
+            ref={themeButtonRef}
             onClick={() => setShowThemeMenu(!showThemeMenu)}
             className={cn(
               "flex items-center gap-2 px-3 py-2 rounded-xl border text-sm transition-all duration-200",
@@ -747,7 +795,7 @@ export default function LoginPage() {
             )}
             aria-label={`Theme: ${currentThemeOption.label}`}
             aria-expanded={showThemeMenu}
-            aria-haspopup="listbox"
+            aria-haspopup="menu"
           >
             <CurrentThemeIcon className="w-4 h-4" />
             <span className="hidden sm:inline" suppressHydrationWarning>{currentThemeOption.label}</span>
@@ -755,8 +803,10 @@ export default function LoginPage() {
 
           {showThemeMenu && (
             <div
+              ref={themeListRef}
+              onKeyDown={onThemeMenuKeyDown}
               className="absolute right-0 top-full mt-2 w-40 rounded-xl border border-border bg-background shadow-lg overflow-hidden animate-fade-in z-50"
-              role="listbox"
+              role="menu"
               aria-label="Theme selection"
             >
               {THEME_OPTIONS.map((option) => {
@@ -766,8 +816,8 @@ export default function LoginPage() {
                   <button
                     key={option.value}
                     type="button"
-                    role="option"
-                    aria-selected={isActive}
+                    role="menuitemradio"
+                    aria-checked={isActive}
                     onClick={() => handleThemeSelect(option.value)}
                     className={cn(
                       "w-full flex items-center gap-3 px-3.5 py-2.5 text-sm transition-colors",
@@ -893,6 +943,7 @@ export default function LoginPage() {
       <div className="absolute top-5 right-5" ref={themeMenuRef} suppressHydrationWarning>
         <button
           type="button"
+          ref={themeButtonRef}
           onClick={() => setShowThemeMenu(!showThemeMenu)}
           className={cn(
             "flex items-center gap-2 px-3 py-2 rounded-xl border text-sm transition-all duration-200",
@@ -902,7 +953,7 @@ export default function LoginPage() {
           )}
           aria-label={`Theme: ${currentThemeOption.label}`}
           aria-expanded={showThemeMenu}
-          aria-haspopup="listbox"
+          aria-haspopup="menu"
         >
           <CurrentThemeIcon className="w-4 h-4" />
           <span className="hidden sm:inline" suppressHydrationWarning>{currentThemeOption.label}</span>
@@ -910,8 +961,10 @@ export default function LoginPage() {
 
         {showThemeMenu && (
           <div
+            ref={themeListRef}
+            onKeyDown={onThemeMenuKeyDown}
             className="absolute right-0 top-full mt-2 w-40 rounded-xl border border-border bg-background shadow-lg overflow-hidden animate-fade-in z-50"
-            role="listbox"
+            role="menu"
             aria-label="Theme selection"
           >
             {THEME_OPTIONS.map((option) => {
@@ -921,8 +974,8 @@ export default function LoginPage() {
                 <button
                   key={option.value}
                   type="button"
-                  role="option"
-                  aria-selected={isActive}
+                  role="menuitemradio"
+                  aria-checked={isActive}
                   onClick={() => handleThemeSelect(option.value)}
                   className={cn(
                     "w-full flex items-center gap-3 px-3.5 py-2.5 text-sm transition-colors",
@@ -1039,8 +1092,9 @@ export default function LoginPage() {
                 </p>
               </div>
             ) : oauthOnly ? (
-              /* OAuth-only mode: show SSO button only */
+              /* OAuth-only mode: server picker (if any) plus the SSO button */
               <div className="space-y-4">
+                {serverPicker}
                 {oauthMetadata ? (
                   <Button
                     type="button"
@@ -1081,8 +1135,8 @@ export default function LoginPage() {
               /* Login Form */
               <form onSubmit={handleSubmit} className="space-y-5">
                 <fieldset disabled={isLoading} className="space-y-4">
-                  {/* Server picker: only shown if no domain options exist and multiple servers configured */}
-                  {!hasDomainOptions && hasServerList && jmapServers.length > 1 && (
+                  {/* Server picker (when admin has configured a server list) */}
+                  {hasServerList && jmapServers.length > 1 && (
                     <div className="space-y-1.5">
                       <label htmlFor="jmap-server-select" className="block text-sm font-medium text-foreground">
                         {t("jmap_server_label")}

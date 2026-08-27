@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useMemo, ReactNode } from "react";
+import { useState, useEffect, useMemo, Fragment, ReactNode } from "react";
 import { useTranslations } from "next-intl";
 import { useRouter } from "@/i18n/navigation";
 import { PluginSlot } from "@/components/plugins/plugin-slot";
@@ -35,9 +35,19 @@ import {
   BellOff,
   Mails,
   MailOpen,
+  MoreHorizontal,
 } from "lucide-react";
 import { cn, buildMailboxTree, MailboxNode } from "@/lib/utils";
 import { localizeMailboxName } from "@/lib/mailbox-label";
+import {
+  buildKeywordTree,
+  countKeywordNodes,
+  filterKeywordTree,
+  hasChildKeywords,
+  type KeywordNode,
+} from "@/lib/keyword-nesting";
+import { useShortenedText } from "@/hooks/use-shortened-text";
+import { useKeywordFormat } from "@/hooks/use-keyword-format";
 import { isEditableEventTarget } from "@/lib/keyboard";
 import { Mailbox } from "@/lib/jmap/types";
 import { useContextMenu } from "@/hooks/use-context-menu";
@@ -47,16 +57,18 @@ import { UNIFIED_MAILBOX_IDS, CROSS_VIEW_IDS } from '@/lib/jmap/types';
 import type { UnifiedMailboxRole } from '@/lib/jmap/types';
 import { useDragDropContext } from "@/contexts/drag-drop-context";
 import { useMailboxDrop } from "@/hooks/use-mailbox-drop";
+import { MAILBOX_DRAG_MIME } from "@/components/pro/pro-shell-drop";
 import { useTagDrop } from "@/hooks/use-tag-drop";
 import { useUIStore } from "@/stores/ui-store";
 import { useAuthStore } from "@/stores/auth-store";
 import { useVacationStore } from "@/stores/vacation-store";
-import { useSettingsStore, KEYWORD_PALETTE, KeywordDefinition } from "@/stores/settings-store";
+import { useSettingsStore, getKeywordVisibility } from "@/stores/settings-store";
 import { useEmailStore } from "@/stores/email-store";
 import { toast } from "@/stores/toast-store";
 import { debug } from "@/lib/debug";
 import { AccountSwitcher } from "./account-switcher";
 import { useIsEmbedded } from "@/hooks/use-is-embedded";
+import { buildSettingsPath, SCHEDULED_MAILBOX_ID, scopedScheduledMailboxId } from "@/lib/deep-links";
 import { useTour } from "@/components/tour/tour-provider";
 
 interface SidebarProps {
@@ -73,12 +85,18 @@ interface SidebarProps {
   onMarkAllFoldersRead?: () => void;
   onEmptyFolder?: (mailboxId: string) => void;
   onCreateSubfolder?: (parentId: string) => void;
-  onCreateFolder?: () => void;
+  onCreateFolder?: (accountId?: string) => void;
   onRenameFolder?: (mailboxId: string) => void;
   onDeleteFolder?: (mailboxId: string) => void;
   onImportEmail?: (mailboxId: string) => void;
   onRefreshMailboxes?: () => void;
   scheduledTotal?: number;
+  /** Pending scheduled-send counts per JMAP account, for shared-account rows. */
+  scheduledTotalByAccount?: Record<string, number>;
+  /** JMAP account the scheduled view is currently narrowed to, if any. The
+   *  store keeps one virtual scheduled mailbox id, so the active shared row is
+   *  identified by this scope rather than by selectedMailbox alone. */
+  scheduledAccountScope?: string | null;
   showScheduledMailbox?: boolean;
   /** True when the unified view spans multiple login accounts (cross-account).
    *  Drives the section header: "All accounts" when true, else "Unified Mailbox". */
@@ -241,6 +259,9 @@ function SidebarRowCounts({
 interface SidebarRowProps {
   icon: ReactNode;
   label: string;
+  /** Progressively shorter renderings of `label`, longest first. The widest one
+   *  that fits the row is shown; without this the full label is used. */
+  labelCandidates?: string[];
   depth?: number;
   isSelected?: boolean;
   isVirtual?: boolean;
@@ -266,6 +287,7 @@ interface SidebarRowProps {
 function SidebarRow({
   icon,
   label,
+  labelCandidates,
   depth = 0,
   isSelected = false,
   isVirtual = false,
@@ -288,6 +310,7 @@ function SidebarRow({
 }: SidebarRowProps) {
   const t = useTranslations('sidebar');
   const leftPad = isCollapsed ? 0 : ROW_PX_BASE + depth * INDENT_STEP;
+  const [labelRef, shortenedLabel] = useShortenedText(labelCandidates ?? [label]);
 
   return (
     <div
@@ -298,6 +321,7 @@ function SidebarRow({
       data-folder-name={testName ?? undefined}
       data-mailbox-id={testMailboxId ?? undefined}
       data-shared={testShared ? 'true' : undefined}
+      data-selected={isSelected ? 'true' : undefined}
       style={{ paddingBlock: 'var(--density-sidebar-py)' }}
       className={cn(
         "group w-full flex items-center max-lg:min-h-[44px] text-sm transition-colors duration-150",
@@ -322,6 +346,7 @@ function SidebarRow({
                 e.stopPropagation();
                 onExpandToggle();
               }}
+              data-testid="folder-expand-toggle"
               className="flex items-center justify-center rounded hover:bg-muted active:bg-accent transition-colors"
               style={{ width: CHEVRON_SLOT, height: CHEVRON_SLOT }}
               title={isExpanded ? t('collapse_tooltip') : t('expand_tooltip')}
@@ -353,7 +378,7 @@ function SidebarRow({
         </span>
         {!isCollapsed && (
           <>
-            <span className="flex-1 truncate">{label}</span>
+            <span ref={labelRef} className="flex-1 truncate">{shortenedLabel}</span>
             <SidebarRowCounts
               unread={unread}
               total={total}
@@ -378,6 +403,7 @@ function SidebarSectionHeader({
   icon,
   sub,
   testId,
+  onContextMenu,
 }: {
   label: string;
   expanded: boolean;
@@ -389,6 +415,7 @@ function SidebarSectionHeader({
   icon?: ReactNode;
   sub?: boolean;
   testId?: string;
+  onContextMenu?: (event: React.MouseEvent) => void;
 }) {
   if (isCollapsed) {
     return first ? null : <div className="h-px bg-border/50 mx-2 my-2" aria-hidden />;
@@ -403,6 +430,7 @@ function SidebarSectionHeader({
   return (
     <button
       onClick={onToggle}
+      onContextMenu={onContextMenu}
       data-testid={testId}
       data-section-name={label}
       data-expanded={expanded ? 'true' : 'false'}
@@ -456,6 +484,7 @@ function MailboxTreeItem({
   onUnreadFilterClick,
   colorful,
   onContextMenu,
+  dragAccountId = null,
 }: {
   node: MailboxNode;
   selectedMailbox: string;
@@ -466,6 +495,10 @@ function MailboxTreeItem({
   onUnreadFilterClick?: (mailboxId: string) => void;
   colorful: boolean;
   onContextMenu?: (e: React.MouseEvent, node: MailboxNode) => void;
+  /** Connected-account id this folder is listed under; null = active account.
+   *  Travels in the folder-drag payload so a folder tab fetches through the
+   *  right client. */
+  dragAccountId?: string | null;
 }) {
   const tNotifications = useTranslations('notifications');
   const tSidebar = useTranslations('sidebar');
@@ -476,6 +509,24 @@ function MailboxTreeItem({
   const isSelected = selectedMailbox === node.id;
   const roleKey = resolveRoleKey(node.role, node.name);
   const label = localizeMailboxName(node.role, node.name, (k) => tSidebar(`mailboxes.${k}`));
+
+  const isEmbedded = useIsEmbedded();
+  // Pro shell only: folder rows are drag sources so a folder can be dropped
+  // onto a tab strip / pane and open as its own tab. Native HTML5 DnD - the
+  // Pro shell's drop targets live outside any dnd-kit context.
+  const folderDragHandlers: Record<string, unknown> | undefined =
+    isEmbedded && !isVirtualNode
+      ? {
+          draggable: true,
+          onDragStart: (e: React.DragEvent) => {
+            e.dataTransfer.setData(
+              MAILBOX_DRAG_MIME,
+              JSON.stringify({ mailboxId: node.id, name: label, accountId: dragAccountId }),
+            );
+            e.dataTransfer.effectAllowed = 'copy';
+          },
+        }
+      : undefined;
 
   const { isDragging: globalDragging } = useDragDropContext();
   const { dropHandlers, isValidDropTarget, isInvalidDropTarget } = useMailboxDrop({
@@ -518,7 +569,14 @@ function MailboxTreeItem({
         onExpandToggle={() => onToggleExpand(node.id)}
         onUnreadClick={() => onUnreadFilterClick?.(node.id)}
         isCollapsed={isCollapsed}
-        dropHandlers={globalDragging ? (dropHandlers as Record<string, unknown>) : undefined}
+        dropHandlers={
+          folderDragHandlers || globalDragging
+            ? {
+                ...(folderDragHandlers ?? {}),
+                ...(globalDragging ? (dropHandlers as Record<string, unknown>) : {}),
+              }
+            : undefined
+        }
         isValidDropTarget={isValidDropTarget}
         isInvalidDropTarget={isInvalidDropTarget}
         onContextMenu={onContextMenu && !isVirtualNode ? (e) => onContextMenu(e, node) : undefined}
@@ -536,84 +594,127 @@ function MailboxTreeItem({
           onUnreadFilterClick={onUnreadFilterClick}
           colorful={colorful}
           onContextMenu={onContextMenu}
+          dragAccountId={dragAccountId}
         />
       ))}
     </>
   );
 }
 
-const TAG_ICON_COLOR: Record<string, string> = {
-  red: "text-red-600/75 dark:text-red-400/75",
-  orange: "text-orange-600/75 dark:text-orange-400/75",
-  yellow: "text-yellow-600/75 dark:text-yellow-400/75",
-  green: "text-green-600/75 dark:text-green-400/75",
-  blue: "text-blue-600/75 dark:text-blue-400/75",
-  purple: "text-purple-600/75 dark:text-purple-400/75",
-  pink: "text-pink-600/75 dark:text-pink-400/75",
-  teal: "text-teal-600/75 dark:text-teal-400/75",
-  cyan: "text-cyan-600/75 dark:text-cyan-400/75",
-  indigo: "text-indigo-600/75 dark:text-indigo-400/75",
-  amber: "text-amber-600/75 dark:text-amber-400/75",
-  lime: "text-lime-600/75 dark:text-lime-400/75",
-  gray: "text-gray-500",
-};
+function ShowAllTagsRow({
+  hiddenCount,
+  showAll,
+  onToggle,
+  isCollapsed,
+}: {
+  hiddenCount: number;
+  showAll: boolean;
+  onToggle: () => void;
+  isCollapsed: boolean;
+}) {
+  const t = useTranslations('sidebar');
+
+  return (
+    <SidebarRow
+      icon={<MoreHorizontal className="w-4 h-4 text-muted-foreground" />}
+      label={showAll ? t('show_fewer_tags') : t('show_all_tags', { count: hiddenCount })}
+      depth={0}
+      onClick={onToggle}
+      isCollapsed={isCollapsed}
+    />
+  );
+}
 
 function TagItem({
-  kw,
-  isSelected,
+  node,
+  selectedKeyword,
+  expandedTags,
   isCollapsed,
   onTagSelect,
-  totalCount,
-  unreadCount,
+  onToggleExpand,
+  tagCounts,
   colorful,
 }: {
-  kw: KeywordDefinition;
-  isSelected: boolean;
+  node: KeywordNode;
+  selectedKeyword: string | null;
+  expandedTags: Set<string>;
   isCollapsed: boolean;
   onTagSelect?: (keywordId: string | null) => void;
-  totalCount: number;
-  unreadCount: number;
+  onToggleExpand: (keywordId: string) => void;
+  tagCounts: Record<string, { total: number; unread: number }>;
   colorful: boolean;
 }) {
   const t = useTranslations('notifications');
-  const palette = KEYWORD_PALETTE[kw.color];
+  const { tagNameCandidates, tagColor } = useKeywordFormat();
+  const palette = tagColor(node.id);
+  const hasChildren = node.children.length > 0;
+  const isExpanded = expandedTags.has(node.id);
+  const isSelected = selectedKeyword === node.id;
+  // Nested rows are placed by their indentation, so they show their own name.
+  // A root spells out its path, which matters when an intermediate tag is
+  // missing from this client's settings and the row would otherwise read as a
+  // bare leaf name.
+  const labelCandidates = node.depth === 0 ? tagNameCandidates(node.id) : [node.label];
+  const label = labelCandidates[0];
+  // Toasts have the room for the whole thing, and no indentation to lean on,
+  // so they always spell out the full path - otherwise two leaves with the
+  // same name in different branches (e.g. "Personal/Receipts" and
+  // "Work/Receipts") would read as the same tag.
+  const fullLabel = tagNameCandidates(node.id)[0];
   const { isDragging: globalDragging } = useDragDropContext();
   const { dropHandlers, isValidDropTarget } = useTagDrop({
-    tagId: kw.id,
-    onSuccess: (count, _tagLabel) => {
+    tagId: node.id,
+    onSuccess: (count) => {
       if (count === 1) {
-        toast.success(t('email_tagged'), kw.label);
+        toast.success(t('email_tagged'), fullLabel);
       } else {
-        toast.success(t('emails_tagged', { count }), kw.label);
+        toast.success(t('emails_tagged', { count }), fullLabel);
       }
     },
     onError: () => {
-      toast.error(t('tag_failed'), kw.label);
+      toast.error(t('tag_failed'), fullLabel);
     },
   });
 
   const tagIcon = colorful ? (
-    <Tag
-      className={cn("w-4 h-4 flex-shrink-0", TAG_ICON_COLOR[kw.color] || "text-muted-foreground")}
-      fill="currentColor"
-    />
+    <Tag className={cn("w-4 h-4 flex-shrink-0", palette.icon)} fill="currentColor" />
   ) : (
-    <span className={cn("w-3 h-3 rounded-full", palette?.dot || "bg-gray-400")} />
+    <span className={cn("w-3 h-3 rounded-full", palette.dot)} />
   );
 
   return (
-    <SidebarRow
-      icon={tagIcon}
-      label={kw.label}
-      depth={0}
-      isSelected={isSelected}
-      unread={unreadCount}
-      total={totalCount}
-      onClick={() => onTagSelect?.(isSelected ? null : kw.id)}
-      isCollapsed={isCollapsed}
-      dropHandlers={globalDragging ? (dropHandlers as Record<string, unknown>) : undefined}
-      isValidDropTarget={isValidDropTarget}
-    />
+    <>
+      <SidebarRow
+        icon={tagIcon}
+        label={label}
+        labelCandidates={labelCandidates}
+        depth={node.depth}
+        isSelected={isSelected}
+        unread={tagCounts[node.id]?.unread ?? 0}
+        total={tagCounts[node.id]?.total ?? 0}
+        onClick={() => onTagSelect?.(isSelected ? null : node.id)}
+        hasChildren={hasChildren}
+        isExpanded={isExpanded}
+        onExpandToggle={() => onToggleExpand(node.id)}
+        isCollapsed={isCollapsed}
+        dropHandlers={globalDragging ? (dropHandlers as Record<string, unknown>) : undefined}
+        isValidDropTarget={isValidDropTarget}
+      />
+
+      {hasChildren && isExpanded && !isCollapsed && node.children.map((child) => (
+        <TagItem
+          key={child.id}
+          node={child}
+          selectedKeyword={selectedKeyword}
+          expandedTags={expandedTags}
+          isCollapsed={isCollapsed}
+          onTagSelect={onTagSelect}
+          onToggleExpand={onToggleExpand}
+          tagCounts={tagCounts}
+          colorful={colorful}
+        />
+      ))}
+    </>
   );
 }
 
@@ -721,6 +822,8 @@ export function Sidebar({
   onImportEmail,
   onRefreshMailboxes,
   scheduledTotal = 0,
+  scheduledTotalByAccount,
+  scheduledAccountScope = null,
   showScheduledMailbox = false,
   crossAccountActive = false,
   showCrossUnread = false,
@@ -737,6 +840,8 @@ export function Sidebar({
   const { sidebarCollapsed: isCollapsed, toggleSidebarCollapsed } = useUIStore();
   const { primaryIdentity: _primaryIdentity, activeAccountId } = useAuthStore();
   const [expandedFolders, setExpandedFolders] = useState<Set<string>>(new Set());
+  const [expandedTags, setExpandedTags] = useState<Set<string>>(new Set());
+  const [showAllTags, setShowAllTags] = useState(false);
   const [foldersExpanded, setFoldersExpanded] = useState(() => {
     try {
       const stored = localStorage.getItem('sidebarFoldersExpanded');
@@ -779,6 +884,7 @@ export function Sidebar({
     return new Set();
   });
   const emailKeywords = useSettingsStore(s => s.emailKeywords);
+  const nestedTags = useSettingsStore(s => s.nestedTags);
   const isEmbedded = useIsEmbedded();
   // The Pro shell owns the global chrome (rail + tab bar), so the sidebar's
   // own AccountSwitcher would be a redundant second account UI in the same
@@ -842,6 +948,37 @@ export function Sidebar({
     });
   };
 
+  useEffect(() => {
+    const stored = localStorage.getItem('expandedTags');
+    if (stored) {
+      try {
+        const parsed = JSON.parse(stored);
+        setExpandedTags(new Set(parsed));
+      } catch (e) {
+        debug.error('Failed to parse expanded tags:', e);
+      }
+    } else {
+      setExpandedTags(
+        new Set(emailKeywords.filter((kw) => hasChildKeywords(kw.id, emailKeywords)).map((kw) => kw.id))
+      );
+    }
+  }, [emailKeywords]);
+
+  const handleToggleTagExpand = (keywordId: string) => {
+    setExpandedTags((prev) => {
+      const next = new Set(prev);
+      if (next.has(keywordId)) {
+        next.delete(keywordId);
+      } else {
+        next.add(keywordId);
+      }
+      try {
+        localStorage.setItem('expandedTags', JSON.stringify(Array.from(next)));
+      } catch { /* storage full or unavailable */ }
+      return next;
+    });
+  };
+
   // When the app renders its own virtual "Scheduled" folder (for delayed
   // sends, driven by EmailSubmission), hide the server-provided scheduled
   // mailbox (e.g. Stalwart's auto-created Scheduled folder, role === 'scheduled')
@@ -851,6 +988,29 @@ export function Sidebar({
   const mailboxTree = buildMailboxTree(mailboxes);
   const ownTree = mailboxTree.filter(n => !n.id.startsWith('shared-account-') && !isServerScheduledNode(n));
   const sharedAccounts = mailboxTree.filter(n => n.id.startsWith('shared-account-'));
+
+  // With nesting off every tag is its own root, so the same rows render through
+  // one path whether or not the ids describe a hierarchy.
+  const tagTree: KeywordNode[] = nestedTags
+    ? buildKeywordTree(emailKeywords)
+    : emailKeywords.map((kw) => ({ ...kw, children: [], depth: 0 }));
+
+  // Counts arrive from a separate JMAP round trip, one batch per group of tags;
+  // a tag with no count yet is treated as visible rather than blanking it and
+  // filling it back in. A tag the server answered for with zero unread hides,
+  // which is the point of the setting.
+  const isTagVisible = (node: KeywordNode) => {
+    if (showAllTags || node.id === selectedKeyword) return true;
+    const visibility = getKeywordVisibility(node);
+    if (visibility === 'hide') return false;
+    if (visibility === 'unread') {
+      const count = tagCounts[node.id];
+      return !count || count.unread > 0;
+    }
+    return true;
+  };
+  const visibleTagTree = filterKeywordTree(tagTree, isTagVisible);
+  const hiddenTagCount = emailKeywords.length - countKeywordNodes(visibleTagTree);
 
   // Multi-account mode (Pro shell): render every connected account as its
   // own collapsible group. The active account's tree comes from the
@@ -869,6 +1029,37 @@ export function Sidebar({
         return { account, isActive, tree };
       })
     : [];
+
+  // Scheduled row. Without an account it is the combined view (the user's own
+  // tree); with one it scopes the list to that shared account's scheduled mail,
+  // which lives in the shared JMAP account rather than the primary one (#874).
+  const renderScheduledRow = (key: string, account?: { accountId?: string; depth?: number }) => {
+    if (!showScheduledMailbox) return null;
+    const accountId = account?.accountId;
+    const mailboxId = accountId ? scopedScheduledMailboxId(accountId) : SCHEDULED_MAILBOX_ID;
+    const count = accountId
+      ? (scheduledTotalByAccount?.[accountId] ?? 0)
+      : scheduledTotal;
+    // selectedMailbox is always the plain virtual id, so the *scope* decides
+    // which of these rows is the active one.
+    const isScheduledSelected = selectedMailbox === SCHEDULED_MAILBOX_ID
+      && (scheduledAccountScope ?? null) === (accountId ?? null);
+    return (
+      <SidebarRow
+        key={key}
+        icon={<CalendarClock className="w-4 h-4 flex-shrink-0 text-sky-600 dark:text-sky-400" />}
+        label={t('scheduled')}
+        depth={account?.depth ?? 0}
+        isSelected={!selectedKeyword && isScheduledSelected}
+        total={count}
+        onClick={() => onMailboxSelect?.(mailboxId)}
+        isCollapsed={isCollapsed}
+        testRole="scheduled"
+        testName="scheduled"
+        testMailboxId={mailboxId}
+      />
+    );
+  };
 
   const getUnifiedIcon = (role: UnifiedMailboxRole) => {
     switch (role) {
@@ -964,14 +1155,11 @@ export function Sidebar({
     });
   };
 
-  const openFolderSettings = () => {
-    try { sessionStorage.setItem('settings-deep-link-tab', 'folders'); } catch { /* */ }
-    router.push('/settings');
-  };
-  const openKeywordSettings = () => {
-    try { sessionStorage.setItem('settings-deep-link-tab', 'keywords'); } catch { /* */ }
-    router.push('/settings');
-  };
+  // The tab now travels in the URL (#733) rather than through sessionStorage,
+  // so a gear click is a link the user can also bookmark or share. It still
+  // steers only this one open - the persisted default is written on tab click.
+  const openFolderSettings = () => { router.push(buildSettingsPath('folders')); };
+  const openKeywordSettings = () => { router.push(buildSettingsPath('keywords')); };
 
   const {
     contextMenu: mailboxContextMenu,
@@ -988,6 +1176,17 @@ export function Sidebar({
 
   const handleFoldersHeaderContextMenu = (e: React.MouseEvent) => {
     openMailboxContextMenu(e, { kind: "folders-section" });
+  };
+
+  // `buildMailboxTree()` groups shared mailboxes that carry no accountId under
+  // the placeholder id "unknown" (lib/utils.ts). Such a node cannot be a valid
+  // JMAP mutation target, so it gets no folder-creation menu at all rather than
+  // a menu that would create the folder in a non-existent account.
+  const sharedAccountMenuId = (accountId?: string) =>
+    accountId && accountId !== "unknown" ? accountId : undefined;
+
+  const handleSharedAccountContextMenu = (e: React.MouseEvent, accountId: string) => {
+    openMailboxContextMenu(e, { kind: "folders-section", accountId });
   };
 
   return (
@@ -1123,32 +1322,25 @@ export function Sidebar({
                     ) : (
                       <>
                         {tree.map((node) => (
-                          <MailboxTreeItem
-                            key={node.id}
-                            node={node}
-                            selectedMailbox={selectedKeyword || !isViewing ? "" : selectedMailbox}
-                            expandedFolders={expandedFolders}
-                            onMailboxSelect={(mailboxId) =>
-                              onAccountMailboxSelect?.(isActive ? null : account.id, mailboxId)
-                            }
-                            onToggleExpand={handleToggleExpand}
-                            isCollapsed={isCollapsed}
-                            onUnreadFilterClick={isActive ? onUnreadFilterClick : undefined}
-                            colorful={colorfulSidebarIcons}
-                            onContextMenu={isActive ? handleMailboxContextMenu : undefined}
-                          />
+                          <Fragment key={node.id}>
+                            <MailboxTreeItem
+                              node={node}
+                              selectedMailbox={selectedKeyword || !isViewing ? "" : selectedMailbox}
+                              expandedFolders={expandedFolders}
+                              onMailboxSelect={(mailboxId) =>
+                                onAccountMailboxSelect?.(isActive ? null : account.id, mailboxId)
+                              }
+                              onToggleExpand={handleToggleExpand}
+                              isCollapsed={isCollapsed}
+                              onUnreadFilterClick={isActive ? onUnreadFilterClick : undefined}
+                              colorful={colorfulSidebarIcons}
+                              onContextMenu={isActive ? handleMailboxContextMenu : undefined}
+                              dragAccountId={isActive ? null : account.id}
+                            />
+                            {isActive && node.role === 'drafts' && renderScheduledRow(`scheduled-${account.id}`)}
+                          </Fragment>
                         ))}
-                        {isActive && showScheduledMailbox && (
-                          <SidebarRow
-                            icon={<CalendarClock className={cn("w-4 h-4 flex-shrink-0", selectedMailbox === '__scheduled__' ? "text-foreground" : "text-muted-foreground")} />}
-                            label={t('scheduled')}
-                            depth={0}
-                            isSelected={!selectedKeyword && selectedMailbox === '__scheduled__'}
-                            total={scheduledTotal}
-                            onClick={() => onMailboxSelect?.('__scheduled__')}
-                            isCollapsed={isCollapsed}
-                          />
-                        )}
+                        {isActive && !tree.some((node) => node.role === 'drafts') && renderScheduledRow(`scheduled-${account.id}`)}
                       </>
                     )}
                   </>
@@ -1176,8 +1368,8 @@ export function Sidebar({
                 ) : (
                   <>
                     {ownTree.map((node) => (
+                      <Fragment key={node.id}>
                         <MailboxTreeItem
-                          key={node.id}
                           node={node}
                           selectedMailbox={selectedKeyword ? "" : selectedMailbox}
                           expandedFolders={expandedFolders}
@@ -1188,18 +1380,10 @@ export function Sidebar({
                           colorful={colorfulSidebarIcons}
                           onContextMenu={handleMailboxContextMenu}
                         />
+                        {node.role === 'drafts' && renderScheduledRow('scheduled')}
+                      </Fragment>
                     ))}
-                    {showScheduledMailbox && (
-                      <SidebarRow
-                        icon={<CalendarClock className={cn("w-4 h-4 flex-shrink-0", selectedMailbox === '__scheduled__' ? "text-foreground" : "text-muted-foreground")} />}
-                        label={t('scheduled')}
-                        depth={0}
-                        isSelected={!selectedKeyword && selectedMailbox === '__scheduled__'}
-                        total={scheduledTotal}
-                        onClick={() => onMailboxSelect?.('__scheduled__')}
-                        isCollapsed={isCollapsed}
-                      />
-                    )}
+                    {!ownTree.some((node) => node.role === 'drafts') && renderScheduledRow('scheduled')}
                   </>
                 )}
               </>
@@ -1220,6 +1404,7 @@ export function Sidebar({
               <>
                 {sharedAccounts.map((account) => {
                   const accountExpanded = expandedSharedAccounts.has(account.id);
+                  const menuAccountId = sharedAccountMenuId(account.accountId);
                   return (
                     <div key={account.id}>
                       <SidebarSectionHeader
@@ -1230,21 +1415,33 @@ export function Sidebar({
                         sub
                         icon={<User className="w-3.5 h-3.5 text-muted-foreground" />}
                         testId="section-shared-account"
+                        onContextMenu={menuAccountId
+                          ? (e) => handleSharedAccountContextMenu(e, menuAccountId)
+                          : undefined}
                       />
-                      {accountExpanded && !isCollapsed && account.children.map((child) => (
-                        <MailboxTreeItem
-                          key={child.id}
-                          node={child}
-                          selectedMailbox={selectedKeyword ? "" : selectedMailbox}
-                          expandedFolders={expandedFolders}
-                          onMailboxSelect={onMailboxSelect}
-                          onToggleExpand={handleToggleExpand}
-                          isCollapsed={isCollapsed}
-                          onUnreadFilterClick={onUnreadFilterClick}
-                          colorful={colorfulSidebarIcons}
-                          onContextMenu={handleMailboxContextMenu}
-                        />
-                      ))}
+                      {accountExpanded && !isCollapsed && (
+                        <>
+                          {account.children.map((child) => (
+                            <Fragment key={child.id}>
+                              <MailboxTreeItem
+                                node={child}
+                                selectedMailbox={selectedKeyword ? "" : selectedMailbox}
+                                expandedFolders={expandedFolders}
+                                onMailboxSelect={onMailboxSelect}
+                                onToggleExpand={handleToggleExpand}
+                                isCollapsed={isCollapsed}
+                                onUnreadFilterClick={onUnreadFilterClick}
+                                colorful={colorfulSidebarIcons}
+                                onContextMenu={handleMailboxContextMenu}
+                              />
+                              {child.role === 'drafts' && menuAccountId
+                                && renderScheduledRow(`${account.id}-scheduled`, { accountId: menuAccountId })}
+                            </Fragment>
+                          ))}
+                          {menuAccountId && !account.children.some((child) => child.role === 'drafts')
+                            && renderScheduledRow(`${account.id}-scheduled`, { accountId: menuAccountId })}
+                        </>
+                      )}
                     </div>
                   );
                 })}
@@ -1265,18 +1462,27 @@ export function Sidebar({
             />
             {((tagsExpanded && !isCollapsed) || isCollapsed) && (
               <>
-                {emailKeywords.map((kw) => (
+                {visibleTagTree.map((node) => (
                   <TagItem
-                    key={kw.id}
-                    kw={kw}
-                    isSelected={selectedKeyword === kw.id}
+                    key={node.id}
+                    node={node}
+                    selectedKeyword={selectedKeyword}
+                    expandedTags={expandedTags}
                     isCollapsed={isCollapsed}
                     onTagSelect={onTagSelect}
-                    totalCount={tagCounts[kw.id]?.total ?? 0}
-                    unreadCount={tagCounts[kw.id]?.unread ?? 0}
+                    onToggleExpand={handleToggleTagExpand}
+                    tagCounts={tagCounts}
                     colorful={colorfulSidebarIcons}
                   />
                 ))}
+                {(hiddenTagCount > 0 || showAllTags) && (
+                  <ShowAllTagsRow
+                    hiddenCount={hiddenTagCount}
+                    showAll={showAllTags}
+                    onToggle={() => setShowAllTags((prev) => !prev)}
+                    isCollapsed={isCollapsed}
+                  />
+                )}
               </>
             )}
           </div>
