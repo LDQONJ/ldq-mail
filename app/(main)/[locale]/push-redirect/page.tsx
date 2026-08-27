@@ -62,7 +62,9 @@ function PushRedirectLogic() {
         let ctxServerHostname = "";
         try {
           ctxServerHostname = new URL(account.serverUrl).hostname.toLowerCase();
-        } catch {}
+        } catch {
+          // ignore invalid URL
+        }
 
         if (labelDomain) {
           const domainMatches = (ctxDomain && ctxDomain === labelDomain) || ctxServerHostname.includes(labelDomain);
