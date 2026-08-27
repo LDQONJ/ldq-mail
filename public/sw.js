@@ -367,7 +367,12 @@ async function handleOpenMailtoInClient(event) {
 
   if ("focus" in client) {
     try {
-      await client.focus();
+      const focusedClient = await client.focus();
+      // Browsers often silently ignore focus requests from background message events.
+      // If the client didn't actually come to the foreground, show the notification.
+      if (focusedClient && focusedClient.visibilityState !== "visible") {
+        await showMailtoFocusNotification(state);
+      }
     } catch (_) {
       // Delivery succeeded; focusing can still be blocked by browser policy.
       await showMailtoFocusNotification(state);
