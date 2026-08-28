@@ -250,7 +250,7 @@ export default function RegisterPage() {
                     placeholder={t('invite_code_placeholder')}
                     value={formData.inviteCode}
                     onChange={(e) => setFormData({ ...formData, inviteCode: e.target.value.toUpperCase() })}
-                    className="h-11 w-full px-3.5 bg-muted/40 border border-border/60 rounded-xl focus:bg-background focus:border-primary/50 transition-all duration-200 text-sm font-mono font-semibold text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20"
+                    className="h-11 w-full px-3.5 bg-muted/40 border border-border/60 rounded-xl focus:bg-background focus:border-primary/50 transition-all duration-200 text-sm font-mono font-semibold text-foreground placeholder:font-sans placeholder:font-normal placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/20"
                   />
                 </div>
 
@@ -337,7 +337,7 @@ export default function RegisterPage() {
                     placeholder={t('display_name_placeholder')}
                     value={formData.displayName}
                     onChange={(e) => setFormData({ ...formData, displayName: e.target.value })}
-                    className="h-11 w-full px-3.5 bg-muted/40 border border-border/60 rounded-xl focus:bg-background focus:border-primary/50 transition-all duration-200 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20"
+                    className="h-11 w-full px-3.5 bg-muted/40 border border-border/60 rounded-xl focus:bg-background focus:border-primary/50 transition-all duration-200 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/20"
                   />
                 </div>
 
@@ -353,7 +353,7 @@ export default function RegisterPage() {
                       placeholder={t('password_placeholder')}
                       value={formData.password}
                       onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                      className="h-11 w-full px-3.5 pe-11 bg-muted/40 border border-border/60 rounded-xl focus:bg-background focus:border-primary/50 transition-all duration-200 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20"
+                      className="h-11 w-full px-3.5 pe-11 bg-muted/40 border border-border/60 rounded-xl focus:bg-background focus:border-primary/50 transition-all duration-200 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/20"
                     />
                     <button
                       type="button"
@@ -376,7 +376,7 @@ export default function RegisterPage() {
                     placeholder={t('confirm_password_placeholder')}
                     value={formData.confirmPassword}
                     onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}
-                    className="h-11 w-full px-3.5 bg-muted/40 border border-border/60 rounded-xl focus:bg-background focus:border-primary/50 transition-all duration-200 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20"
+                    className="h-11 w-full px-3.5 bg-muted/40 border border-border/60 rounded-xl focus:bg-background focus:border-primary/50 transition-all duration-200 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/20"
                   />
                 </div>
 
