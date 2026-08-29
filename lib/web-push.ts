@@ -366,10 +366,13 @@ async function pollVerificationCode(
   while (Date.now() < timeoutAt) {
     const res = await fetch(
       buildRelayUrl(relayBaseUrl, `/api/push/verify/${encodeURIComponent(subscriptionId)}`),
+      { cache: 'no-store' }
     );
     if (res.ok) {
       const body = (await res.json()) as { verificationCode?: string | null };
       if (body.verificationCode) return body.verificationCode;
+    } else if (res.status === 404) {
+      throw new Error('Push registration was deleted from the relay while waiting for verification.');
     }
     await new Promise((r) => setTimeout(r, delay));
     delay = Math.min(delay * 1.5, 2000);
