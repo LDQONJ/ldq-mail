@@ -23,6 +23,7 @@ export default function RegisterPage() {
   const router = useRouter();
   const params = useParams();
   const searchParams = useSearchParams();
+  const isAddAccountMode = searchParams.get('mode') === 'add-account';
   const t = useTranslations('register');
   const locale = (params.locale as string) || 'en';
   const initialCode = searchParams.get('code') || '';
@@ -174,7 +175,9 @@ export default function RegisterPage() {
     }
   };
 
-  const loginPath = toRouterPath(`${getPathPrefix(locale)}/${locale}/login`);
+  const loginPath = toRouterPath(
+    `${getPathPrefix(locale)}/${locale}/login${isAddAccountMode ? '?mode=add-account' : ''}`
+  );
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-background via-muted/10 to-muted/30 relative px-4 py-12">

@@ -872,7 +872,7 @@ export default function LoginPage() {
           {/* Footer */}
           <div className="mt-6 flex flex-col items-center gap-2">
             <Link
-              href={toRouterPath(`${getPathPrefix(params.locale as string)}/${params.locale}/register`)}
+              href={toRouterPath(`${getPathPrefix(params.locale as string)}/${params.locale}/register${isAddAccountMode ? '?mode=add-account' : ''}`)}
               className="text-xs text-muted-foreground/80 hover:text-primary transition-colors font-medium mb-1"
             >
               {t("have_invite_code")} <span className="underline underline-offset-2">{t("register_link")}</span>
@@ -1418,7 +1418,7 @@ export default function LoginPage() {
                 {/* Register Link */}
                 <div className="mt-4 pt-3 text-center border-t border-border/40">
                   <Link
-                    href={toRouterPath(`${getPathPrefix(params.locale as string)}/${params.locale}/register`)}
+                    href={toRouterPath(`${getPathPrefix(params.locale as string)}/${params.locale}/register${isAddAccountMode ? '?mode=add-account' : ''}`)}
                     className="text-xs text-muted-foreground hover:text-foreground transition-colors font-medium inline-flex items-center gap-1.5"
                   >
                     <span>{t("have_invite_code")}</span>

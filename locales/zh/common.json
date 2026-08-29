@@ -141,14 +141,14 @@
       "spam": "垃圾邮件",
       "important": "重要"
     },
-    "unified_inbox": "统一收件箱",
-    "unified_sent": "所有已发送",
-    "unified_drafts": "所有草稿",
-    "unified_trash": "所有已删除",
-    "unified_archive": "所有归档",
-    "unified_junk": "所有垃圾邮件",
-    "all_accounts": "所有账户",
-    "unified_mailbox": "统一邮箱",
+    "unified_inbox": "全部收件箱",
+    "unified_sent": "全部已发送",
+    "unified_drafts": "全部草稿",
+    "unified_trash": "全部已删除",
+    "unified_archive": "全部归档",
+    "unified_junk": "全部垃圾邮件",
+    "all_accounts": "全部账号",
+    "unified_mailbox": "全部邮箱",
     "expand": "展开",
     "collapse": "收起",
     "expand_tooltip": "展开",
@@ -1056,15 +1056,15 @@
         "description": "在导航栏底部显示账户头像，方便快速切换；下方会保留退出按钮。"
       },
       "unified_mailbox": {
-        "label": "统一邮箱",
-        "description": "显示所有已连接账户的合并文件夹（收件箱、已发送等）",
+        "label": "全部邮箱",
+        "description": "显示所有已登录账号的合并文件夹（收件箱、已发送等）",
         "cross_account": {
           "label": "Across all accounts",
           "description": "Merge the unified mailbox across every connected account instead of staying within the active account."
         },
         "include_group": {
           "label": "包含群组收件箱",
-          "description": "在统一视图中也合并共享/群组收件箱。"
+          "description": "在全部视图中也合并共享/群组收件箱。"
         }
       },
       "all_mail": {
@@ -1075,19 +1075,19 @@
       },
       "colorful_sidebar_icons": {
         "label": "彩色侧边栏图标",
-        "description": "按类型为文件夹和标签图标着色（蓝色收件箱、红色垃圾邮件、绿色已发送等）。禁用以获得单色侧边栏。"
+        "description": "按类型为文件夹和标签图标着色（蓝色收件箱、红色垃圾邮件、绿色已发送等）。禁用以使用单色侧边栏。"
       },
       "tint_list_rows": {
-        "label": "Tint List Rows by Tag Color",
-        "description": "Shade each message row with its first tag color. Disable to keep rows plain; tag dots and chips still show the color."
+        "label": "邮件列表着色",
+        "description": "使用邮件的第一个标签色给列表中的邮件加上背景色。禁用使邮件列表中所有邮件恢复默认颜色；标签胶囊和小圆点始终显示颜色。"
       },
       "show_folder_total_count": {
         "label": "显示邮件总数",
-        "description": "在文件夹和标签旁边显示邮件总数，以及未读数量。停用后仅显示未读数量。"
+        "description": "在文件夹和标签旁边显示邮件总数，以及未读数量。禁用后仅显示未读数量。"
       },
       "favicon_unread_badge": {
-        "label": "Unread Count on Tab Icon",
-        "description": "Show the inbox unread count as a badge on the browser tab icon, so new mail is visible when the tab is not focused. Disable to keep the icon unbadged."
+        "label": "标签页图标显示未读数量",
+        "description": "在浏览器标签页图标上展示收件箱未读邮件数量角标，即使标签页位于后台也能看见新邮件。禁用以隐藏标签页图标角标。"
       },
       "pro_interface": {
         "label": "Pro 界面（实验性）",
@@ -1550,7 +1550,7 @@
     "account": {
       "title": "账户",
       "description": "查看您的账户信息",
-      "name_label": "显示名称",
+      "name_label": "姓名",
       "username_label": "用户名",
       "account_type_label": "账户类型",
       "auth_method_label": "认证方式",
@@ -1558,7 +1558,7 @@
       "auth_method_basic": "密码",
       "demo_account": "演示账户",
       "email": {
-        "label": "邮件",
+        "label": "邮箱",
         "value": "{email}"
       },
       "server": {
@@ -1610,21 +1610,21 @@
         "error_generic": "更改密码失败"
       },
       "display_name": {
-        "label": "显示名称",
+        "label": "姓名",
         "description": "显示在服务器上的名称",
-        "placeholder": "输入您的显示名称",
+        "placeholder": "输入您的姓名",
         "save": "保存",
-        "success": "显示名称已更新",
-        "error": "无法更新显示名称"
+        "success": "姓名已更新",
+        "error": "无法更新姓名"
       },
       "totp": {
-        "section_title": "双因素身份验证",
-        "label": "TOTP 身份验证",
-        "description": "使用基于时间的一次性密码添加额外的安全层",
+        "section_title": "2FA 身份验证",
+        "label": "2FA 身份验证",
+        "description": "使用基于时间的一次性密码添加额外的安全保障",
         "active": "启用",
         "inactive": "未启用",
-        "enabled": "启用双因素身份验证",
-        "disabled": "禁用双因素身份验证",
+        "enabled": "启用 2FA 身份验证",
+        "disabled": "禁用 2FA 身份验证",
         "enable_error": "无法启用 2FA",
         "disable_error": "无法禁用 2FA",
         "setup_instructions": "请将此 URL 复制到身份验证器应用（Google Authenticator、Authy 等）中：",

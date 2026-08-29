@@ -34,6 +34,7 @@ import { getActiveAccountSlotHeaders } from '@/lib/auth/active-account-slot';
 
 import { useUpdateStore, selectHasUpdate } from '@/stores/update-store';
 import { apiFetch, getPathPrefix, withBasePath } from '@/lib/browser-navigation';
+import { AdminI18nProvider } from '@/components/admin/admin-i18n-provider';
 
 // Single-page tab navigation: clicks update a Zustand store. The URL stays
 // at /admin so React doesn't fire a route transition on every tab switch -
@@ -180,7 +181,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
   // Don't gate the login page
   if (pathname === '/admin/login') {
-    return <>{children}</>;
+    return <AdminI18nProvider>{children}</AdminI18nProvider>;
   }
 
   // /admin lives outside the [locale] tree, so links back to the webmail
@@ -277,7 +278,8 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   );
 
   return (
-    <div className="min-h-screen flex bg-background">
+    <AdminI18nProvider>
+      <div className="min-h-screen flex bg-background">
       {/* Slim webmail nav rail (desktop only) */}
       <nav className="hidden md:flex w-14 bg-secondary flex-col items-center py-3 gap-2 border-e border-border sticky top-0 h-screen shrink-0">
         {logoUrl ? (
@@ -479,5 +481,6 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         </a>
       </nav>
     </div>
+    </AdminI18nProvider>
   );
 }

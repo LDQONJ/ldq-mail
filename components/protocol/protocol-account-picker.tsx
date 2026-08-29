@@ -92,12 +92,6 @@ export function ProtocolAccountPicker({
         <div className="max-h-80 overflow-y-auto p-2">
           {accounts.map((account) => {
             const isActive = account.id === activeAccountId;
-            let host = account.serverUrl;
-            try {
-              host = new URL(account.serverUrl).hostname;
-            } catch {
-              // Keep the configured value when it is not an absolute URL.
-            }
 
             return (
               <button
@@ -132,7 +126,6 @@ export function ProtocolAccountPicker({
                     )}
                   </div>
                   <p className="truncate text-xs text-muted-foreground">{account.email || account.username}</p>
-                  <p className="truncate text-[10px] text-muted-foreground">{host}</p>
                 </div>
               </button>
             );

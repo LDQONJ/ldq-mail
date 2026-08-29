@@ -15,10 +15,6 @@ import { useRouter } from '@/i18n/navigation';
 import { getMaxAccounts } from '@/lib/account-utils';
 import { formatFileSize, cn } from '@/lib/utils';
 
-function hostnameOf(serverUrl: string): string {
-  try { return new URL(serverUrl).hostname; } catch { return serverUrl; }
-}
-
 // First scoped settings tab to land on for a shared account, by capability.
 // Mirrors the scoped-tab gating in the settings page. null = nothing editable.
 function firstScopedTab(caps: SharedAccount['capabilities']): string | null {
@@ -33,7 +29,7 @@ export function AccountSettings() {
   const t = useTranslations('settings.account');
   const tCommon = useTranslations('common');
   const router = useRouter();
-  const { username, serverUrl, isDemoMode, primaryIdentity, authMode, client } = useAuthStore();
+  const { username, isDemoMode, primaryIdentity, authMode, client } = useAuthStore();
   const activeAccountId = useAuthStore((s) => s.activeAccountId);
   const switchAccount = useAuthStore((s) => s.switchAccount);
   const setManagedAccount = useManagedAccountStore((s) => s.setManagedAccount);
@@ -140,13 +136,6 @@ export function AccountSettings() {
         <SettingItem label={t('auth_method_label')}>
           <span className="text-sm text-foreground">
             {authMode === 'oauth' ? t('auth_method_oauth') : t('auth_method_basic')}
-          </span>
-        </SettingItem>
-
-        {/* Server */}
-        <SettingItem label={t('server.label')}>
-          <span className="text-sm text-foreground truncate max-w-xs">
-            {serverUrl || tCommon('unknown')}
           </span>
         </SettingItem>
 
@@ -376,19 +365,11 @@ function AccountRow({
         <p className="text-xs text-muted-foreground truncate">
           {account.email || account.username}
         </p>
-        <div className="flex items-center gap-1 mt-0.5">
-          {account.hasError ? (
+        {account.hasError && (
+          <div className="flex items-center gap-1 mt-0.5">
             <AlertCircle className="w-3 h-3 text-destructive" />
-          ) : (
-            <span className={cn(
-              'w-1.5 h-1.5 rounded-full',
-              account.isConnected ? 'bg-green-500' : 'bg-muted-foreground/40'
-            )} />
-          )}
-          <span className="text-[10px] text-muted-foreground truncate">
-            {hostnameOf(account.serverUrl)}
-          </span>
-        </div>
+          </div>
+        )}
       </button>
 
       <div className="flex items-center gap-0.5 flex-shrink-0">

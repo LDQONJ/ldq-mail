@@ -1044,13 +1044,14 @@ export function Sidebar({
     // which of these rows is the active one.
     const isScheduledSelected = selectedMailbox === SCHEDULED_MAILBOX_ID
       && (scheduledAccountScope ?? null) === (accountId ?? null);
+    const isSelected = !selectedKeyword && isScheduledSelected;
     return (
       <SidebarRow
         key={key}
-        icon={<CalendarClock className="w-4 h-4 flex-shrink-0 text-sky-600 dark:text-sky-400" />}
+        icon={<CalendarClock className={getIconClass(isSelected, false, colorfulSidebarIcons, 'scheduled')} />}
         label={t('scheduled')}
         depth={account?.depth ?? 0}
-        isSelected={!selectedKeyword && isScheduledSelected}
+        isSelected={isSelected}
         total={count}
         onClick={() => onMailboxSelect?.(mailboxId)}
         isCollapsed={isCollapsed}

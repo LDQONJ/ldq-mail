@@ -293,19 +293,11 @@ export function AccountSwitcher({ variant = "rail", className }: AccountSwitcher
                     <p className="text-xs text-muted-foreground truncate">
                       {account.email || account.username}
                     </p>
-                    <div className="flex items-center gap-1 mt-0.5">
-                      {account.hasError ? (
+                    {account.hasError && (
+                      <div className="flex items-center gap-1 mt-0.5">
                         <AlertCircle className="w-3 h-3 text-destructive" />
-                      ) : (
-                        <span className={cn(
-                          "w-1.5 h-1.5 rounded-full",
-                          account.isConnected ? "bg-green-500" : "bg-muted-foreground/40"
-                        )} />
-                      )}
-                      <span className="text-[10px] text-muted-foreground truncate">
-                        {(() => { try { return new URL(account.serverUrl).hostname; } catch { return account.serverUrl; } })()}
-                      </span>
-                    </div>
+                      </div>
+                    )}
                   </div>
                 </button>
                 {isDraggable && (
