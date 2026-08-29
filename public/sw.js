@@ -303,7 +303,7 @@ async function handleNotificationClick(event) {
   for (const client of allClients) {
     // Reuse an existing tab whenever possible - users on desktop browsers
     // get annoyed when each notification opens a fresh window.
-    if ("focus" in client) {
+    if (client.frameType === "top-level" && "focus" in client) {
       try {
         const focusedClient = await client.focus();
         if ("navigate" in focusedClient && targetUrl) {
@@ -406,7 +406,7 @@ async function findReusableWindowClientEntry(sourceClientId, requireMailtoReady)
   const candidates = [];
 
   for (const client of allClients) {
-    if (client.id === sourceClientId) continue;
+    if (client.id === sourceClientId || client.frameType !== "top-level") continue;
     const state = MAILTO_CLIENTS.get(client.id);
     if (requireMailtoReady && !state) continue;
 
