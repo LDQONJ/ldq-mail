@@ -520,9 +520,14 @@ export async function enableWebPush(
   //     reap the ones it confirms are dead. Anything live - or anything the
   //     relay can't vouch for (a different relay, a non-Bulwark client, a
   //     network blip) - is left untouched.
+  let recoveredId: string | null = null;
   for (const s of existingSubs) {
     if (s.id === storedServerId) continue;
     if (s.deviceClientId === deviceClientId) {
+      if (!recoveredId) {
+        recoveredId = s.id;
+        continue;
+      }
       await params.client.destroyPushSubscription(s.id).catch(() => undefined);
       continue;
     }
@@ -531,7 +536,7 @@ export async function enableWebPush(
     }
   }
 
-  const serverAssignedId = await params.client.createPushSubscription({
+  const serverAssignedId = recoveredId || await params.client.createPushSubscription({
     deviceClientId,
     url: buildRelayUrl(relayBaseUrl, `/api/push/jmap/${encodeURIComponent(deviceClientId)}`),
     types: [...PUSH_TYPES],
