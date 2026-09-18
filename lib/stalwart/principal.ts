@@ -49,8 +49,10 @@ export async function fetchPrincipalDisplayName(
   if (!client.hasAccountCapability?.(STALWART_JMAP_CAPABILITY)) return null;
   if (!(await isStalwartJmapPassthroughEnabled())) return null;
 
+  const accountId = client.getAccountId();
+
+  // 1. Try x:Account/get (works for admins with sysAccountGet permission)
   try {
-    const accountId = client.getAccountId();
     const responses = await stalwartJmap(
       [['x:Account/get', { accountId, ids: [accountId] }, '0']],
       { slot },
@@ -58,10 +60,27 @@ export async function fetchPrincipalDisplayName(
     const result = requireResult<PrincipalGetResponse>(responses, 'x:Account/get');
     const description = result.list?.[0]?.description;
     const name = typeof description === 'string' ? description.trim() : '';
+    if (name) return name;
+  } catch (error) {
+    debug.warn('auth', 'x:Account/get rejected (non-admin), falling back to x:AccountSettings/get:', error);
+  }
+
+  // 2. Fall back to x:AccountSettings/get (standard users can read their own singleton settings)
+  try {
+    const responses = await stalwartJmap(
+      [['x:AccountSettings/get', { accountId, ids: ['singleton'] }, '0']],
+      { slot },
+    );
+    const result = requireResult<{ list?: Array<{ description?: string | null }> }>(
+      responses,
+      'x:AccountSettings/get',
+    );
+    const description = result.list?.[0]?.description;
+    const name = typeof description === 'string' ? description.trim() : '';
     return name || null;
   } catch (error) {
     // Not fatal: the cached display name (or the identity name) stays in use.
-    debug.warn('auth', 'Failed to read principal display name:', error);
+    debug.warn('auth', 'Failed to read principal display name via x:AccountSettings/get:', error);
     return null;
   }
 }

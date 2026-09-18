@@ -1,6 +1,8 @@
 import { create } from 'zustand';
 import { debug } from '@/lib/debug';
 import { useAuthStore } from '@/stores/auth-store';
+import { useAccountStore, type AccountEntry } from '@/stores/account-store';
+import { useIdentityStore } from '@/stores/identity-store';
 import { stalwartJmap, requireResult, type JmapMethodResponse } from '@/lib/stalwart/jmap-passthrough';
 import { isStalwartJmapPassthroughEnabled } from '@/lib/stalwart/principal';
 
@@ -510,6 +512,22 @@ export const useAccountSecurityStore = create<AccountSecurityState>()((set, get)
       // aliases simply stay unknown.
       if (isForbiddenError(error)) {
         debug.log('Principal not readable for this account, aliases unavailable:', msg);
+        try {
+          const accountId = getPrimaryAccountId();
+          const responses = await stalwartJmap([
+            ['x:AccountSettings/get', { accountId, ids: ['singleton'] }, '0'],
+          ]);
+          const result = requireResult<{ list?: Array<{ description?: string | null }> }>(
+            responses,
+            'x:AccountSettings/get',
+          );
+          const desc = result.list?.[0]?.description ?? '';
+          if (desc) {
+            set({ displayName: desc });
+          }
+        } catch (settingsError) {
+          debug.warn('security', 'Failed to read AccountSettings display name:', settingsError);
+        }
         set({ isLoadingPrincipal: false });
         return;
       }
@@ -563,6 +581,34 @@ export const useAccountSecurityStore = create<AccountSecurityState>()((set, get)
         ],
       ]);
       set({ displayName, isSaving: false });
+
+      // 1. Immediately update account store so the sidebar avatar, switcher, and account settings update live
+      try {
+        const accountStore = useAccountStore.getState();
+        const activeId = accountStore.activeAccountId;
+        if (activeId) {
+          const cur = accountStore.getAccountById(activeId);
+          const updates: Partial<AccountEntry> = { displayName };
+          if (!cur?.label || cur.label === cur.displayName) {
+            updates.label = displayName;
+          }
+          accountStore.updateAccount(activeId, updates);
+        }
+      } catch (storeError) {
+        debug.warn('security', 'Failed to update account store display name:', storeError);
+      }
+
+      // 2. Update default JMAP Identity so composer and fallback identity lookups reflect the new name
+      try {
+        const auth = useAuthStore.getState();
+        const primaryIdentity = auth.primaryIdentity;
+        if (auth.client && primaryIdentity) {
+          await auth.client.updateIdentity(primaryIdentity.id, { name: displayName });
+          useIdentityStore.getState().updateIdentityLocal(primaryIdentity.id, { name: displayName });
+        }
+      } catch (identityError) {
+        debug.warn('security', 'Failed to update JMAP identity name:', identityError);
+      }
     } catch (error) {
       set({
         isSaving: false,

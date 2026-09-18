@@ -75,8 +75,29 @@ describe('fetchPrincipalDisplayName (#900)', () => {
     expect(await fetchPrincipalDisplayName(fakeClient())).toBeNull();
   });
 
+  it('falls back to x:AccountSettings/get when x:Account/get is forbidden (non-admin)', async () => {
+    mockedJmap
+      .mockRejectedValueOnce(new Error('forbidden'))
+      .mockResolvedValueOnce([
+        ['x:AccountSettings/get', { list: [{ id: 'singleton', description: 'Non-Admin User' }] }, '0'],
+      ]);
+
+    const name = await fetchPrincipalDisplayName(fakeClient(), 1);
+    expect(name).toBe('Non-Admin User');
+    expect(mockedJmap).toHaveBeenNthCalledWith(
+      1,
+      [['x:Account/get', { accountId: 'acc-1', ids: ['acc-1'] }, '0']],
+      { slot: 1 },
+    );
+    expect(mockedJmap).toHaveBeenNthCalledWith(
+      2,
+      [['x:AccountSettings/get', { accountId: 'acc-1', ids: ['singleton'] }, '0']],
+      { slot: 1 },
+    );
+  });
+
   it('swallows passthrough errors (e.g. forbidden for this user)', async () => {
-    mockedJmap.mockRejectedValueOnce(new Error('forbidden'));
+    mockedJmap.mockRejectedValue(new Error('forbidden'));
 
     await expect(fetchPrincipalDisplayName(fakeClient())).resolves.toBeNull();
   });
