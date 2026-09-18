@@ -2,6 +2,7 @@ import { create } from 'zustand';
 import { debug } from '@/lib/debug';
 import { useAuthStore } from '@/stores/auth-store';
 import { stalwartJmap, requireResult, type JmapMethodResponse } from '@/lib/stalwart/jmap-passthrough';
+import { isStalwartJmapPassthroughEnabled } from '@/lib/stalwart/principal';
 
 export type EncryptionType = 'Disabled' | 'Aes128' | 'Aes256';
 
@@ -112,6 +113,20 @@ function getPrimaryAccountId(): string {
   const client = useAuthStore.getState().client;
   if (!client) throw new Error('Not authenticated');
   return client.getAccountId();
+}
+
+/**
+ * A refused request. Stalwart answers a missing permission with a
+ * `forbidden` method error whose description reads "You are not authorized
+ * to perform this action", so the JMAP error type is the reliable signal;
+ * the wording checks keep older passthrough messages covered.
+ */
+function isForbiddenError(error: unknown): boolean {
+  if (!(error instanceof Error)) return false;
+  const { status, methodError } = error as { status?: number; methodError?: { type?: string } };
+  if (methodError?.type === 'forbidden' || status === 403) return true;
+  const msg = error.message.toLowerCase();
+  return msg.includes('forbidden') || msg.includes('not authorized');
 }
 
 function credentialFromResult(raw: Record<string, unknown>): AppPasswordInfo {
@@ -285,7 +300,11 @@ export const useAccountSecurityStore = create<AccountSecurityState>()((set, get)
         set({ isProbing: false });
         return false;
       }
-      const isStalwart = !!client.hasAccountCapability?.('urn:stalwart:jmap');
+      // Every management call below goes through the server-side passthrough;
+      // when the operator switched it off, behave like a non-Stalwart server. (#904)
+      const isStalwart =
+        !!client.hasAccountCapability?.('urn:stalwart:jmap') &&
+        (await isStalwartJmapPassthroughEnabled());
       set({ isStalwart, isProbing: false });
       return isStalwart;
     } catch (error) {
@@ -485,12 +504,19 @@ export const useAccountSecurityStore = create<AccountSecurityState>()((set, get)
         isLoadingPrincipal: false,
       });
     } catch (error) {
-      debug.error('Failed to fetch principal:', error);
       const msg = error instanceof Error ? error.message : 'Failed to fetch principal';
-      const isForbidden = msg.toLowerCase().includes('forbidden');
+      // Non-admins usually cannot read their own Account object (no
+      // sysAccountGet): that is a normal condition, not an error - the
+      // aliases simply stay unknown.
+      if (isForbiddenError(error)) {
+        debug.log('Principal not readable for this account, aliases unavailable:', msg);
+        set({ isLoadingPrincipal: false });
+        return;
+      }
+      debug.error('Failed to fetch principal:', error);
       set({
         isLoadingPrincipal: false,
-        error: isForbidden ? null : msg,
+        error: msg,
       });
     }
   },

@@ -1,41 +1,7 @@
 {
   "meta_description": "Minimalist webmail client using JMAP protocol",
-  "register": {
-    "title": "Create Email Account",
-    "subtitle": "Join using your registration invite code",
-    "invite_code_label": "Invite Code",
-    "invite_code_placeholder": "e.g. INV-88F2A-991",
-    "email_label": "Email Address",
-    "username_placeholder": "username",
-    "display_name_label": "Name",
-    "display_name_optional": "(optional)",
-    "display_name_placeholder": "defaults to username(email prefix)",
-    "password_label": "Password",
-    "password_placeholder": "At least 8 characters",
-    "confirm_password_label": "Confirm Password",
-    "confirm_password_placeholder": "Re-enter your password",
-    "submit_button": "Register Account",
-    "submitting": "Creating Account...",
-    "success_title": "Registration Successful!",
-    "success_subtitle": "Your new email account has been created:",
-    "proceed_to_login": "Proceed to Login",
-    "already_have_account": "Already have an account?",
-    "login_link": "Log In",
-    "have_invite_code": "Have an invite code?",
-    "register_link": "Register Account",
-    "error": {
-      "invite_required": "Please enter a valid invite code.",
-      "username_required": "Please enter a username.",
-      "username_invalid": "Username contains invalid characters (letters, numbers, dot, dash, underscore only).",
-      "password_required": "Please enter a password.",
-      "password_short": "Password must be at least 8 characters.",
-      "password_mismatch": "Passwords do not match."
-    }
-  },
   "login": {
     "title": "Webmail",
-    "have_invite_code": "Have an invite code?",
-    "register_link": "Register Account",
     "username_label": "Email",
     "username_placeholder": "user@example.com",
     "password_label": "Password",
@@ -95,7 +61,9 @@
       "token_exchange_failed": "Failed to complete authentication. Please try again.",
       "access_denied": "Access was denied. Please contact your administrator.",
       "back_to_login": "Back to login"
-    }
+    },
+    "have_invite_code": "Have an invite code?",
+    "register_link": "Register Account"
   },
   "sidebar": {
     "close": "Close",
@@ -236,6 +204,9 @@
     "delete_confirm": "Are you sure you want to delete \"{name}\"?",
     "no_apps": "No apps added yet",
     "no_apps_hint": "Add custom apps and links to your sidebar",
+    "managed_title": "Provided by your administrator",
+    "managed_description": "These apps are set up for everyone and cannot be changed.",
+    "managed_badge": "Managed",
     "search_icons": "Search icons...",
     "show_popular": "Popular",
     "show_all": "All",
@@ -256,6 +227,10 @@
     "and_others": "and {count} others",
     "draft": "Draft",
     "starred": "Starred",
+    "pinned": "Pinned",
+    "replied": "Replied",
+    "forwarded": "Forwarded",
+    "has_attachment": "Has attachment",
     "conversations_count": "{count} of {total} conversations",
     "conversations_count_plus": "{count}+ conversations",
     "conversations_count_simple": "{count} conversations",
@@ -323,6 +298,7 @@
     "forward": "Forward",
     "delete": "Delete",
     "archive": "Archive",
+    "archive_mailbox_not_found": "Archive mailbox not found - cannot archive email",
     "star": "Star",
     "unstar": "Unstar",
     "mark_unread": "Mark as unread",
@@ -334,9 +310,7 @@
     "move": "Move",
     "print": "Print",
     "view_source": "View source",
-
     "fullscreen": "Fullscreen",
-
     "exit_fullscreen": "Exit fullscreen",
     "export_email": "Export as .eml",
     "forward_as_attachment": "Forward as attachment",
@@ -611,6 +585,12 @@
   "email_composer": {
     "read_receipt_on": "Read receipt requested (click to disable)",
     "read_receipt_off": "Request a read receipt",
+    "dsn_on": "Delivery notification requested (click to disable)",
+    "dsn_off": "Request a delivery notification",
+    "format_plain_text": "Switch to plain text",
+    "format_rich_text": "Switch to rich text (HTML)",
+    "require_tls_on": "Encrypted delivery required (click to disable)",
+    "require_tls_off": "Require encrypted delivery (TLS)",
     "new_message": "New Message",
     "signature_edit_hint": "Double-click to edit the signature",
     "reply": "Reply",
@@ -757,7 +737,11 @@
       "delete_column": "Delete column",
       "toggle_header_row": "Toggle header row",
       "delete_table": "Delete table",
-      "pick_size": "Pick size"
+      "pick_size": "Pick size",
+      "font_size": "Font size",
+      "font_size_default": "Default",
+      "background_color": "Background color",
+      "remove_background_color": "Remove background color"
     },
     "send_filing_warning": "Sent - but the post-send cleanup failed, a stale draft may remain."
   },
@@ -1060,7 +1044,7 @@
       },
       "unified_mailbox": {
         "label": "Unified Mailbox",
-        "description": "Show combined folders (Inbox, Sent, etc.) for the active account and its shared folders.",
+        "description": "Show combined folders (Inbox, Sent, etc.) for the active account and its shared folders. Needs more than one connected account (or a group inbox included below) before any folders appear here - with just one account, this only adds the section header. The All mail / Unread / Starred entries below are separate, admin-gated options that won't show up until your admin turns them on.",
         "cross_account": {
           "label": "Across all accounts",
           "description": "Merge the unified mailbox across every connected account instead of staying within the active account."
@@ -1089,8 +1073,8 @@
         "description": "Show the total message count next to folders and tags, alongside the unread count. Disable to show only unread counts."
       },
       "favicon_unread_badge": {
-        "label": "Unread Count on Tab Icon",
-        "description": "Show the inbox unread count as a badge on the browser tab icon, so new mail is visible when the tab is not focused. Disable to keep the icon unbadged."
+        "label": "Unread Count on Tab and App Icon",
+        "description": "Show the inbox unread count as a badge on the browser tab icon, and on the installed app icon where supported, so new mail is visible when the tab is not focused. Disable to keep both icons unbadged."
       },
       "pro_interface": {
         "label": "Pro Interface (Experimental)",
@@ -1272,6 +1256,10 @@
       }
     },
     "email_behavior": {
+      "clear_search_on_folder_change": {
+        "label": "Clear search when switching folders",
+        "description": "Clicking a folder (Inbox, Sent, …) clears the active search and browses that folder. When off, the search stays applied and re-runs in the folder you switch to."
+      },
       "request_read_receipt": {
         "label": "Request read receipts by default",
         "description": "Pre-enable the read-receipt request when composing a new message."
@@ -1353,7 +1341,13 @@
       },
       "auto_select_reply_identity": {
         "label": "Reply From Received Address",
-        "description": "When replying, send from the address the message was originally sent to. Matches identities first; for domain catch-all deliveries, rewrites the From header to the alias while sending through your primary identity."
+        "description": "When replying, send from the address the message was originally sent to. Your configured identities always match; whether other addresses on your domains count too (catch-all) is set by “Received Address Matching” below."
+      },
+      "reply_identity_match": {
+        "label": "Received Address Matching",
+        "description": "Which received addresses count as yours. Exact address only picks one of your configured identities. Same domain also treats any other address on one of your identity domains as a catch-all alias and rewrites the From header to it. Choose exact address if those addresses are distribution lists rather than aliases.",
+        "exact": "Exact address only",
+        "domain": "Any address on my domains"
       },
       "signature_position": {
         "label": "Signature Position",
@@ -1697,7 +1691,7 @@
         "disable_tooltip": "Disable encryption",
         "enabled_success": "Encryption at rest enabled"
       },
-      "public_keys":{
+      "public_keys": {
         "name_label": "Public Key name",
         "name_placeholder": "e.g. My Key",
         "key_label": "Public Key (S/MIME or PGP ASCII-armored)",
@@ -1801,6 +1795,8 @@
       "role_trash": "Trash",
       "role_junk": "Spam / Junk",
       "role_archive": "Archive",
+      "role_scheduled": "Scheduled",
+      "role_snoozed": "Snoozed",
       "role_none": "None",
       "create_folder": "Create Folder",
       "create_subfolder": "Create Subfolder",
@@ -1874,7 +1870,7 @@
       },
       "refresh_cache": {
         "label": "Refresh cached data",
-        "description": "Reload contacts, calendars, and folders from the server. Keeps your accounts and sessions \u2014 fixes a stale or wrong view without signing out.",
+        "description": "Reload contacts, calendars, and folders from the server. Keeps your accounts and sessions — fixes a stale or wrong view without signing out.",
         "button": "Refresh"
       },
       "reset_settings": {
@@ -1901,6 +1897,8 @@
       "description": "Manage custom apps and links in your sidebar",
       "keep_loaded": "Keep Apps Loaded",
       "keep_loaded_description": "Keep inline apps running in the background when switching between them to avoid reloading",
+      "managed_title": "Provided by your administrator",
+      "managed_description": "These apps are set up for everyone and cannot be changed.",
       "manage_title": "Custom Apps",
       "manage_description": "Add, edit, or remove custom apps from your sidebar"
     },
@@ -1909,6 +1907,8 @@
       "description": "Import and export your contacts",
       "group_by_letter_label": "Group by first letter",
       "group_by_letter_description": "Show alphabetical section headers in the contact list",
+      "sort_by_last_name_label": "Sort by last name",
+      "sort_by_last_name_description": "Order the contact list by surname so family members appear together",
       "import_label": "Import Contacts",
       "import_description": "Import contacts from a vCard (.vcf) file",
       "export_label": "Export Contacts",
@@ -2236,6 +2236,7 @@
     "new_subfolder": "New subfolder...",
     "new_folder": "New folder...",
     "rename": "Rename...",
+    "share": "Share...",
     "import_email": "Import .eml or .zip...",
     "empty_folder": "Empty folder",
     "empty_folder_generic": "Empty folder",
@@ -2265,7 +2266,10 @@
     "toast_error_rename": "Failed to rename folder",
     "toast_error_delete": "Failed to delete folder",
     "toast_error_delete_has_children": "Folder has subfolders. Remove them first.",
-    "toast_error_delete_has_email": "Folder is not empty. Empty it first."
+    "toast_error_delete_has_email": "Folder is not empty. Empty it first.",
+    "delete_with_contents_title": "Folder is not empty",
+    "delete_with_contents_message": "The folder \"{name}\" still contains {count, plural, one {1 message} other {# messages}}. Delete the folder and all of its messages? This cannot be undone.",
+    "delete_with_contents_confirm": "Delete folder and messages"
   },
   "shortcuts": {
     "title": "Keyboard Shortcuts",
@@ -2299,7 +2303,8 @@
       "search": "Focus search",
       "help": "Show shortcuts",
       "refresh": "Refresh emails",
-      "select_all": "Select all"
+      "select_all": "Select all",
+      "global_search": "Search everything"
     },
     "threads": {
       "expand_collapse": "Expand/collapse thread"
@@ -2464,6 +2469,9 @@
       "renamed": "Address book renamed",
       "rename_failed": "Failed to rename address book",
       "default": "Default",
+      "set_default": "Set as default",
+      "default_updated": "Default address book updated",
+      "set_default_failed": "Failed to set default address book",
       "manage": "Manage address books",
       "share": "Share address book",
       "new_contact_in_book": "New contact in this address book",
@@ -2748,7 +2756,10 @@
       "any_month": "Any month",
       "has_email": "Has email",
       "has_phone": "Has phone",
-      "has_photo": "Has photo"
+      "has_photo": "Has photo",
+      "sort_by": "Sort by",
+      "sort_first_name": "First name",
+      "sort_last_name": "Last name"
     }
   },
   "calendar": {
@@ -2784,6 +2795,10 @@
       "duplicate": "Duplicate",
       "today_header": "Today",
       "tomorrow_header": "Tomorrow",
+      "agenda_show_earlier": "Show earlier events",
+      "agenda_loading": "Loading…",
+      "agenda_range_start": "Showing events from {date}",
+      "agenda_range_end": "Showing events until {date}",
       "export_ics": "Export as .ics",
       "copy_title": "Copy title",
       "copy_link": "Copy meeting link",
@@ -2819,6 +2834,14 @@
       "color": "Color"
     },
     "participants": {
+      "availability": {
+        "title": "Availability",
+        "free": "Available",
+        "busy": "Busy",
+        "tentative": "Tentative",
+        "unknown": "Not a user on this server",
+        "checking": "Checking…"
+      },
       "title": "Participants",
       "add": "Add participant",
       "organizer": "Organizer",
@@ -2931,6 +2954,8 @@
       "show_time_in_month_view_desc": "Display event times in the month calendar view. On small screens this shows full event entries instead of dots.",
       "show_week_numbers": "Show week numbers",
       "show_week_numbers_desc": "Display week numbers in the mini-calendar",
+      "calendar_free_scroll": "Free scrolling",
+      "calendar_free_scroll_desc": "Scroll continuously through months, weeks and days instead of one period at a time",
       "enable_tasks": "Enable tasks",
       "enable_tasks_desc": "Show a tasks view in the calendar for managing to-dos",
       "show_tasks_on_calendar": "Show tasks on calendar",
@@ -2942,6 +2967,9 @@
       "hover_preview_delay_1s": "1-second delay",
       "hover_preview_delay_2s": "2-second delay",
       "hover_preview_off": "Disabled",
+      "organizer_identity": "Organize invitations as",
+      "organizer_identity_desc": "The calendar address used as organizer when you invite people to events.",
+      "organizer_identity_failed": "Failed to change the organizer address",
       "show_birthday_calendar": "Contact birthday calendar",
       "show_birthday_calendar_desc": "Show a virtual calendar with birthdays from your contacts"
     },
@@ -3175,6 +3203,25 @@
       "overdue": "Overdue"
     }
   },
+  "calendar_event_notifications": {
+    "someone": "Someone",
+    "invited": "{name} invited you to \"{title}\"",
+    "updated": "{name} updated \"{title}\"",
+    "cancelled": "{name} cancelled \"{title}\"",
+    "untitled": "Untitled event"
+  },
+  "share_notifications": {
+    "someone": "Someone",
+    "shared": "{name} shared the {kind} \"{object}\" with you",
+    "changed": "{name} changed your access to the {kind} \"{object}\"",
+    "revoked": "{name} removed your access to the {kind} \"{object}\"",
+    "object": {
+      "folder": "folder",
+      "calendar": "calendar",
+      "address_book": "address book",
+      "files": "file folder"
+    }
+  },
   "sharing": {
     "title": "Share \"{name}\"",
     "description": "Grant access to other users or groups on this server. Changes take effect immediately.",
@@ -3213,6 +3260,8 @@
     "has_attachment": "Attachments",
     "date_after": "After",
     "date_before": "Before",
+    "size_min": "Larger than (KB)",
+    "size_max": "Smaller than (KB)",
     "starred": "Starred",
     "unread": "Unread",
     "read": "Read",
@@ -3254,6 +3303,10 @@
     "hint": "Click any email on the left to get started, or take the tour below."
   },
   "files": {
+    "office_edit": "Edit document",
+    "office_loading": "Opening document editor…",
+    "office_error": "The document editor could not be opened.",
+    "office_close": "Close editor",
     "open_in_new_tab": "Open in new tab",
     "title": "Files",
     "search_placeholder": "Search files...",
@@ -3527,5 +3580,77 @@
     "copy_event": "Copy link to event",
     "copied": "Link copied",
     "copy_failed": "Couldn't copy the link"
+  },
+  "plugins": {
+    "oauth_callback": {
+      "completing": "Completing authorization…",
+      "completing_message": "Please wait while the connection is established.",
+      "received_title": "Authorization received",
+      "received_message": "You can return to the tab where you started the connection.",
+      "failed_title": "Authorization failed",
+      "denied": "Authorization was denied.",
+      "failed_detail": "Authorization failed: {error}",
+      "missing_params": "Missing authorization code or state.",
+      "delivery_failed": "The authorization result could not be delivered to the app tab. Please close this window and try again."
+    }
+  },
+  "global_search": {
+    "title": "Search everything",
+    "placeholder": "Search mail, contacts, calendar, files...",
+    "scope_label": "Search in",
+    "account_label": "Account",
+    "scope_all": "All",
+    "scope_mail": "Mail",
+    "scope_contacts": "Contacts",
+    "scope_calendar": "Calendar",
+    "scope_files": "Files",
+    "all_accounts": "All accounts",
+    "show_all": "Show all results",
+    "no_results": "No results for “{query}”",
+    "server_hint": "Complete words search the server; partial words match already-loaded items",
+    "searching": "Searching...",
+    "account_error": "Couldn't search {account}",
+    "recent_searches": "Recent searches",
+    "recurring": "Recurring",
+    "no_subject": "(no subject)",
+    "empty_hint": "Search mail, contacts, events and files across all accounts. Try from:, subject:, has:attachment, after:2026-01-01.",
+    "flat_by_date": "Flat by date",
+    "grouped": "Grouped",
+    "load_more": "Load more",
+    "preview_empty": "Select a result to preview it",
+    "open_full": "Open",
+    "view_label": "View"
+  },
+  "register": {
+    "title": "Create Email Account",
+    "subtitle": "Join using your registration invite code",
+    "invite_code_label": "Invite Code",
+    "invite_code_placeholder": "e.g. INV-88F2A-991",
+    "email_label": "Email Address",
+    "username_placeholder": "username",
+    "display_name_label": "Name",
+    "display_name_optional": "(optional)",
+    "display_name_placeholder": "defaults to username(email prefix)",
+    "password_label": "Password",
+    "password_placeholder": "At least 8 characters",
+    "confirm_password_label": "Confirm Password",
+    "confirm_password_placeholder": "Re-enter your password",
+    "submit_button": "Register Account",
+    "submitting": "Creating Account...",
+    "success_title": "Registration Successful!",
+    "success_subtitle": "Your new email account has been created:",
+    "proceed_to_login": "Proceed to Login",
+    "already_have_account": "Already have an account?",
+    "login_link": "Log In",
+    "have_invite_code": "Have an invite code?",
+    "register_link": "Register Account",
+    "error": {
+      "invite_required": "Please enter a valid invite code.",
+      "username_required": "Please enter a username.",
+      "username_invalid": "Username contains invalid characters (letters, numbers, dot, dash, underscore only).",
+      "password_required": "Please enter a password.",
+      "password_short": "Password must be at least 8 characters.",
+      "password_mismatch": "Passwords do not match."
+    }
   }
 }

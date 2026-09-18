@@ -1,9 +1,12 @@
-import { type NextRequest, NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import createIntlMiddleware from "next-intl/middleware";
 import { routing } from "./i18n/routing";
+import { localeFromAcceptLanguage } from "./i18n/locale-matcher";
+import { isSameOriginRequest } from "./lib/security/same-origin";
 import { getEnabledPluginFrameOrigins } from "./lib/admin/csp-frame-origins";
 import {
   APP_FRAME_ORIGINS_COOKIE,
+  inlineAppFrameOrigins,
   parseAppFrameOrigins,
 } from "./lib/security/app-frame-origins";
 import { configManager } from "./lib/admin/config-manager";
@@ -11,11 +14,58 @@ import { detectSetupState } from "./lib/setup/state";
 
 const intlMiddleware = createIntlMiddleware(routing);
 
+/**
+ * next-intl uses best-fit locale matching, which can rank `zh` ahead of
+ * `zh-TW` for regional Traditional Chinese tags such as `zh-HK`. Collapse a
+ * Chinese Accept-Language list to the exact locale selected by Bulwark's
+ * script/region-aware matcher before handing the request to next-intl. URL
+ * prefixes and the NEXT_LOCALE cookie still keep their higher precedence.
+ */
+function withMatchedChineseAcceptLanguage(request: NextRequest): NextRequest {
+  const localeCookie = routing.localeCookie;
+  const localeCookieName =
+    localeCookie === false
+      ? null
+      : typeof localeCookie === "object" && localeCookie.name
+        ? localeCookie.name
+        : "NEXT_LOCALE";
+  const cookieLocale = localeCookieName ? request.cookies.get(localeCookieName)?.value : undefined;
+  if (cookieLocale && (routing.locales as readonly string[]).includes(cookieLocale)) return request;
+
+  const acceptLanguage = request.headers.get("accept-language");
+  const locale = localeFromAcceptLanguage(acceptLanguage, routing.locales);
+  if (locale !== "zh" && locale !== "zh-TW") return request;
+  if (acceptLanguage === locale) return request; // nothing to collapse, keep the original request
+
+  const headers = new Headers(request.headers);
+  headers.set("accept-language", locale);
+  // A cloned NextRequest re-parses its URL, so `nextConfig` has to be handed
+  // over as well: without it the base path stays glued to nextUrl.pathname and
+  // next-intl rewrites a sub-path install to /zh-TW/<basePath>/... (a 404)
+  // instead of /<basePath>/zh-TW/....
+  const basePath = request.nextUrl.basePath;
+  return new NextRequest(request, { headers, nextConfig: basePath ? { basePath } : undefined });
+}
+
 // Next 16's Proxy always runs on Node.js runtime and route-segment config
 // (e.g. `export const config = { matcher }`) is no longer allowed in the
 // proxy file. We replicate the previous matcher inline by short-circuiting
 // requests for API routes, Next internals and static assets.
-const PROXY_SKIP_PATTERN = /^\/(?:api|_next)(?:\/|$)|\.[^/]+$/;
+const PROXY_SKIP_PATTERN = /^\/(?:api|_next)(?:\/|$)/;
+
+// What Next serves from public/: a single dotted segment at the root
+// (/sw.js, /favicon.ico, /manifest.webmanifest) and the branding/ and
+// notification/ asset folders. The upstream matcher treated EVERY path whose
+// last segment has a dot as a static file, but the [[...segments]] catch-alls
+// under /<locale>/mail, /calendar, /contacts and /files make
+// /en/mail/folder/inbox/statement.pdf a real signed-in page, and it rendered
+// without a CSP or any other security header (GHSA-xvjh-v9c6-qcvc). Only what
+// is genuinely static may skip locale routing and the headers.
+const STATIC_ASSET_PATTERN = /^\/[^/]+\.[^/]+$|^\/(?:branding|notification)\//;
+
+export function isStaticAssetPath(pathname: string): boolean {
+  return STATIC_ASSET_PATTERN.test(pathname);
+}
 
 /**
  * Hand the route every request header the client sent, plus `extra`.
@@ -92,7 +142,7 @@ export async function proxy(request: NextRequest) {
       // Public read endpoint - serves wizard-uploaded branding assets so
       // image previews work during the wizard. No auth on the GET route.
       pathname.startsWith("/api/admin/branding/") ||
-      /\.[^/]+$/.test(pathname);
+      isStaticAssetPath(pathname);
 
     if (!allowed) {
       if (pathname.startsWith("/api/")) {
@@ -120,7 +170,14 @@ export async function proxy(request: NextRequest) {
     return NextResponse.redirect(url);
   }
 
-  if (PROXY_SKIP_PATTERN.test(pathname)) {
+  // Outer CSRF gate for the unauthenticated auth routes (GHSA-qvr9-m8cq-7wvg).
+  // Each handler checks this itself as well; this layer covers any route
+  // added under /api/auth/ later. GET/HEAD/OPTIONS pass through untouched.
+  if (pathname.startsWith("/api/auth/") && !isSameOriginRequest(request)) {
+    return NextResponse.json({ error: "Cross-origin request rejected" }, { status: 403 });
+  }
+
+  if (PROXY_SKIP_PATTERN.test(pathname) || isStaticAssetPath(pathname)) {
     return NextResponse.next();
   }
 
@@ -138,6 +195,25 @@ export async function proxy(request: NextRequest) {
     pathname.startsWith("/plugin-sandbox/") ||
     pathname === "/plugin-sandbox-privileged" ||
     pathname.startsWith("/plugin-sandbox-privileged/");
+
+  // The sandbox routes are only ever loaded as iframes by the host bridge.
+  // Refuse them as a top-level document (window.open() from another site, a
+  // typed URL): the browser sets `Sec-Fetch-Dest` and page script cannot
+  // forge it; browsers without it fall through to the runtime's own host gate.
+  // They also disappear entirely while the plugin feature is off, so a stock
+  // install never serves a document carrying 'unsafe-eval'
+  // (GHSA-96cx-gx36-3g79). Other destinations pass - `iframe` for the bridge,
+  // `empty` for the router's own RSC refetches - and cross-site framing is
+  // already blocked by the `frame-ancestors 'self'` below.
+  if (isSandboxPath) {
+    const pluginsEnabled = configManager.getPolicy().features?.pluginsEnabled === true;
+    if (!pluginsEnabled || request.headers.get("sec-fetch-dest") === "document") {
+      return new NextResponse("The plugin sandbox is only served inside the webmail.", {
+        status: 403,
+        headers: { "content-type": "text/plain" },
+      });
+    }
+  }
 
   const scriptSrc = isSandboxPath
     ? `'self' 'nonce-${nonce}' 'unsafe-eval'`
@@ -159,15 +235,32 @@ export async function proxy(request: NextRequest) {
   // read, so the client mirrors their origins into a cookie (#787). Ignored
   // when the admin has turned the feature off, so a stale cookie can't keep
   // widening the CSP after the fact.
-  const sidebarAppsEnabled =
-    configManager.getPolicy().features?.sidebarAppsEnabled !== false;
+  const policy = configManager.getPolicy();
+  const sidebarAppsEnabled = policy.features?.sidebarAppsEnabled !== false;
   const appFrameOrigins = sidebarAppsEnabled
     ? parseAppFrameOrigins(request.cookies.get(APP_FRAME_ORIGINS_COOKIE)?.value)
     : [];
 
+  // Apps the operator pins for everyone (#931) are known server-side, so their
+  // origins go straight into the header - no cookie handshake, and no reload
+  // the first time a user opens one. They survive the gate above, which only
+  // governs the apps users add themselves.
+  const managedAppFrameOrigins = inlineAppFrameOrigins(policy.defaultSidebarApps);
+
+  // WOPI document editor (#425): the editor is launched by POSTing the access
+  // token into an iframe on its origin, so that origin must be allowed in both
+  // frame-src AND form-action (which is otherwise 'self').
+  let wopiOrigin = "";
+  try {
+    const wopiClientUrl = configManager.get<string>("wopiClientUrl", "").trim();
+    if (wopiClientUrl) wopiOrigin = new URL(wopiClientUrl).origin;
+  } catch {
+    // Invalid admin-supplied URL - leave the CSP unchanged.
+  }
+
   const frameOrigins: string[] = [];
   const seenFrameOrigins = new Set<string>();
-  for (const origin of [...pluginFrameOrigins, ...appFrameOrigins]) {
+  for (const origin of [...pluginFrameOrigins, ...managedAppFrameOrigins, ...appFrameOrigins, ...(wopiOrigin ? [wopiOrigin] : [])]) {
     const key = origin.toLowerCase();
     if (seenFrameOrigins.has(key)) continue;
     seenFrameOrigins.add(key);
@@ -189,7 +282,7 @@ export async function proxy(request: NextRequest) {
     frameSrc,
     `object-src 'self' blob:`,
     `base-uri 'self'`,
-    `form-action 'self'`,
+    `form-action 'self'${wopiOrigin ? ` ${wopiOrigin}` : ""}`,
     `frame-ancestors ${frameAncestors}`,
     `media-src 'self' blob:`,
   ].join("; ");
@@ -214,7 +307,7 @@ export async function proxy(request: NextRequest) {
   let intlResponse: ReturnType<typeof intlMiddleware> | null = null;
   if (!isAdminRoute && !isProtocolRoute && !isSetupRoute && !isSandboxRoute && !hasLocalePrefix) {
     try {
-      intlResponse = intlMiddleware(request);
+      intlResponse = intlMiddleware(withMatchedChineseAcceptLanguage(request));
     } catch (error) {
       console.error('Locale middleware error:', error);
     }

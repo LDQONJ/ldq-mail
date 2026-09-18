@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect, useLayoutEffect, useCallback } from "react";
 import { createPortal } from "react-dom";
-import { Mail, Calendar, BookUser, HardDrive, Settings, Keyboard, Plus, Shield, LogOut, Check } from "lucide-react";
+import { Mail, Calendar, BookUser, HardDrive, Settings, Keyboard, Plus, Shield, LogOut, Check, Search } from "lucide-react";
 import { AccountSwitcher } from "./account-switcher";
 import { icons as lucideIcons, type LucideIcon } from "lucide-react";
 import { useConfig } from "@/hooks/use-config";
@@ -13,6 +13,7 @@ import { useCalendarStore } from "@/stores/calendar-store";
 import { useEmailStore } from "@/stores/email-store";
 import { useSettingsStore } from "@/stores/settings-store";
 import { usePolicyStore } from "@/stores/policy-store";
+import { useResolvedSidebarApps } from "@/hooks/use-resolved-sidebar-apps";
 import { useAuthStore } from "@/stores/auth-store";
 import { useAccountStore } from "@/stores/account-store";
 import { useUpdateStore, selectHasUpdate } from "@/stores/update-store";
@@ -60,6 +61,11 @@ interface NavigationRailProps {
    * active app).
    */
   activeItemId?: 'mail' | 'calendar' | 'contacts' | 'files' | 'settings' | null;
+  /**
+   * Pro shell only: renders a Search entry that opens the global search
+   * palette (#641) instead of navigating anywhere.
+   */
+  onOpenSearch?: () => void;
 }
 
 function StorageQuotaCircle({ quota, usagePercent }: { quota: { used: number; total: number }; usagePercent: number }) {
@@ -191,8 +197,10 @@ export function NavigationRail({
   activeAppId,
   onNavigate,
   activeItemId,
+  onOpenSearch,
 }: NavigationRailProps) {
   const t = useTranslations("sidebar");
+  const tGlobalSearch = useTranslations("global_search");
   const pathname = usePathname();
   const router = useRouter();
   const { appLogoLightUrl, appLogoDarkUrl } = useConfig();
@@ -202,13 +210,14 @@ export function NavigationRail({
   const client = useAuthStore((s) => s.client);
   const supportsFiles = client?.supportsFiles() ?? false;
   const supportsContacts = client?.supportsContacts() ?? false;
-  const sidebarApps = useSettingsStore((s) => s.sidebarApps);
   const showRailAccountList = useSettingsStore((s) => s.showRailAccountList);
   const sidebarAppsEnabled = usePolicyStore((s) => s.isFeatureEnabled('sidebarAppsEnabled'));
   const filesEnabled = usePolicyStore((s) => s.isFeatureEnabled('filesEnabled'));
   const contactsEnabled = usePolicyStore((s) => s.isFeatureEnabled('contactsEnabled'));
   const calendarEnabled = usePolicyStore((s) => s.isFeatureEnabled('calendarEnabled'));
-  const visibleSidebarApps = sidebarAppsEnabled ? sidebarApps : [];
+  // Operator-provided apps (#931) plus the user's own; the gate above only
+  // removes the user's, so a pinned set still shows when custom apps are off.
+  const visibleSidebarApps = useResolvedSidebarApps();
   const inboxUnread = mailboxes.find(m => m.role === "inbox")?.unreadEmails || 0;
   const [isStalwartAdmin, setIsStalwartAdmin] = useState(false);
   const hasUpdate = useUpdateStore(selectHasUpdate);
@@ -502,6 +511,24 @@ export function NavigationRail({
         role="navigation"
         aria-label={t("nav_label")}
       >
+        {onOpenSearch && (
+          <button
+            type="button"
+            onClick={onOpenSearch}
+            data-tour="nav-search"
+            className={cn(
+              "relative flex items-center gap-2.5 rounded-md transition-colors duration-150 cursor-pointer",
+              collapsed ? "justify-center w-10 h-10" : "px-2.5 text-sm",
+              "max-lg:min-h-[44px]",
+              "text-muted-foreground hover:bg-muted hover:text-foreground"
+            )}
+            title={collapsed ? tGlobalSearch("title") : undefined}
+            style={collapsed ? undefined : { paddingBlock: 'var(--density-sidebar-py)' }}
+          >
+            <Search className="w-[18px] h-[18px] flex-shrink-0" />
+            {!collapsed && <span className="truncate">{tGlobalSearch("title")}</span>}
+          </button>
+        )}
         {visibleItems.map((item) => {
           const isActive = getIsActive(item.href, item.id);
           const Icon = item.icon;

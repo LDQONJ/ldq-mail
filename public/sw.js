@@ -305,11 +305,15 @@ async function handleNotificationClick(event) {
     // get annoyed when each notification opens a fresh window.
     if (client.frameType === "top-level" && "focus" in client) {
       try {
-        const focusedClient = await client.focus();
-        if ("navigate" in focusedClient && targetUrl) {
-          return focusedClient.navigate(targetUrl);
+        const focused = await client.focus();
+        if (focused && "navigate" in focused && targetUrl) {
+          try {
+            await focused.navigate(targetUrl);
+          } catch (_) {
+            // Focused but not navigated still beats nothing opening at all.
+          }
         }
-        return focusedClient;
+        return focused;
       } catch (_) {
         // navigate() can reject for cross-origin or detached clients - fall
         // through and open a new window below.

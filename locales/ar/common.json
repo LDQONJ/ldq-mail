@@ -202,6 +202,9 @@
     "delete_confirm": "هل أنت متأكد أنك تريد حذف \"{name}\"؟",
     "no_apps": "لم تتم إضافة أي تطبيقات بعد",
     "no_apps_hint": "أضف تطبيقات وروابط مخصصة إلى الشريط الجانبي",
+    "managed_title": "مقدَّمة من المسؤول",
+    "managed_description": "تم إعداد هذه التطبيقات للجميع ولا يمكن تغييرها.",
+    "managed_badge": "مُدارة",
     "search_icons": "بحث عن أيقونات...",
     "show_popular": "الأكثر شيوعًا",
     "show_all": "الكل",
@@ -222,6 +225,10 @@
     "and_others": "و{count} آخرين",
     "draft": "مسودة",
     "starred": "مميزة بنجمة",
+    "pinned": "مثبتة",
+    "replied": "تم الرد عليها",
+    "forwarded": "تمت إعادة توجيهها",
+    "has_attachment": "تحتوي على مرفق",
     "conversations_count": "{count} من {total} محادثة",
     "conversations_count_plus": "{count}+ محادثة",
     "conversations_count_simple": "{count} محادثة",
@@ -289,6 +296,7 @@
     "forward": "إعادة توجيه",
     "delete": "حذف",
     "archive": "أرشفة",
+    "archive_mailbox_not_found": "Archive mailbox not found - cannot archive email",
     "star": "تمييز بنجمة",
     "unstar": "إزالة النجمة",
     "mark_unread": "تمييز كغير مقروءة",
@@ -300,12 +308,10 @@
     "move": "نقل",
     "print": "طباعة",
     "view_source": "عرض المصدر",
-
     "fullscreen": "ملء الشاشة",
-
     "exit_fullscreen": "الخروج من ملء الشاشة",
     "export_email": "تصدير كملف ‎.eml",
-    "forward_as_attachment": "Forward as attachment",
+    "forward_as_attachment": "إعادة التوجيه كمرفق",
     "import_email": "استيراد ملف ‎.eml أو ‎.zip",
     "keyboard_shortcuts": "اختصارات لوحة المفاتيح (؟)",
     "email_source": "مصدر الرسالة",
@@ -577,6 +583,12 @@
   "email_composer": {
     "read_receipt_on": "إيصال القراءة مطلوب (انقر للتعطيل)",
     "read_receipt_off": "طلب إيصال قراءة",
+    "dsn_on": "تم طلب إشعار التسليم (انقر للتعطيل)",
+    "dsn_off": "طلب إشعار بالتسليم",
+    "format_plain_text": "التبديل إلى نص عادي",
+    "format_rich_text": "التبديل إلى نص منسق (HTML)",
+    "require_tls_on": "التسليم المشفّر مطلوب (انقر للتعطيل)",
+    "require_tls_off": "اشتراط التسليم المشفّر (TLS)",
     "new_message": "رسالة جديدة",
     "signature_edit_hint": "انقر نقرًا مزدوجًا لتحرير التوقيع",
     "reply": "رد",
@@ -723,7 +735,11 @@
       "delete_column": "حذف العمود",
       "toggle_header_row": "تبديل صف الرأس",
       "delete_table": "حذف الجدول",
-      "pick_size": "اختيار الحجم"
+      "pick_size": "اختيار الحجم",
+      "font_size": "حجم الخط",
+      "font_size_default": "افتراضي",
+      "background_color": "لون الخلفية",
+      "remove_background_color": "إزالة لون الخلفية"
     },
     "send_filing_warning": "تم الإرسال - لكن التنظيف بعد الإرسال فشل، وقد تبقى مسودة قديمة."
   },
@@ -1238,6 +1254,10 @@
       }
     },
     "email_behavior": {
+      "clear_search_on_folder_change": {
+        "label": "مسح البحث عند تبديل المجلدات",
+        "description": "النقر على مجلد (البريد الوارد، المرسل…) يمسح البحث النشط ويعرض ذلك المجلد. عند الإيقاف، يبقى البحث ويُعاد تشغيله في المجلد الذي تنتقل إليه."
+      },
       "request_read_receipt": {
         "label": "طلب إيصالات القراءة افتراضيًا",
         "description": "تفعيل طلب إيصال القراءة مسبقًا عند إنشاء رسالة جديدة."
@@ -1320,6 +1340,12 @@
       "auto_select_reply_identity": {
         "label": "الرد من العنوان المستلَم إليه",
         "description": "عند الرد، الإرسال من العنوان الذي أُرسلت إليه الرسالة أصلًا. يطابق الهويات أولًا؛ وبالنسبة لعمليات التسليم الشاملة للنطاق، يعيد كتابة ترويسة \"من\" إلى العنوان البديل مع الإرسال عبر هويتك الأساسية."
+      },
+      "reply_identity_match": {
+        "label": "مطابقة عنوان الاستلام",
+        "description": "أي عناوين الاستلام تُعدّ عناوينك. «العنوان المطابق فقط» يختار إحدى هوياتك المضبوطة فقط؛ أما «نفس النطاق» فيعامل أيضًا أي عنوان آخر على نطاقات هوياتك كاسم مستعار شامل ويستبدل به ترويسة المرسل. اختر العنوان المطابق إذا كانت تلك العناوين قوائم توزيع.",
+        "exact": "العنوان المطابق فقط",
+        "domain": "أي عنوان على نطاقاتي"
       },
       "signature_position": {
         "label": "موضع التوقيع",
@@ -1767,6 +1793,8 @@
       "role_trash": "المهملات",
       "role_junk": "البريد المزعج",
       "role_archive": "الأرشيف",
+      "role_scheduled": "Scheduled",
+      "role_snoozed": "Snoozed",
       "role_none": "بلا",
       "create_folder": "إنشاء مجلد",
       "create_subfolder": "إنشاء مجلد فرعي",
@@ -1867,6 +1895,8 @@
       "description": "إدارة التطبيقات والروابط المخصصة في الشريط الجانبي",
       "keep_loaded": "إبقاء التطبيقات محمّلة",
       "keep_loaded_description": "إبقاء التطبيقات الداخلية تعمل في الخلفية عند التبديل بينها لتجنب إعادة التحميل",
+      "managed_title": "مقدَّمة من المسؤول",
+      "managed_description": "تم إعداد هذه التطبيقات للجميع ولا يمكن تغييرها.",
       "manage_title": "التطبيقات المخصصة",
       "manage_description": "إضافة أو تعديل أو إزالة التطبيقات المخصصة من الشريط الجانبي"
     },
@@ -1874,6 +1904,8 @@
       "title": "جهات الاتصال",
       "description": "استيراد وتصدير جهات اتصالك",
       "group_by_letter_label": "التجميع حسب الحرف الأول",
+      "sort_by_last_name_label": "الترتيب حسب اسم العائلة",
+      "sort_by_last_name_description": "ترتيب قائمة جهات الاتصال حسب اسم العائلة بحيث يظهر أفراد العائلة معًا",
       "group_by_letter_description": "إظهار عناوين أقسام أبجدية في قائمة جهات الاتصال",
       "import_label": "استيراد جهات الاتصال",
       "import_description": "استيراد جهات الاتصال من ملف vCard (‎.vcf)",
@@ -2202,6 +2234,7 @@
     "new_subfolder": "مجلد فرعي جديد...",
     "new_folder": "مجلد جديد...",
     "rename": "إعادة تسمية...",
+    "share": "مشاركة...",
     "import_email": "استيراد ملف ‎.eml أو ‎.zip...",
     "empty_folder": "إفراغ المجلد",
     "empty_folder_generic": "إفراغ المجلد",
@@ -2231,7 +2264,10 @@
     "toast_error_rename": "فشلت إعادة تسمية المجلد",
     "toast_error_delete": "فشل حذف المجلد",
     "toast_error_delete_has_children": "المجلد يحتوي على مجلدات فرعية. أزلها أولًا.",
-    "toast_error_delete_has_email": "المجلد ليس فارغًا. أفرغه أولًا."
+    "toast_error_delete_has_email": "المجلد ليس فارغًا. أفرغه أولًا.",
+    "delete_with_contents_title": "المجلد ليس فارغًا",
+    "delete_with_contents_message": "لا يزال المجلد \"{name}\" يحتوي على {count, plural, one {رسالة واحدة} other {# رسائل}}. هل تريد حذف المجلد وكل رسائله؟ لا يمكن التراجع عن هذا.",
+    "delete_with_contents_confirm": "حذف المجلد والرسائل"
   },
   "shortcuts": {
     "title": "اختصارات لوحة المفاتيح",
@@ -2265,7 +2301,8 @@
       "search": "التركيز على البحث",
       "help": "إظهار الاختصارات",
       "refresh": "تحديث الرسائل",
-      "select_all": "تحديد الكل"
+      "select_all": "تحديد الكل",
+      "global_search": "البحث في كل شيء"
     },
     "threads": {
       "expand_collapse": "توسيع/طي المحادثة"
@@ -2430,6 +2467,9 @@
       "renamed": "تمت إعادة تسمية دفتر العناوين",
       "rename_failed": "فشلت إعادة تسمية دفتر العناوين",
       "default": "افتراضي",
+      "set_default": "تعيين كافتراضي",
+      "default_updated": "تم تحديث دفتر العناوين الافتراضي",
+      "set_default_failed": "فشل تعيين دفتر العناوين الافتراضي",
       "manage": "إدارة دفاتر العناوين",
       "share": "مشاركة دفتر العناوين",
       "new_contact_in_book": "جهة اتصال جديدة في دفتر العناوين هذا",
@@ -2714,7 +2754,10 @@
       "any_month": "أي شهر",
       "has_email": "لديه بريد إلكتروني",
       "has_phone": "لديه هاتف",
-      "has_photo": "لديه صورة"
+      "has_photo": "لديه صورة",
+      "sort_by": "الترتيب حسب",
+      "sort_first_name": "الاسم الأول",
+      "sort_last_name": "اسم العائلة"
     }
   },
   "calendar": {
@@ -2750,6 +2793,10 @@
       "duplicate": "تكرار",
       "today_header": "اليوم",
       "tomorrow_header": "غدًا",
+      "agenda_show_earlier": "عرض الأحداث السابقة",
+      "agenda_loading": "جارٍ التحميل…",
+      "agenda_range_start": "الأحداث من {date}",
+      "agenda_range_end": "الأحداث حتى {date}",
       "export_ics": "التصدير كملف ‎.ics",
       "copy_title": "نسخ العنوان",
       "copy_link": "نسخ رابط الاجتماع",
@@ -2785,6 +2832,14 @@
       "color": "اللون"
     },
     "participants": {
+      "availability": {
+        "title": "التوفر",
+        "free": "متاح",
+        "busy": "مشغول",
+        "tentative": "مبدئي",
+        "unknown": "ليس مستخدمًا على هذا الخادم",
+        "checking": "جارٍ التحقق…"
+      },
       "title": "المشاركون",
       "add": "إضافة مشارك",
       "organizer": "المنظّم",
@@ -2897,6 +2952,8 @@
       "show_time_in_month_view_desc": "عرض أوقات الأحداث في عرض التقويم الشهري",
       "show_week_numbers": "إظهار أرقام الأسابيع",
       "show_week_numbers_desc": "عرض أرقام الأسابيع في التقويم المصغّر",
+      "calendar_free_scroll": "تمرير حر",
+      "calendar_free_scroll_desc": "التمرير باستمرار عبر الأشهر والأسابيع والأيام بدلاً من فترة واحدة في كل مرة",
       "enable_tasks": "تفعيل المهام",
       "enable_tasks_desc": "إظهار عرض للمهام في التقويم لإدارة قوائم المهام",
       "show_tasks_on_calendar": "إظهار المهام في التقويم",
@@ -2908,6 +2965,9 @@
       "hover_preview_delay_1s": "تأخير ثانية واحدة",
       "hover_preview_delay_2s": "تأخير ثانيتين",
       "hover_preview_off": "معطّل",
+      "organizer_identity": "تنظيم الدعوات باسم",
+      "organizer_identity_desc": "عنوان التقويم المستخدم كمنظّم عند دعوة الآخرين إلى الأحداث.",
+      "organizer_identity_failed": "فشل تغيير عنوان المنظّم",
       "show_birthday_calendar": "تقويم أعياد ميلاد جهات الاتصال",
       "show_birthday_calendar_desc": "إظهار تقويم افتراضي بأعياد ميلاد جهات اتصالك"
     },
@@ -3141,6 +3201,25 @@
       "overdue": "متأخرة"
     }
   },
+  "calendar_event_notifications": {
+    "someone": "شخص ما",
+    "invited": "دعاك {name} إلى \"{title}\"",
+    "updated": "حدّث {name} \"{title}\"",
+    "cancelled": "ألغى {name} \"{title}\"",
+    "untitled": "حدث بدون عنوان"
+  },
+  "share_notifications": {
+    "someone": "شخص ما",
+    "shared": "شارك {name} معك {kind} \"{object}\"",
+    "changed": "غيّر {name} صلاحيتك على {kind} \"{object}\"",
+    "revoked": "أزال {name} صلاحيتك على {kind} \"{object}\"",
+    "object": {
+      "folder": "المجلد",
+      "calendar": "التقويم",
+      "address_book": "دفتر العناوين",
+      "files": "مجلد الملفات"
+    }
+  },
   "sharing": {
     "title": "مشاركة \"{name}\"",
     "description": "امنح الوصول لمستخدمين أو مجموعات أخرى على هذا الخادم. تُطبَّق التغييرات فورًا.",
@@ -3179,6 +3258,8 @@
     "has_attachment": "المرفقات",
     "date_after": "بعد",
     "date_before": "قبل",
+    "size_min": "أكبر من (كيلوبايت)",
+    "size_max": "أصغر من (كيلوبايت)",
     "starred": "مميز بنجمة",
     "unread": "غير مقروءة",
     "read": "مقروءة",
@@ -3220,6 +3301,10 @@
     "hint": "انقر على أي رسالة على اليسار للبدء، أو خذ الجولة أدناه."
   },
   "files": {
+    "office_edit": "تحرير المستند",
+    "office_loading": "جارٍ فتح محرر المستندات…",
+    "office_error": "تعذر فتح محرر المستندات.",
+    "office_close": "إغلاق المحرر",
     "open_in_new_tab": "فتح في علامة تبويب جديدة",
     "title": "الملفات",
     "search_placeholder": "بحث في الملفات...",
@@ -3493,5 +3578,45 @@
     "copy_event": "نسخ رابط الحدث",
     "copied": "تم نسخ الرابط",
     "copy_failed": "تعذّر نسخ الرابط"
+  },
+  "plugins": {
+    "oauth_callback": {
+      "completing": "جارٍ إكمال التفويض…",
+      "completing_message": "يرجى الانتظار بينما يتم إنشاء الاتصال.",
+      "received_title": "تم استلام التفويض",
+      "received_message": "يمكنك العودة إلى علامة التبويب التي بدأت فيها الاتصال.",
+      "failed_title": "فشل التفويض",
+      "denied": "تم رفض التفويض.",
+      "failed_detail": "فشل التفويض: {error}",
+      "missing_params": "رمز التفويض أو الحالة مفقود.",
+      "delivery_failed": "تعذّر إرسال نتيجة التفويض إلى تبويب التطبيق. يرجى إغلاق هذه النافذة والمحاولة مرة أخرى."
+    }
+  },
+  "global_search": {
+    "title": "البحث في كل شيء",
+    "placeholder": "ابحث في البريد وجهات الاتصال والتقويم والملفات...",
+    "scope_label": "البحث في",
+    "account_label": "الحساب",
+    "scope_all": "الكل",
+    "scope_mail": "البريد",
+    "scope_contacts": "جهات الاتصال",
+    "scope_calendar": "التقويم",
+    "scope_files": "الملفات",
+    "all_accounts": "جميع الحسابات",
+    "show_all": "عرض كل النتائج",
+    "no_results": "لا توجد نتائج لـ “{query}”",
+    "server_hint": "الكلمات الكاملة تبحث في الخادم؛ أجزاء الكلمات تطابق العناصر المحمّلة بالفعل",
+    "searching": "جارٍ البحث...",
+    "account_error": "تعذر البحث في {account}",
+    "recent_searches": "عمليات البحث الأخيرة",
+    "recurring": "متكرر",
+    "no_subject": "(no subject)",
+    "empty_hint": "ابحث في البريد وجهات الاتصال والأحداث والملفات في جميع الحسابات. جرّب from:, subject:, has:attachment, after:2026-01-01.",
+    "flat_by_date": "مسطح حسب التاريخ",
+    "grouped": "مجمّع",
+    "load_more": "تحميل المزيد",
+    "preview_empty": "اختر نتيجة لمعاينتها",
+    "open_full": "فتح",
+    "view_label": "العرض"
   }
 }

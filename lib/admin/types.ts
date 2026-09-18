@@ -117,6 +117,23 @@ export interface PushRelayOption {
   url: string;
 }
 
+/**
+ * A sidebar app the operator ships to every user (#931). Same shape as the
+ * user's own `SidebarApp`, but the id is issued by the admin UI and the entry
+ * is read-only in the client - users see it in the rail without configuring
+ * anything, and cannot edit or delete it.
+ */
+export interface AdminSidebarApp {
+  id: string;
+  name: string;
+  url: string;
+  /** Lucide icon name (e.g. 'Globe'). */
+  icon: string;
+  /** Open in a new browser tab, or embedded in an iframe. */
+  openMode: 'tab' | 'inline';
+  showOnMobile: boolean;
+}
+
 export interface SettingsPolicy {
   restrictions: Record<string, SettingRestriction>;
   features: FeatureGates;
@@ -137,6 +154,13 @@ export interface SettingsPolicy {
   pushRelayUrl?: string;
   /** When true, users are pinned to pushRelayUrl and cannot pick another relay. */
   pushRelayUrlLocked?: boolean;
+  /**
+   * Sidebar apps shown to every user, ahead of their own. Read-only in the
+   * client; sanitized on policy load and save. Independent of the
+   * `sidebarAppsEnabled` gate, which only governs *user-added* apps - an
+   * operator can ship a fixed set while forbidding custom ones.
+   */
+  defaultSidebarApps?: AdminSidebarApp[];
 }
 
 export const DEFAULT_POLICY: SettingsPolicy = {
@@ -150,6 +174,7 @@ export const DEFAULT_POLICY: SettingsPolicy = {
   pushRelays: [],
   pushRelayUrl: '',
   pushRelayUrlLocked: false,
+  defaultSidebarApps: [],
 };
 
 export interface AuditEntry {
@@ -167,6 +192,10 @@ export const CONFIG_ENV_MAP: Record<string, { envVar: string; fileEnvVar?: strin
   searchEngineIndexing: { envVar: 'SEARCH_ENGINE_INDEXING', type: 'boolean', defaultValue: false },
   jmapServerUrl: { envVar: 'JMAP_SERVER_URL', type: 'url', defaultValue: '' },
   stalwartFeaturesEnabled: { envVar: 'STALWART_FEATURES', type: 'boolean', defaultValue: true },
+  // Server-side switch for /api/account/stalwart/jmap. Independent of the UI
+  // flag above so operators can keep the client features but block the
+  // credential-bearing passthrough entirely (#904).
+  stalwartJmapPassthroughEnabled: { envVar: 'STALWART_JMAP_PASSTHROUGH_ENABLED', type: 'boolean', defaultValue: true },
   demoMode: { envVar: 'DEMO_MODE', type: 'boolean', defaultValue: false },
   devMode: { envVar: 'DEV_MOCK_JMAP', type: 'boolean', defaultValue: false },
   faviconUrl: { envVar: 'FAVICON_URL', type: 'url', defaultValue: '/branding/Bulwark_Favicon.svg' },
@@ -236,6 +265,15 @@ export const CONFIG_ENV_MAP: Record<string, { envVar: string; fileEnvVar?: strin
   logLevel: { envVar: 'LOG_LEVEL', type: 'enum', defaultValue: 'info', enumValues: ['error', 'warn', 'info', 'debug'] },
   sessionSecret: { envVar: 'SESSION_SECRET', fileEnvVar: 'SESSION_SECRET_FILE', type: 'string', defaultValue: '' },
   extensionDirectoryUrl: { envVar: 'EXTENSION_DIRECTORY_URL', type: 'url', defaultValue: 'https://extensions.bulwarkmail.org' },
+  // WOPI document editing (#425). `wopiClientUrl` is the editor's base URL
+  // (Collabora Online / OnlyOffice / EuroOffice, ...); discovery is fetched
+  // from `<url>/hosting/discovery` unless the URL already carries a path.
+  // Empty = feature off.
+  wopiClientUrl: { envVar: 'WOPI_CLIENT_URL', type: 'url', defaultValue: '' },
+  // How the WOPI editor reaches this webmail (WOPISrc base). Empty = derive
+  // from the request origin; set it when the editor sees a different host
+  // than the browser (docker networks, split DNS).
+  wopiHostUrl: { envVar: 'WOPI_HOST_URL', type: 'url', defaultValue: '' },
 };
 
 /** Keys that should never be exposed to the client config endpoint */

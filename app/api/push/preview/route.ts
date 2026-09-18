@@ -131,12 +131,24 @@ async function resolveTargetForAccount(
           const session = (await res.json()) as {
             apiUrl?: string;
             primaryAccounts?: Record<string, string>;
+            accounts?: Record<string, unknown>;
           };
           const mailAccountId = session.primaryAccounts?.['urn:ietf:params:jmap:mail'];
           if (!mailAccountId) {
             logger.warn('push-preview: probe no mail account in session', { slot, ctxServerUrl });
             return null;
           }
+
+          // Shared and group mailboxes are never the primary mail account -
+          // they only appear in session.accounts. Accept those too, or the
+          // SW falls back to a generic "New mail" notification for them. (#839)
+          const isSharedAccount =
+            Boolean(accountId && accountId !== mailAccountId &&
+            Object.prototype.hasOwnProperty.call(session.accounts ?? {}, accountId));
+          if (accountId && mailAccountId !== accountId && !isSharedAccount) {
+            return null;
+          }
+          const targetAccountId: string = (isSharedAccount && accountId) ? accountId : mailAccountId;
 
           const absoluteApiUrl = rebaseApiUrl(session, ctxServerUrl)
             ?? (session.apiUrl?.startsWith('http') ? session.apiUrl : `${ctxServerUrl}/jmap`);
@@ -154,7 +166,7 @@ async function resolveTargetForAccount(
                 body: JSON.stringify({
                   using: ['urn:ietf:params:jmap:core', 'urn:ietf:params:jmap:mail'],
                   methodCalls: [
-                    ['Email/get', { accountId: mailAccountId, ids: [emailId], properties: ['id'] }, '0'],
+                    ['Email/get', { accountId: targetAccountId, ids: [emailId], properties: ['id'] }, '0'],
                   ],
                 }),
               }, trusted);
@@ -170,7 +182,7 @@ async function resolveTargetForAccount(
           }
 
           logger.info('push-preview: probe success', { slot, ctxServerUrl, hasTargetEmail, trusted });
-          return { authHeader: ctx.authHeader, apiUrl: absoluteApiUrl, accountId: mailAccountId, trusted, hasTargetEmail };
+          return { authHeader: ctx.authHeader, apiUrl: absoluteApiUrl, accountId: targetAccountId, trusted, hasTargetEmail };
         } catch (err) {
           logger.warn('push-preview: probe exception', { slot, ctxServerUrl, err: String(err) });
           return null;

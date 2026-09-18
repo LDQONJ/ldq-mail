@@ -1,43 +1,9 @@
 {
   "meta_description": "使用 JMAP 协议的极简网页邮件客户端",
-  "register": {
-    "title": "LDQ Mail",
-    "subtitle": "安全 私密 专属于你",
-    "invite_code_label": "邀请码",
-    "invite_code_placeholder": "邀请码",
-    "email_label": "邮箱地址",
-    "username_placeholder": "用户名",
-    "display_name_label": "姓名",
-    "display_name_optional": "(可选)",
-    "display_name_placeholder": "默认使用用户名(邮箱前缀)",
-    "password_label": "设置密码",
-    "password_placeholder": "至少 8 个字符",
-    "confirm_password_label": "确认密码",
-    "confirm_password_placeholder": "再次输入密码",
-    "submit_button": "注册账号",
-    "submitting": "正在创建账号...",
-    "success_title": "注册成功！",
-    "success_subtitle": "您的全新邮箱账号已创建：",
-    "proceed_to_login": "前往登录",
-    "already_have_account": "已有账号？",
-    "login_link": "去登录",
-    "have_invite_code": "有邀请码？",
-    "register_link": "注册账号",
-    "error": {
-      "invite_required": "请输入有效的邀请码。",
-      "username_required": "请输入用户名。",
-      "username_invalid": "用户名包含非法字符（仅允许字母、数字、点、下划线和减号）。",
-      "password_required": "请输入密码。",
-      "password_short": "密码至少需要 8 个字符。",
-      "password_mismatch": "两次输入的密码不一致。"
-    }
-  },
   "login": {
-    "title": "安全 私密 专属于你",
-    "have_invite_code": "有邀请码？",
-    "register_link": "注册账号",
+    "title": "网页邮箱",
     "username_label": "邮箱地址",
-    "username_placeholder": "用户名（邮箱前缀）",
+    "username_placeholder": "user@example.com",
     "password_label": "密码",
     "password_placeholder": "请输入密码",
     "jmap_endpoint_label": "JMAP 服务器",
@@ -61,7 +27,7 @@
     },
     "show_password": "显示密码",
     "hide_password": "隐藏密码",
-    "totp_toggle": "TOTP 动态验证码",
+    "totp_toggle": "我有双重验证代码",
     "remember_me": "记住我",
     "config_error": {
       "title": "配置错误",
@@ -70,7 +36,7 @@
     },
     "remove_from_history": "从历史记录中移除",
     "totp_label": "验证码",
-    "totp_placeholder": "123456",
+    "totp_placeholder": "000000",
     "session_expired": "会话已过期，请重新登录。",
     "dismiss": "关闭",
     "or": "或",
@@ -95,7 +61,9 @@
       "token_exchange_failed": "无法完成身份验证。请再试一次。",
       "access_denied": "访问被拒绝。请联系您的管理员。",
       "back_to_login": "返回登录"
-    }
+    },
+    "have_invite_code": "有邀请码？",
+    "register_link": "注册账号"
   },
   "sidebar": {
     "close": "关闭",
@@ -176,23 +144,23 @@
     "unified_all_unread": "全部未读",
     "unified_all_starred": "全部加星标",
     "unified_all_mail": "全部邮件",
-    "remove_account": "删除账号",
-    "remove_account_confirm": "是否从该设备删除 {account}？您可以稍后重新添加。"
+    "remove_account": "Remove account",
+    "remove_account_confirm": "Remove {account} from this device? You can add it back later."
   },
   "protocol_handlers": {
     "title": "默认应用",
-    "description": "选择是否在 LDQ Mail 中打开电子邮件和日历链接。从技术上讲，LDQ Mail 会注册为 mailto: 和 webcal: 链接的协议处理程序。",
+    "description": "选择是否在 Bulwark 中打开电子邮件和日历链接。从技术上讲，Bulwark 会注册为 mailto: 和 webcal: 链接的协议处理程序。",
     "unsupported": "此浏览器或连接不支持手动注册协议处理程序。你仍可尝试通过浏览器或系统设置使用已安装的 PWA。",
     "mailto_label": "电子邮件链接",
-    "mailto_description": "在 LDQ Mail 中打开 mailto: 链接，并预先填好撰写窗口。",
+    "mailto_description": "在 Bulwark 中打开 mailto: 链接，并预先填好撰写窗口。",
     "protocol_open_mode_label": "打开协议链接时",
-    "protocol_open_mode_description": "选择 LDQ Mail 是在新标签页中打开 mailto: 和 webcal: 链接，还是复用已打开的会话。活动会话选项需要通知权限，这样当浏览器阻止聚焦时，你可以点击备用通知将 LDQ Mail 窗口带到前台。",
+    "protocol_open_mode_description": "选择 Bulwark 是在新标签页中打开 mailto: 和 webcal: 链接，还是复用已打开的会话。活动会话选项需要通知权限，这样当浏览器阻止聚焦时，你可以点击备用通知将 Bulwark 窗口带到前台。",
     "protocol_open_mode_active_session": "尽可能在活动会话中打开",
     "protocol_open_mode_new_tab": "始终打开新标签页",
-    "focus_notification_title": "打开 LDQ Mail",
-    "focus_notification_body": "链接已在 LDQ Mail 中打开。点击可将窗口带到前台。",
+    "focus_notification_title": "打开 Bulwark",
+    "focus_notification_body": "链接已在 Bulwark 中打开。点击可将窗口带到前台。",
     "webcal_label": "日历链接",
-    "webcal_description": "在 LDQ Mail 中打开 webcal: 链接，并预先填好日历订阅对话框。",
+    "webcal_description": "在 Bulwark 中打开 webcal: 链接，并预先填好日历订阅对话框。",
     "register_mailto": "注册电子邮件应用",
     "register_webcal": "注册日历应用",
     "mailto_registered": "已请求注册电子邮件处理程序",
@@ -200,7 +168,7 @@
     "registration_failed": "协议处理程序注册失败",
     "opening_mailto": "正在打开撰写窗口...",
     "opening_webcal": "正在打开日历...",
-    "browser_note": "你的浏览器或操作系统可能会要求确认，并且可能需要先安装 LDQ Mail，才能将其选为默认应用。",
+    "browser_note": "你的浏览器或操作系统可能会要求确认，并且可能需要先安装 Bulwark，才能将其选为默认应用。",
     "select_account_title": "选择账户",
     "select_mailto_account": "选择用于打开此电子邮件链接的账户。",
     "select_webcal_account": "选择用于打开此日历链接的账户。",
@@ -236,6 +204,9 @@
     "delete_confirm": "您确定要删除\"{name}\"吗？",
     "no_apps": "尚未添加应用",
     "no_apps_hint": "将自定义应用和链接添加到侧边栏",
+    "managed_title": "由管理员提供",
+    "managed_description": "这些应用已为所有人配置，无法更改。",
+    "managed_badge": "受管理",
     "search_icons": "搜索图标...",
     "show_popular": "热门",
     "show_all": "全部",
@@ -256,6 +227,10 @@
     "and_others": "和 {count} 其他人",
     "draft": "草稿",
     "starred": "加星标",
+    "pinned": "已置顶",
+    "replied": "已回复",
+    "forwarded": "已转发",
+    "has_attachment": "有附件",
     "conversations_count": "共 {total} 个会话，当前显示 {count} 个",
     "conversations_count_plus": "{count}+ 个会话",
     "conversations_count_simple": "{count} 个会话",
@@ -265,7 +240,7 @@
     "batch_actions": {
       "select": "选择邮件",
       "select_all": "全选",
-      "selected_messages": "已選取 {count, plural, one {1} other {#}} 封電子郵件",
+      "selected_messages": "已选取 {count, plural, one {1} other {#}} 封电子邮件",
       "mark_read": "标记为已读",
       "mark_unread": "标记为未读",
       "delete": "删除",
@@ -323,6 +298,7 @@
     "forward": "转发",
     "delete": "删除",
     "archive": "归档",
+    "archive_mailbox_not_found": "Archive mailbox not found - cannot archive email",
     "star": "加星标",
     "unstar": "取消星标",
     "mark_unread": "标记为未读",
@@ -334,12 +310,10 @@
     "move": "移动",
     "print": "打印",
     "view_source": "查看源码",
-
     "fullscreen": "全屏",
-
     "exit_fullscreen": "退出全屏",
     "export_email": "导出为 .eml",
-    "forward_as_attachment": "Forward as attachment",
+    "forward_as_attachment": "作为附件转发",
     "import_email": "导入 .eml 或 .zip",
     "keyboard_shortcuts": "键盘快捷键（？）",
     "email_source": "邮件源码",
@@ -611,6 +585,12 @@
   "email_composer": {
     "read_receipt_on": "已请求已读回执（点击以关闭）",
     "read_receipt_off": "请求已读回执",
+    "dsn_on": "已请求投递通知（点击禁用）",
+    "dsn_off": "请求投递通知",
+    "format_plain_text": "切换为纯文本",
+    "format_rich_text": "切换为富文本 (HTML)",
+    "require_tls_on": "已要求加密投递（点击禁用）",
+    "require_tls_off": "要求加密投递 (TLS)",
     "new_message": "新邮件",
     "signature_edit_hint": "双击以编辑签名",
     "reply": "回复",
@@ -757,7 +737,11 @@
       "delete_column": "删除列",
       "toggle_header_row": "切换标题行",
       "delete_table": "删除表格",
-      "pick_size": "选择大小"
+      "pick_size": "选择大小",
+      "font_size": "字号",
+      "font_size_default": "默认",
+      "background_color": "背景颜色",
+      "remove_background_color": "移除背景颜色"
     },
     "send_filing_warning": "已发送，但发送后的清理失败，可能会残留旧草稿。"
   },
@@ -785,9 +769,9 @@
     "app_title": "网页邮箱",
     "reconnecting": "连接已断开，正在尝试重连…",
     "rate_limited_title": "服务器身份验证暂时受到速率限制。",
-    "rate_limited_detail": "LDQ Mail 已暂停后台请求以避免账户被锁定。将在 {seconds} 秒后重试。",
+    "rate_limited_detail": "Bulwark 已暂停后台请求以避免账户被锁定。将在 {seconds} 秒后重试。",
     "rate_limited_action_title": "请求已暂停以避免账户被锁定。",
-    "rate_limited_action_detail": "LDQ Mail 正在等待服务器解除限制，然后再发送更多请求。请在 {seconds} 秒后重试。",
+    "rate_limited_action_detail": "Bulwark 正在等待服务器冷却，然后再发送更多请求。请在 {seconds} 秒后重试。",
     "pull_to_refresh": "下拉刷新",
     "release_to_refresh": "松开刷新",
     "refreshing": "正在刷新…"
@@ -1068,10 +1052,10 @@
         }
       },
       "all_mail": {
-        "folders_label": "全部邮件文件夹",
-        "folders_description": "选择要合并到“全部邮件”视图的文件夹。",
-        "account_hint": "应用到 {account}。",
-        "no_folders": "没有可用的文件夹"
+        "folders_label": "Folders in All Mail",
+        "folders_description": "Choose which folders are merged into the All Mail view.",
+        "account_hint": "Applies to {account}.",
+        "no_folders": "No folders available."
       },
       "colorful_sidebar_icons": {
         "label": "彩色侧边栏图标",
@@ -1242,12 +1226,12 @@
         "preview_older": "更早："
       },
       "date_locale": {
-        "label": "日期格式区域",
-        "description": "数字日期的排序方式（日/月/年）",
-        "auto": "自动（匹配语言）",
+        "label": "Date format region",
+        "description": "How numeric dates are ordered (day, month, year)",
+        "auto": "Automatic (match language)",
         "iso": "ISO 8601 (YYYY-MM-DD)",
-        "dmy": "日/月/年",
-        "mdy": "月/日/年"
+        "dmy": "Day/Month/Year",
+        "mdy": "Month/Day/Year"
       },
       "time_format": {
         "label": "时间格式",
@@ -1269,6 +1253,10 @@
       }
     },
     "email_behavior": {
+      "clear_search_on_folder_change": {
+        "label": "切换文件夹时清除搜索",
+        "description": "点击文件夹（收件箱、已发送等）会清除当前搜索并浏览该文件夹。关闭时，搜索会保留并在切换到的文件夹中重新运行。"
+      },
       "request_read_receipt": {
         "label": "默认请求已读回执",
         "description": "撰写新邮件时预先启用已读回执请求。"
@@ -1351,6 +1339,12 @@
       "auto_select_reply_identity": {
         "label": "自动选择回复地址",
         "description": "回复时自动将发件人地址切换为最初收到该邮件的身份"
+      },
+      "reply_identity_match": {
+        "label": "接收地址匹配",
+        "description": "哪些接收地址算作您的地址。“仅精确地址”只从已配置的身份中选择；“相同域名”还会将身份域名下的其他任何地址视为 catch-all 别名，并将发件人标头改写为该地址。如果这些地址是分发列表，请选择精确地址。",
+        "exact": "仅精确地址",
+        "domain": "我的域名下的任意地址"
       },
       "signature_position": {
         "label": "签名位置",
@@ -1700,10 +1694,10 @@
       },
       "link_device": {
         "title": "关联移动应用",
-        "description": "无需输入任何内容即可登录 LDQ Mail 移动应用。在此生成二维码，然后在应用的登录界面扫描。",
+        "description": "无需输入任何内容即可登录 Bulwark Mail 移动应用。在此生成二维码，然后在应用的登录界面扫描。",
         "generate": "显示二维码",
         "regenerate": "显示新的二维码",
-        "instructions": "打开 LDQ Mail 应用，在登录界面点按\"扫描二维码\"，然后将相机对准此处。",
+        "instructions": "打开 Bulwark Mail 应用，在登录界面点按\"扫描二维码\"，然后将相机对准此处。",
         "expires_in": "此二维码将在 {seconds} 秒后过期，且只能使用一次。",
         "expired": "此二维码已过期。",
         "generating": "生成中…",
@@ -1794,6 +1788,8 @@
       "role_trash": "已删除",
       "role_junk": "垃圾邮件",
       "role_archive": "归档",
+      "role_scheduled": "Scheduled",
+      "role_snoozed": "Snoozed",
       "role_none": "无",
       "create_folder": "创建文件夹",
       "create_subfolder": "新建子文件夹",
@@ -1866,9 +1862,9 @@
         "button": "查看快捷方式"
       },
       "refresh_cache": {
-        "label": "刷新缓存的数据",
-        "description": "从服务器重新加载联系人、日历和文件夹。保留您的账户和会话 - 在不注销的情况下修复过时或错误的视图。",
-        "button": "刷新"
+        "label": "Refresh cached data",
+        "description": "Reload contacts, calendars, and folders from the server. Keeps your accounts and sessions — fixes a stale or wrong view without signing out.",
+        "button": "Refresh"
       },
       "reset_settings": {
         "label": "重置设置",
@@ -1886,7 +1882,7 @@
         "button": "导入"
       },
       "about": {
-        "title": "LDQ Mail 网页邮箱"
+        "title": "Bulwark 网页邮箱"
       }
     },
     "sidebar_apps": {
@@ -1894,6 +1890,8 @@
       "description": "管理侧边栏中的自定义应用和链接",
       "keep_loaded": "保持应用加载",
       "keep_loaded_description": "在内联应用之间切换时，保持内联应用在后台运行以避免重新加载",
+      "managed_title": "由管理员提供",
+      "managed_description": "这些应用已为所有人配置，无法更改。",
       "manage_title": "定制应用",
       "manage_description": "从侧边栏添加、编辑或删除自定义应用"
     },
@@ -1911,7 +1909,9 @@
       "categories_description": "重命名联系人类别",
       "no_categories": "未找到类别",
       "group_by_letter_description": "在联系人列表中显示按字母顺序排列的分节标题",
-      "group_by_letter_label": "按首字母分组"
+      "group_by_letter_label": "按首字母分组",
+      "sort_by_last_name_label": "按姓氏排序",
+      "sort_by_last_name_description": "按姓氏排列联系人列表，使家庭成员显示在一起"
     },
     "downloads": {
       "title": "下载",
@@ -2236,6 +2236,7 @@
     "new_subfolder": "新建子文件夹...",
     "new_folder": "新建文件夹...",
     "rename": "重命名...",
+    "share": "共享...",
     "import_email": "导入 .eml 或 .zip...",
     "empty_folder": "清空文件夹",
     "empty_folder_generic": "清空文件夹",
@@ -2263,6 +2264,9 @@
     "toast_error_delete": "删除文件夹失败",
     "toast_error_delete_has_children": "文件夹包含子文件夹，请先将其删除。",
     "toast_error_delete_has_email": "文件夹不为空，请先清空它。",
+    "delete_with_contents_title": "文件夹不为空",
+    "delete_with_contents_message": "文件夹“{name}”中仍有 {count} 封邮件。删除该文件夹及其所有邮件？此操作无法撤销。",
+    "delete_with_contents_confirm": "删除文件夹和邮件",
     "placeholder_folder_name": "文件夹名称",
     "create": "创建",
     "rename_confirm": "重命名"
@@ -2299,7 +2303,8 @@
       "search": "聚焦搜索框",
       "help": "显示快捷方式",
       "refresh": "刷新邮件",
-      "select_all": "全选"
+      "select_all": "全选",
+      "global_search": "全局搜索"
     },
     "threads": {
       "expand_collapse": "展开/折叠会话"
@@ -2463,6 +2468,9 @@
       "renamed": "地址簿已重命名",
       "rename_failed": "重命名地址簿失败",
       "default": "默认",
+      "set_default": "设为默认",
+      "default_updated": "默认地址簿已更新",
+      "set_default_failed": "无法设置默认地址簿",
       "manage": "管理地址簿",
       "share": "共享通讯录",
       "new_contact_in_book": "在此通讯录中新建联系人",
@@ -2522,32 +2530,32 @@
       "calendar_uri": "日历 URL",
       "scheduling_uri": "调度 URL",
       "freebusy_uri": "空闲/忙碌 URL",
-      "section_contact": "联系人详情",
-      "section_work": "工作",
-      "section_personal": "个人",
-      "email_default_label": "邮箱",
-      "phone_default_label": "电话",
-      "address_default_label": "地址",
-      "online_service_default_label": "在线",
-      "organization_label": "组织",
-      "title_label": "标题",
-      "role_label": "角色",
-      "language_label": "语言",
-      "related_default_label": "相关",
+      "section_contact": "Contact details",
+      "section_work": "Work",
+      "section_personal": "Personal",
+      "email_default_label": "Email",
+      "phone_default_label": "Phone",
+      "address_default_label": "Address",
+      "online_service_default_label": "Online",
+      "organization_label": "Organization",
+      "title_label": "Title",
+      "role_label": "Role",
+      "language_label": "Language",
+      "related_default_label": "Related",
       "more_actions": "更多操作",
       "age_years": "{count}岁",
       "years_since": "{count}年前"
     },
     "activity": {
-      "recent_emails": "近期邮件",
-      "upcoming_events": "即将到来的事件",
-      "no_emails": "没有近期邮件",
-      "no_events": "没有即将到来的事件",
-      "no_subject": "(无主题)",
-      "no_title": "(无标题)",
-      "load_failed": "加载失败",
-      "unknown_sender": "未知发件人",
-      "all_day": "全天"
+      "recent_emails": "Recent Emails",
+      "upcoming_events": "Upcoming Events",
+      "no_emails": "No recent emails",
+      "no_events": "No upcoming events",
+      "no_subject": "(No subject)",
+      "no_title": "(No title)",
+      "load_failed": "Failed to load",
+      "unknown_sender": "Unknown sender",
+      "all_day": "All day"
     },
     "form": {
       "create_title": "新联系人",
@@ -2668,11 +2676,11 @@
       "search_members": "搜索联系人以添加...",
       "no_members": "该群组中没有成员",
       "member_count": "{count, plural, =0 {无成员} one {1 位成员} other {# 位成员}}",
-      "send_email": "发送群组邮件",
-      "send_email_to": "收件人",
-      "send_email_cc": "抄送",
-      "send_email_bcc": "密送",
-      "no_member_emails": "该群组中没有成员的邮箱地址。"
+      "send_email": "Send email to group",
+      "send_email_to": "To",
+      "send_email_cc": "Cc",
+      "send_email_bcc": "Bcc",
+      "no_member_emails": "This group has no members with an email address."
     },
     "import": {
       "title": "导入联系人",
@@ -2747,7 +2755,10 @@
       "any_month": "任意月份",
       "has_email": "有邮箱",
       "has_phone": "有电话",
-      "has_photo": "有照片"
+      "has_photo": "有照片",
+      "sort_by": "排序方式",
+      "sort_first_name": "名",
+      "sort_last_name": "姓"
     },
     "open_categories": "打开分类"
   },
@@ -2784,6 +2795,10 @@
       "duplicate": "复制",
       "today_header": "今天",
       "tomorrow_header": "明天",
+      "agenda_show_earlier": "显示更早的日程",
+      "agenda_loading": "加载中…",
+      "agenda_range_start": "显示 {date} 起的日程",
+      "agenda_range_end": "显示至 {date} 的日程",
       "export_ics": "导出为 .ics",
       "copy_title": "复制标题",
       "copy_link": "复制会议链接",
@@ -2819,6 +2834,14 @@
       "color": "颜色"
     },
     "participants": {
+      "availability": {
+        "title": "空闲状态",
+        "free": "空闲",
+        "busy": "忙碌",
+        "tentative": "暂定",
+        "unknown": "不是此服务器上的用户",
+        "checking": "正在检查…"
+      },
       "title": "参加者",
       "add": "添加参与者",
       "organizer": "组织者",
@@ -2931,6 +2954,8 @@
       "show_time_in_month_view_desc": "在月历视图中显示事件时间",
       "show_week_numbers": "显示周数",
       "show_week_numbers_desc": "在迷你日历中显示周数",
+      "calendar_free_scroll": "自由滚动",
+      "calendar_free_scroll_desc": "连续滚动浏览月、周和日，而不是一次只显示一个时段",
       "enable_tasks": "启用任务",
       "enable_tasks_desc": "在日历中显示任务视图以管理待办事项",
       "show_tasks_on_calendar": "在日历上显示任务",
@@ -2942,6 +2967,9 @@
       "hover_preview_delay_1s": "1秒延迟",
       "hover_preview_delay_2s": "2秒延迟",
       "hover_preview_off": "关闭",
+      "organizer_identity": "以此身份组织邀请",
+      "organizer_identity_desc": "邀请他人参加活动时用作组织者的日历地址。",
+      "organizer_identity_failed": "无法更改组织者地址",
       "show_birthday_calendar": "联系人生日日历",
       "show_birthday_calendar_desc": "显示包含联系人生日的虚拟日历"
     },
@@ -3190,6 +3218,8 @@
     "has_attachment": "附件",
     "date_after": "后",
     "date_before": "前",
+    "size_min": "大于 (KB)",
+    "size_max": "小于 (KB)",
     "starred": "加星标",
     "unread": "未读",
     "read": "已读",
@@ -3222,7 +3252,7 @@
     "start_tour": "开始导览"
   },
   "demo_welcome": {
-    "title": "欢迎使用 LDQ Mail",
+    "title": "欢迎使用 Bulwark Mail",
     "description": "探索功能齐全的网页邮件客户端--就在您的浏览器中。所有数据都保留在您的设备上，请随意体验所有功能。",
     "feature_email": "阅读和撰写邮件",
     "feature_organize": "标签、星标和文件夹",
@@ -3231,6 +3261,10 @@
     "hint": "点击左侧的任意邮件即可开始，或参加下方的导览。"
   },
   "files": {
+    "office_edit": "编辑文档",
+    "office_loading": "正在打开文档编辑器…",
+    "office_error": "无法打开文档编辑器。",
+    "office_close": "关闭编辑器",
     "open_in_new_tab": "在新标签页中打开",
     "title": "文件",
     "search_placeholder": "搜索文件...",
@@ -3294,10 +3328,10 @@
     "duplicate": "创建副本",
     "duplicate_success": "复制成功",
     "duplicate_error": "复制失败",
-    "share": "分享",
-    "shared": "已分享",
-    "shared_with_me": "与我分享",
-    "shared_by": "由 {name} 分享",
+    "share": "Share",
+    "shared": "Shared",
+    "shared_with_me": "Shared with me",
+    "shared_by": "Shared by {name}",
     "create_file_success": "文件已创建",
     "create_file_error": "创建文件失败",
     "favorites": "收藏夹",
@@ -3477,6 +3511,25 @@
   "unified_mailbox": {
     "search_unavailable": "统一视图中无法使用搜索"
   },
+  "calendar_event_notifications": {
+    "someone": "有人",
+    "invited": "{name} 邀请您参加“{title}”",
+    "updated": "{name} 更新了“{title}”",
+    "cancelled": "{name} 取消了“{title}”",
+    "untitled": "无标题活动"
+  },
+  "share_notifications": {
+    "someone": "有人",
+    "shared": "{name} 与您共享了{kind}“{object}”",
+    "changed": "{name} 更改了您对{kind}“{object}”的访问权限",
+    "revoked": "{name} 移除了您对{kind}“{object}”的访问权限",
+    "object": {
+      "folder": "文件夹",
+      "calendar": "日历",
+      "address_book": "通讯录",
+      "files": "文件目录"
+    }
+  },
   "sharing": {
     "title": "共享「{name}」",
     "description": "向此服务器上的其他用户或群组授予访问权限。更改会立即生效。",
@@ -3527,5 +3580,77 @@
     "copy_event": "复制日程链接",
     "copied": "链接已复制",
     "copy_failed": "无法复制链接"
+  },
+  "plugins": {
+    "oauth_callback": {
+      "completing": "正在完成授权…",
+      "completing_message": "正在建立连接，请稍候。",
+      "received_title": "已收到授权",
+      "received_message": "您可以返回发起连接的标签页。",
+      "failed_title": "授权失败",
+      "denied": "授权被拒绝。",
+      "failed_detail": "授权失败：{error}",
+      "missing_params": "缺少授权码或状态。",
+      "delivery_failed": "无法将授权结果传递到应用标签页。请关闭此窗口并重试。"
+    }
+  },
+  "global_search": {
+    "title": "全局搜索",
+    "placeholder": "搜索邮件、联系人、日历、文件...",
+    "scope_label": "搜索范围",
+    "account_label": "账户",
+    "scope_all": "全部",
+    "scope_mail": "邮件",
+    "scope_contacts": "联系人",
+    "scope_calendar": "日历",
+    "scope_files": "文件",
+    "all_accounts": "所有账户",
+    "show_all": "显示全部结果",
+    "no_results": "未找到“{query}”的结果",
+    "server_hint": "完整单词在服务器上搜索；部分单词匹配已加载的内容",
+    "searching": "搜索中...",
+    "account_error": "无法搜索 {account}",
+    "recent_searches": "最近搜索",
+    "recurring": "重复",
+    "no_subject": "(no subject)",
+    "empty_hint": "在所有账户中搜索邮件、联系人、日程和文件。可尝试 from:、subject:、has:attachment、after:2026-01-01。",
+    "flat_by_date": "按日期平铺",
+    "grouped": "分组",
+    "load_more": "加载更多",
+    "preview_empty": "选择一个结果以预览",
+    "open_full": "打开",
+    "view_label": "视图"
+  },
+  "register": {
+    "title": "LDQ Mail",
+    "subtitle": "安全 私密 专属于你",
+    "invite_code_label": "邀请码",
+    "invite_code_placeholder": "邀请码",
+    "email_label": "邮箱地址",
+    "username_placeholder": "用户名",
+    "display_name_label": "姓名",
+    "display_name_optional": "(可选)",
+    "display_name_placeholder": "默认使用用户名(邮箱前缀)",
+    "password_label": "设置密码",
+    "password_placeholder": "至少 8 个字符",
+    "confirm_password_label": "确认密码",
+    "confirm_password_placeholder": "再次输入密码",
+    "submit_button": "注册账号",
+    "submitting": "正在创建账号...",
+    "success_title": "注册成功！",
+    "success_subtitle": "您的全新邮箱账号已创建：",
+    "proceed_to_login": "前往登录",
+    "already_have_account": "已有账号？",
+    "login_link": "去登录",
+    "have_invite_code": "有邀请码？",
+    "register_link": "注册账号",
+    "error": {
+      "invite_required": "请输入有效的邀请码。",
+      "username_required": "请输入用户名。",
+      "username_invalid": "用户名包含非法字符（仅允许字母、数字、点、下划线和减号）。",
+      "password_required": "请输入密码。",
+      "password_short": "密码至少需要 8 个字符。",
+      "password_mismatch": "两次输入的密码不一致。"
+    }
   }
 }

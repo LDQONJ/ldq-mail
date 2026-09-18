@@ -202,6 +202,9 @@
     "delete_confirm": "Er du sikker på, at du vil slette \\\"{name}\\\"?",
     "no_apps": "Ingen apps tilføjet endnu",
     "no_apps_hint": "Tilføj brugerdefinerede apps og links til dit sidepanel",
+    "managed_title": "Leveret af din administrator",
+    "managed_description": "Disse apps er sat op for alle og kan ikke ændres.",
+    "managed_badge": "Administreret",
     "search_icons": "Søg efter ikoner...",
     "show_popular": "Populære",
     "show_all": "Alle",
@@ -222,6 +225,10 @@
     "and_others": "og {count} andre",
     "draft": "Kladde",
     "starred": "Stjernemarkerede",
+    "pinned": "Fastgjort",
+    "replied": "Besvaret",
+    "forwarded": "Videresendt",
+    "has_attachment": "Har vedhæftning",
     "conversations_count": "{count} af {total} samtaler",
     "conversations_count_plus": "{count}+ samtaler",
     "conversations_count_simple": "{count} samtaler",
@@ -289,6 +296,7 @@
     "forward": "Videresend",
     "delete": "Slet",
     "archive": "Arkivér",
+    "archive_mailbox_not_found": "Archive mailbox not found - cannot archive email",
     "star": "Stjernemarkér",
     "unstar": "Fjern stjernemarkering",
     "mark_unread": "Markér som ulæst",
@@ -300,12 +308,10 @@
     "move": "Flyt",
     "print": "Udskriv",
     "view_source": "Vis kilde",
-
     "fullscreen": "Fuld skærm",
-
     "exit_fullscreen": "Afslut fuld skærm",
     "export_email": "Eksportér som .eml",
-    "forward_as_attachment": "Forward as attachment",
+    "forward_as_attachment": "Videresend som vedhæftet fil",
     "import_email": "Importér .eml eller .zip",
     "keyboard_shortcuts": "Tastaturgenveje (?)",
     "email_source": "E-mail-kilde",
@@ -577,6 +583,12 @@
   "email_composer": {
     "read_receipt_on": "Læsekvittering anmodet (klik for at deaktivere)",
     "read_receipt_off": "Anmod om læsekvittering",
+    "dsn_on": "Leveringsbesked anmodet (klik for at slå fra)",
+    "dsn_off": "Anmod om leveringsbesked",
+    "format_plain_text": "Skift til ren tekst",
+    "format_rich_text": "Skift til formateret tekst (HTML)",
+    "require_tls_on": "Krypteret levering påkrævet (klik for at slå fra)",
+    "require_tls_off": "Kræv krypteret levering (TLS)",
     "new_message": "Ny besked",
     "signature_edit_hint": "Dobbeltklik for at redigere signaturen",
     "reply": "Svar",
@@ -723,7 +735,11 @@
       "delete_column": "Slet kolonne",
       "toggle_header_row": "Slå overskriftsrække til/fra",
       "delete_table": "Slet tabel",
-      "pick_size": "Vælg størrelse"
+      "pick_size": "Vælg størrelse",
+      "font_size": "Skriftstørrelse",
+      "font_size_default": "Standard",
+      "background_color": "Baggrundsfarve",
+      "remove_background_color": "Fjern baggrundsfarve"
     },
     "send_filing_warning": "Sendt - men oprydningen bagefter mislykkedes, en forældet kladde kan blive stående."
   },
@@ -1238,6 +1254,10 @@
       }
     },
     "email_behavior": {
+      "clear_search_on_folder_change": {
+        "label": "Ryd søgningen ved skift af mappe",
+        "description": "Klik på en mappe (Indbakke, Sendt …) rydder den aktive søgning og viser mappen. Når det er slået fra, bevares søgningen og køres igen i den valgte mappe."
+      },
       "request_read_receipt": {
         "label": "Anmod om læsekvittering som standard",
         "description": "Aktivér anmodningen om læsekvittering på forhånd, når du skriver en ny besked."
@@ -1320,6 +1340,12 @@
       "auto_select_reply_identity": {
         "label": "Svar fra modtaget adresse",
         "description": "Når du svarer, send fra den adresse som beskeden oprindeligt blev sendt til. Matcher først identiteter; for domæne catch-all-leveringer omskriver Fra-headeren til aliaset, mens der sendes gennem din primære identitet."
+      },
+      "reply_identity_match": {
+        "label": "Matchning af modtageradresse",
+        "description": "Hvilke modtageradresser der tæller som dine. „Kun præcis adresse“ vælger udelukkende en af dine opsatte identiteter; „samme domæne“ behandler desuden enhver anden adresse på dine identitetsdomæner som et catch-all-alias og omskriver Fra-headeren til den. Vælg præcis adresse, hvis disse adresser er distributionslister.",
+        "exact": "Kun præcis adresse",
+        "domain": "Enhver adresse på mine domæner"
       },
       "signature_position": {
         "label": "Signaturplacering",
@@ -1763,6 +1789,8 @@
       "role_trash": "Papirkurv",
       "role_junk": "Spam",
       "role_archive": "Arkiv",
+      "role_scheduled": "Scheduled",
+      "role_snoozed": "Snoozed",
       "role_none": "Ingen",
       "create_folder": "Opret mappe",
       "create_subfolder": "Opret undermappe",
@@ -1863,6 +1891,8 @@
       "description": "Administrér brugerdefinerede apps og links i dit sidepanel",
       "keep_loaded": "Hold apps indlæst",
       "keep_loaded_description": "Hold indlejrede apps kørende i baggrunden, når du skifter mellem dem, for at undgå genindlæsning",
+      "managed_title": "Leveret af din administrator",
+      "managed_description": "Disse apps er sat op for alle og kan ikke ændres.",
       "manage_title": "Brugerdefinerede apps",
       "manage_description": "Tilføj, redigér eller fjern brugerdefinerede apps fra dit sidepanel"
     },
@@ -1870,6 +1900,8 @@
       "title": "Kontakter",
       "description": "Importér og eksportér dine kontakter",
       "group_by_letter_label": "Gruppér efter første bogstav",
+      "sort_by_last_name_label": "Sortér efter efternavn",
+      "sort_by_last_name_description": "Sortér kontaktlisten efter efternavn, så familiemedlemmer står samlet",
       "group_by_letter_description": "Vis alfabetiske sektionsoverskrifter i kontaktlisten",
       "import_label": "Importér kontakter",
       "import_description": "Importér kontakter fra en vCard-fil (.vcf)",
@@ -2202,6 +2234,7 @@
     "new_subfolder": "Ny undermappe...",
     "new_folder": "Ny mappe...",
     "rename": "Omdøb...",
+    "share": "Del...",
     "import_email": "Importér .eml eller .zip...",
     "empty_folder": "Tøm mappe",
     "empty_folder_generic": "Tøm mappe",
@@ -2231,7 +2264,10 @@
     "toast_error_rename": "Kunne ikke omdøbe mappe",
     "toast_error_delete": "Kunne ikke slette mappe",
     "toast_error_delete_has_children": "Mappen har undermapper. Fjern dem først.",
-    "toast_error_delete_has_email": "Mappen er ikke tom. Tøm den først."
+    "toast_error_delete_has_email": "Mappen er ikke tom. Tøm den først.",
+    "delete_with_contents_title": "Mappen er ikke tom",
+    "delete_with_contents_message": "Mappen \"{name}\" indeholder stadig {count, plural, one {1 besked} other {# beskeder}}. Slet mappen og alle dens beskeder? Dette kan ikke fortrydes.",
+    "delete_with_contents_confirm": "Slet mappe og beskeder"
   },
   "shortcuts": {
     "title": "Tastaturgenveje",
@@ -2265,7 +2301,8 @@
       "search": "Fokusér søgning",
       "help": "Vis genveje",
       "refresh": "Opdatér e-mails",
-      "select_all": "Vælg alle"
+      "select_all": "Vælg alle",
+      "global_search": "Søg i alt"
     },
     "threads": {
       "expand_collapse": "Udvid/skjul tråd"
@@ -2429,6 +2466,9 @@
       "renamed": "Adressebog omdøbt",
       "rename_failed": "Kunne ikke omdøbe adressebog",
       "default": "Standard",
+      "set_default": "Angiv som standard",
+      "default_updated": "Standardadressebog opdateret",
+      "set_default_failed": "Kunne ikke angive standardadressebog",
       "manage": "Administrér adressebøger",
       "share": "Del adressebog",
       "new_contact_in_book": "Ny kontakt i denne adressebog",
@@ -2713,7 +2753,10 @@
       "any_month": "Enhver måned",
       "has_email": "Har e-mail",
       "has_phone": "Har telefon",
-      "has_photo": "Har billede"
+      "has_photo": "Har billede",
+      "sort_by": "Sortér efter",
+      "sort_first_name": "Fornavn",
+      "sort_last_name": "Efternavn"
     },
     "open_categories": "Åbn kategorier"
   },
@@ -2750,6 +2793,10 @@
       "duplicate": "Duplikér",
       "today_header": "I dag",
       "tomorrow_header": "I morgen",
+      "agenda_show_earlier": "Vis tidligere begivenheder",
+      "agenda_loading": "Indlæser…",
+      "agenda_range_start": "Begivenheder fra {date}",
+      "agenda_range_end": "Begivenheder til {date}",
       "export_ics": "Eksportér som .ics",
       "copy_title": "Kopier titel",
       "copy_link": "Kopier mødelink",
@@ -2785,6 +2832,14 @@
       "color": "Farve"
     },
     "participants": {
+      "availability": {
+        "title": "Tilgængelighed",
+        "free": "Ledig",
+        "busy": "Optaget",
+        "tentative": "Foreløbig",
+        "unknown": "Ikke en bruger på denne server",
+        "checking": "Kontrollerer…"
+      },
       "title": "Deltagere",
       "add": "Tilføj deltager",
       "organizer": "Arrangør",
@@ -2897,6 +2952,8 @@
       "show_time_in_month_view_desc": "Vis begivenhedstider i månedskalendervisningen",
       "show_week_numbers": "Vis ugenumre",
       "show_week_numbers_desc": "Vis ugenumre i minikalenderen",
+      "calendar_free_scroll": "Fri rulning",
+      "calendar_free_scroll_desc": "Rul fortløbende gennem måneder, uger og dage i stedet for én periode ad gangen",
       "enable_tasks": "Aktivér opgaver",
       "enable_tasks_desc": "Vis en opgavevisning i kalenderen til styring af gøremål",
       "show_tasks_on_calendar": "Vis opgaver på kalender",
@@ -2908,6 +2965,9 @@
       "hover_preview_delay_1s": "1 sekunds forsinkelse",
       "hover_preview_delay_2s": "2 sekunders forsinkelse",
       "hover_preview_off": "Deaktiveret",
+      "organizer_identity": "Organisér invitationer som",
+      "organizer_identity_desc": "Kalenderadressen, der bruges som arrangør, når du inviterer folk til begivenheder.",
+      "organizer_identity_failed": "Kunne ikke ændre arrangøradressen",
       "show_birthday_calendar": "Kontaktfødselsdagskalender",
       "show_birthday_calendar_desc": "Vis en virtuel kalender med fødselsdage fra dine kontakter"
     },
@@ -3141,6 +3201,25 @@
     },
     "nav_open_menu": "Åbn menu"
   },
+  "calendar_event_notifications": {
+    "someone": "Nogen",
+    "invited": "{name} har inviteret dig til \"{title}\"",
+    "updated": "{name} har opdateret \"{title}\"",
+    "cancelled": "{name} har aflyst \"{title}\"",
+    "untitled": "Unavngivet begivenhed"
+  },
+  "share_notifications": {
+    "someone": "Nogen",
+    "shared": "{name} har delt {kind} \"{object}\" med dig",
+    "changed": "{name} har ændret din adgang til {kind} \"{object}\"",
+    "revoked": "{name} har fjernet din adgang til {kind} \"{object}\"",
+    "object": {
+      "folder": "mappen",
+      "calendar": "kalenderen",
+      "address_book": "adressebogen",
+      "files": "filmappen"
+    }
+  },
   "sharing": {
     "title": "Del \"{name}\"",
     "description": "Giv adgang til andre brugere eller grupper på denne server. Ændringer træder i kraft øjeblikkeligt.",
@@ -3179,6 +3258,8 @@
     "has_attachment": "Vedhæftninger",
     "date_after": "Efter",
     "date_before": "Før",
+    "size_min": "Større end (KB)",
+    "size_max": "Mindre end (KB)",
     "starred": "Stjernemarkerede",
     "unread": "Ulæst",
     "read": "Læst",
@@ -3220,6 +3301,10 @@
     "hint": "Klik på en e-mail til venstre for at komme i gang, eller tag rundvisningen nedenfor."
   },
   "files": {
+    "office_edit": "Rediger dokument",
+    "office_loading": "Åbner dokumenteditor…",
+    "office_error": "Dokumenteditoren kunne ikke åbnes.",
+    "office_close": "Luk editor",
     "open_in_new_tab": "Åbn i ny fane",
     "title": "Filer",
     "search_placeholder": "Søg efter filer...",
@@ -3493,5 +3578,45 @@
     "copy_event": "Kopier link til begivenhed",
     "copied": "Link kopieret",
     "copy_failed": "Kunne ikke kopiere linket"
+  },
+  "plugins": {
+    "oauth_callback": {
+      "completing": "Fuldfører godkendelse…",
+      "completing_message": "Vent venligst, mens forbindelsen oprettes.",
+      "received_title": "Godkendelse modtaget",
+      "received_message": "Du kan vende tilbage til den fane, hvor du startede forbindelsen.",
+      "failed_title": "Godkendelse mislykkedes",
+      "denied": "Godkendelse blev nægtet.",
+      "failed_detail": "Godkendelse mislykkedes: {error}",
+      "missing_params": "Autorisationskode eller tilstand mangler.",
+      "delivery_failed": "Resultatet af godkendelsen kunne ikke leveres til app-fanen. Luk dette vindue og prøv igen."
+    }
+  },
+  "global_search": {
+    "title": "Søg i alt",
+    "placeholder": "Søg i mail, kontakter, kalender, filer...",
+    "scope_label": "Søg i",
+    "account_label": "Konto",
+    "scope_all": "Alt",
+    "scope_mail": "Mail",
+    "scope_contacts": "Kontakter",
+    "scope_calendar": "Kalender",
+    "scope_files": "Filer",
+    "all_accounts": "Alle konti",
+    "show_all": "Vis alle resultater",
+    "no_results": "Ingen resultater for “{query}”",
+    "server_hint": "Hele ord søger på serveren; dele af ord matcher allerede indlæste elementer",
+    "searching": "Søger...",
+    "account_error": "Kunne ikke søge i {account}",
+    "recent_searches": "Seneste søgninger",
+    "recurring": "Tilbagevendende",
+    "no_subject": "(no subject)",
+    "empty_hint": "Søg i mail, kontakter, begivenheder og filer på alle konti. Prøv from:, subject:, has:attachment, after:2026-01-01.",
+    "flat_by_date": "Fladt efter dato",
+    "grouped": "Grupperet",
+    "load_more": "Indlæs flere",
+    "preview_empty": "Vælg et resultat for at se det",
+    "open_full": "Åbn",
+    "view_label": "Visning"
   }
 }

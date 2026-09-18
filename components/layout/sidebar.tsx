@@ -88,6 +88,7 @@ interface SidebarProps {
   onCreateFolder?: (accountId?: string) => void;
   onRenameFolder?: (mailboxId: string) => void;
   onDeleteFolder?: (mailboxId: string) => void;
+  onShareFolder?: (mailboxId: string) => void;
   onImportEmail?: (mailboxId: string) => void;
   onRefreshMailboxes?: () => void;
   scheduledTotal?: number;
@@ -819,6 +820,7 @@ export function Sidebar({
   onCreateFolder,
   onRenameFolder,
   onDeleteFolder,
+  onShareFolder,
   onImportEmail,
   onRefreshMailboxes,
   scheduledTotal = 0,
@@ -902,9 +904,14 @@ export function Sidebar({
   // single account we still surface unified when the user has opted into
   // merging group/shared inboxes — otherwise the counts would just duplicate
   // the one inbox.
+  // Only show the section when mail-app will actually populate it: cross-account
+  // needs the admin gate + user toggle (`crossAccountActive`, which already
+  // implies 2+ connected accounts), otherwise a merged group inbox or one of
+  // the cross views must exist. A bare "2+ accounts" left an empty header. (#843)
+  const anyCrossViewEnabled = showCrossUnread || showCrossStarred || showCrossAll;
   const showUnified =
     (multiAccountMode || enableUnifiedMailbox) &&
-    (connectedAccounts.length > 1 || (includeGroupInUnified && hasGroupInboxes));
+    (crossAccountActive || (includeGroupInUnified && hasGroupInboxes) || anyCrossViewEnabled);
   const { unifiedCounts } = useEmailStore();
   const t = useTranslations('sidebar');
 
@@ -1507,6 +1514,7 @@ export function Sidebar({
         onCreateFolder={onCreateFolder}
         onRenameFolder={onRenameFolder}
         onDeleteFolder={onDeleteFolder}
+        onShareFolder={onShareFolder}
         onImportEmail={onImportEmail}
         onRefresh={onRefreshMailboxes}
       />
