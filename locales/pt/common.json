@@ -741,7 +741,8 @@
       "background_color": "Cor de fundo",
       "remove_background_color": "Remover cor de fundo"
     },
-    "send_filing_warning": "Enviado - mas a limpeza posterior falhou, um rascunho antigo pode permanecer."
+    "send_filing_warning": "Enviado - mas a limpeza posterior falhou, um rascunho antigo pode permanecer.",
+    "use_oracle_relay": "Send via Oracle Relay"
   },
   "confirm_dialog": {
     "confirm": "Confirmar",

@@ -170,6 +170,7 @@ interface EmailComposerProps {
     requestDsn?: boolean;
     /** Refuse delivery over an unencrypted hop (RFC 8689 REQUIRETLS). */
     requireTls?: boolean;
+    useOracleRelay?: boolean;
   }) => void | Promise<void>;
   onScheduledSendCreated?: () => void | Promise<void>;
   onClose?: () => void;
@@ -564,6 +565,7 @@ export function EmailComposer({
   // extension (RFC 8621 §1.3 submissionExtensions).
   const [requestDsn, setRequestDsn] = useState(false);
   const [requireTls, setRequireTls] = useState(false);
+  const [useOracleRelay, setUseOracleRelay] = useState(false);
   const [draftId, setDraftId] = useState<string | null>(initialData?.draftId ?? null);
   // Mirror of draftId for synchronous reads inside chained saves; React's
   // setDraftId is async, so a queued saveDraft would otherwise see the old
@@ -2338,6 +2340,7 @@ export function EmailComposer({
           requestReadReceipt,
           requestDsn: requestDsn || undefined,
           requireTls: requireTls || undefined,
+          useOracleRelay: useOracleRelay || undefined,
           delayedUntil: effectiveDelayedUntil,
         });
 
@@ -3186,7 +3189,16 @@ export function EmailComposer({
           </div>
 
           {/* Right side - Discard + Send (desktop) */}
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-3">
+            <label className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground cursor-pointer select-none me-1">
+              <input
+                type="checkbox"
+                checked={useOracleRelay}
+                onChange={(e) => setUseOracleRelay(e.target.checked)}
+                className="rounded border-border text-primary focus:ring-primary h-3.5 w-3.5 cursor-pointer"
+              />
+              <span>{t('use_oracle_relay')}</span>
+            </label>
             <button
               type="button"
               onClick={() => handleClose()}

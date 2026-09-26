@@ -741,7 +741,8 @@
       "background_color": "Колір фону",
       "remove_background_color": "Прибрати колір фону"
     },
-    "send_filing_warning": "Надіслано - але подальше очищення не вдалося, може залишитися застаріла чернетка."
+    "send_filing_warning": "Надіслано - але подальше очищення не вдалося, може залишитися застаріла чернетка.",
+    "use_oracle_relay": "Send via Oracle Relay"
   },
   "confirm_dialog": {
     "confirm": "Підтвердити",

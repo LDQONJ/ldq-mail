@@ -741,7 +741,8 @@
       "background_color": "Achtergrondkleur",
       "remove_background_color": "Achtergrondkleur verwijderen"
     },
-    "send_filing_warning": "Verzonden - maar het opruimen daarna is mislukt, mogelijk blijft een oud concept staan."
+    "send_filing_warning": "Verzonden - maar het opruimen daarna is mislukt, mogelijk blijft een oud concept staan.",
+    "use_oracle_relay": "Send via Oracle Relay"
   },
   "confirm_dialog": {
     "confirm": "Bevestigen",

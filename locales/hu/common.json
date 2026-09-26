@@ -741,7 +741,8 @@
       "background_color": "Háttérszín",
       "remove_background_color": "Háttérszín eltávolítása"
     },
-    "send_filing_warning": "Elküldve - de az utólagos rendrakás nem sikerült, egy elavult piszkozat megmaradhat."
+    "send_filing_warning": "Elküldve - de az utólagos rendrakás nem sikerült, egy elavult piszkozat megmaradhat.",
+    "use_oracle_relay": "Send via Oracle Relay"
   },
   "confirm_dialog": {
     "confirm": "Megerősítés",

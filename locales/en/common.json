@@ -743,7 +743,8 @@
       "background_color": "Background color",
       "remove_background_color": "Remove background color"
     },
-    "send_filing_warning": "Sent - but the post-send cleanup failed, a stale draft may remain."
+    "send_filing_warning": "Sent - but the post-send cleanup failed, a stale draft may remain.",
+    "use_oracle_relay": "Send via Oracle Relay"
   },
   "confirm_dialog": {
     "confirm": "Confirm",

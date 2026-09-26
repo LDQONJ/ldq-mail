@@ -741,7 +741,8 @@
       "background_color": "Baggrundsfarve",
       "remove_background_color": "Fjern baggrundsfarve"
     },
-    "send_filing_warning": "Sendt - men oprydningen bagefter mislykkedes, en forældet kladde kan blive stående."
+    "send_filing_warning": "Sendt - men oprydningen bagefter mislykkedes, en forældet kladde kan blive stående.",
+    "use_oracle_relay": "Send via Oracle Relay"
   },
   "confirm_dialog": {
     "confirm": "Bekræft",

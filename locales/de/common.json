@@ -741,7 +741,8 @@
       "background_color": "Hintergrundfarbe",
       "remove_background_color": "Hintergrundfarbe entfernen"
     },
-    "send_filing_warning": "Gesendet - aber das Aufräumen danach schlug fehl, evtl. bleibt ein alter Entwurf sichtbar."
+    "send_filing_warning": "Gesendet - aber das Aufräumen danach schlug fehl, evtl. bleibt ein alter Entwurf sichtbar.",
+    "use_oracle_relay": "Send via Oracle Relay"
   },
   "confirm_dialog": {
     "confirm": "Bestätigen",

@@ -741,7 +741,8 @@
       "background_color": "Barva pozadí",
       "remove_background_color": "Odebrat barvu pozadí"
     },
-    "send_filing_warning": "Odesláno - ale následný úklid selhal, může zůstat zastaralý koncept."
+    "send_filing_warning": "Odesláno - ale následný úklid selhal, může zůstat zastaralý koncept.",
+    "use_oracle_relay": "Send via Oracle Relay"
   },
   "confirm_dialog": {
     "confirm": "Potvrdit",

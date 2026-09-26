@@ -741,7 +741,8 @@
       "background_color": "Colore di sfondo",
       "remove_background_color": "Rimuovi colore di sfondo"
     },
-    "send_filing_warning": "Inviato - ma la pulizia successiva non è riuscita, potrebbe restare una bozza obsoleta."
+    "send_filing_warning": "Inviato - ma la pulizia successiva non è riuscita, potrebbe restare una bozza obsoleta.",
+    "use_oracle_relay": "Send via Oracle Relay"
   },
   "confirm_dialog": {
     "confirm": "Conferma",

@@ -645,6 +645,7 @@ export interface SubmissionSendOptions {
   requestReadReceipt?: boolean;
   requestDsn?: boolean;
   requireTls?: boolean;
+  useOracleRelay?: boolean;
 }
 
 /** The MAIL FROM / RCPT TO parameters the options translate to. */
@@ -3506,6 +3507,7 @@ export class JMAPClient implements IJMAPClient {
 
     const sanitizedFromName = sanitizeIdentityDisplayName(fromName);
     // Always create a new email with the final body content
+    const generatedMessageId = generateMessageId(fromEmail || this.username);
     const emailCreate: Record<string, unknown> = {
       from: [{ ...(sanitizedFromName ? { name: sanitizedFromName } : {}), email: fromEmail || this.username }],
       replyTo: identityReplyTo?.length ? identityReplyTo : undefined,
@@ -3516,7 +3518,7 @@ export class JMAPClient implements IJMAPClient {
       cc: cc?.length ? cc.map(parseRecipientString) : undefined,
       bcc: bcc?.length ? bcc.map(parseRecipientString) : undefined,
       subject,
-      messageId: [generateMessageId(fromEmail || this.username)],
+      messageId: [generatedMessageId],
       inReplyTo: normalizedInReplyTo?.length ? normalizedInReplyTo : undefined,
       references: normalizedReferences?.length ? normalizedReferences : undefined,
       keywords: { "$seen": true, "$draft": true },
@@ -3551,6 +3553,75 @@ export class JMAPClient implements IJMAPClient {
         disposition: att.disposition ?? "attachment",
         ...(att.cid ? { cid: att.cid } : {}),
       }));
+    }
+
+    // When useOracleRelay is requested, send via Oracle Cloud SMTP directly,
+    // then store the copy directly in the Sent folder.
+    if (options?.useOracleRelay) {
+      const attachmentPayload = attachments?.map(att => ({
+        ...att,
+        downloadUrl: this.getBlobDownloadUrl(att.blobId, att.name, att.type, targetAccountId),
+      }));
+
+      const oracleRes = await fetch('/api/mail/send-oracle', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': this.authHeader,
+        },
+        body: JSON.stringify({
+          serverUrl: this.serverUrl,
+          from: { name: sanitizedFromName, email: fromEmail || this.username },
+          to,
+          cc,
+          bcc,
+          subject,
+          text: body,
+          html: htmlBody,
+          messageId: generatedMessageId,
+          inReplyTo: normalizedInReplyTo,
+          references: normalizedReferences,
+          attachments: attachmentPayload,
+        }),
+      });
+
+      if (!oracleRes.ok) {
+        const errJson = await oracleRes.json().catch(() => ({}));
+        throw new Error(errJson.error || `Oracle 代发失败 (HTTP ${oracleRes.status})`);
+      }
+
+      // Save directly to Sent mailbox in Stalwart
+      const sentEmailCreate = {
+        ...emailCreate,
+        keywords: { "$seen": true },
+        mailboxIds: { [sentMailbox.id]: true },
+      };
+
+      const saveResponse = await this.request([
+        ["Email/set", {
+          accountId: targetAccountId,
+          create: { [emailId]: sentEmailCreate },
+        }, "0"]
+      ]);
+
+      const createResult = saveResponse.methodResponses?.[0]?.[1];
+      const createdId = createResult?.created?.[emailId]?.id;
+
+      // Clean up old draft if exists
+      if (draftId) {
+        try {
+          await this.request([
+            ["Email/set", { accountId: this.accountId, destroy: [draftId] }, "0"],
+          ]);
+        } catch (err) {
+          console.error('[sendEmail] old draft cleanup failed:', err);
+        }
+      }
+
+      return {
+        scheduled: false,
+        emailId: createdId || emailId,
+      };
     }
 
     const methodCalls: JMAPMethodCall[] = [];

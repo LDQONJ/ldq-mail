@@ -741,7 +741,8 @@
       "background_color": "Farba pozadia",
       "remove_background_color": "Odstrániť farbu pozadia"
     },
-    "send_filing_warning": "Odoslané - ale následné upratovanie zlyhalo, môže zostať zastaraný koncept."
+    "send_filing_warning": "Odoslané - ale následné upratovanie zlyhalo, môže zostať zastaraný koncept.",
+    "use_oracle_relay": "Send via Oracle Relay"
   },
   "confirm_dialog": {
     "confirm": "Potvrdiť",

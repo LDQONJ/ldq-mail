@@ -288,7 +288,7 @@ export interface IJMAPClient {
     // requestDsn / requireTls map to RFC 3461 / RFC 8689 envelope parameters
     // and need the matching `submissionExtensions` entry (see
     // supportsSubmissionExtension).
-    options?: { requestReadReceipt?: boolean; requestDsn?: boolean; requireTls?: boolean },
+    options?: { requestReadReceipt?: boolean; requestDsn?: boolean; requireTls?: boolean; useOracleRelay?: boolean },
   ): Promise<SendEmailResult>;
   /** Whether the submission account advertises an SMTP extension ("DSN", "REQUIRETLS", …). */
   supportsSubmissionExtension?(extension: string, accountId?: string): boolean;

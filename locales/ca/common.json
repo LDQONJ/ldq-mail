@@ -741,7 +741,8 @@
       "background_color": "Color de fons",
       "remove_background_color": "Elimina el color de fons"
     },
-    "send_filing_warning": "Enviat, però la neteja posterior a l'enviament ha fallat; és possible que quedi un esborrany obsolet."
+    "send_filing_warning": "Enviat, però la neteja posterior a l'enviament ha fallat; és possible que quedi un esborrany obsolet.",
+    "use_oracle_relay": "Send via Oracle Relay"
   },
   "confirm_dialog": {
     "confirm": "Confirma",

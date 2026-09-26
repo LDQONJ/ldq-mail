@@ -741,7 +741,8 @@
       "background_color": "Bakgrunnsfarge",
       "remove_background_color": "Fjern bakgrunnsfarge"
     },
-    "send_filing_warning": "Meldingen ble sendt, men oppryddingen etterpå mislyktes. Et gammelt utkast kan bli liggende."
+    "send_filing_warning": "Meldingen ble sendt, men oppryddingen etterpå mislyktes. Et gammelt utkast kan bli liggende.",
+    "use_oracle_relay": "Send via Oracle Relay"
   },
   "confirm_dialog": {
     "confirm": "Bekreft",

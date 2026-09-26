@@ -741,7 +741,8 @@
       "background_color": "Цвет фона",
       "remove_background_color": "Убрать цвет фона"
     },
-    "send_filing_warning": "Отправлено - но последующая очистка не удалась, может остаться устаревший черновик."
+    "send_filing_warning": "Отправлено - но последующая очистка не удалась, может остаться устаревший черновик.",
+    "use_oracle_relay": "Send via Oracle Relay"
   },
   "confirm_dialog": {
     "confirm": "Подтвердить",
