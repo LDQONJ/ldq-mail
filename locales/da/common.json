@@ -646,7 +646,8 @@
       "name_label": "Fra-navn",
       "name_placeholder": "Navn",
       "email_label": "Fra-e-mailadresse",
-      "email_placeholder": "alias@eksempel.dk"
+      "email_placeholder": "alias@eksempel.dk",
+      "envelope_notice": "Hvis din server ikke accepterer denne adresse som konvolutafsender, bruges {identity} i stedet, og modtagerne kan se den i Return-Path-headeren."
     },
     "use_template": "Skabelon",
     "save_as_template": "Gem som skabelon",
@@ -659,6 +660,8 @@
     "upload_progress": "Uploader {uploaded} / {total}",
     "upload_cancel": "Annuller upload",
     "upload_failed": "Kunne ikke uploade {filename}",
+    "attachment_too_large": "\"{name}\" er større, end serveren tillader ({max} pr. fil)",
+    "attachments_total_too_large": "Vedhæftningerne ville overskride serverens grænse på {max} pr. besked",
     "drop_files": "Træk filer hertil for at vedhæfte",
     "show_less": "Vis mindre",
     "send_failed": "Kunne ikke sende e-mail",
@@ -779,6 +782,10 @@
     "email_sent": "E-mail sendt succesfuldt",
     "email_deleted": "E-mail slettet",
     "email_archived": "E-mail arkiveret",
+    "emails_deleted": "{count, plural, one {# e-mail slettet} other {# e-mails slettet}}",
+    "emails_archived": "{count, plural, one {# e-mail arkiveret} other {# e-mails arkiveret}}",
+    "error_archiving": "Kunne ikke arkivere e-mail",
+    "error_updating": "Kunne ikke opdatere e-mail",
     "email_starred": "E-mail stjernemarkeret",
     "email_unstarred": "Stjernemarkering fjernet",
     "email_marked_read": "E-mail markeret som læst",
@@ -1158,6 +1165,7 @@
         "status_active": "Aktiv på denne enhed",
         "status_inactive": "Ikke aktiveret på denne enhed",
         "status_unsupported": "Denne browser understøtter ikke Web Push",
+        "status_lite": "Web Push is not available in Bulwark Lite; it needs the Bulwark server.",
         "status_busy": "Arbejder…",
         "enable": "Aktivér",
         "reenable": "Genregistrér",
@@ -1195,7 +1203,9 @@
         "enabled": "E-mail-notifikationer",
         "enabled_desc": "Vis notifikationer, når nye e-mails ankommer",
         "sound": "Notifikationslyd",
-        "sound_desc": "Afspil en lydadvarsel, når nye e-mails ankommer"
+        "sound_desc": "Afspil en lydadvarsel, når nye e-mails ankommer",
+        "inbox_only": "Inbox only",
+        "inbox_only_desc": "Only notify for mail that lands in the Inbox; skip mail a filter files into another folder"
       },
       "calendar": {
         "title": "Kalendernotifikationer",
@@ -1773,7 +1783,9 @@
       "warnings": {
         "end_before_start": "Slutdato skal være efter startdato",
         "start_in_past": "Startdato er tidligere end i dag",
-        "empty_body": "Beskedteksten er tom - modtagere vil modtage et tomt svar"
+        "empty_body": "Beskedteksten er tom - modtagere vil modtage et tomt svar",
+        "subject_too_long": "Emnet er for langt til serveren (højst {max} byte).",
+        "body_too_long": "Beskeden er for lang til serveren (højst {max} byte inkl. formatering)."
       }
     },
     "folders": {
@@ -1994,6 +2006,7 @@
       "actions": "Handlinger",
       "add_action": "Tilføj handling",
       "stop_processing": "Stop behandling af efterfølgende regler",
+      "include_spam": "Flyt også beskeder, der er markeret som spam",
       "attachment_type_placeholder": "f.eks. pdf, doc, jpg",
       "value_placeholder_multi": "Værdi (flere adskilt med komma)",
       "condition_fields": {
@@ -2035,6 +2048,8 @@
       "copy_to_folder": "Vælg mappe",
       "forward_to": "Videresend til e-mailadresse",
       "forward_placeholder": "email@eksempel.dk",
+      "forward_keep_copy": "Behold en kopi",
+      "forward_limit": "Grænse for videresendelser pr. besked på denne server: {count}. Yderligere videresendelser springes over.",
       "reject_message": "Afvisningsbesked",
       "reject_placeholder": "Din e-mail er blevet afvist",
       "label_name": "Tag-navn",
@@ -2915,7 +2930,10 @@
       "all_events": "Alle begivenheder",
       "cancel": "Annuller",
       "save": "Gem",
-      "delete": "Slet"
+      "delete": "Slet",
+      "rsvp_title": "Svar på tilbagevendende begivenhed",
+      "rsvp_description": "Dette er en tilbagevendende begivenhed. Hvilke begivenheder gælder dit svar for?",
+      "respond": "Svar"
     },
     "alerts": {
       "title": "Påmindelse",
@@ -3026,6 +3044,9 @@
       "alert_now": "Starter nu",
       "alert_in_minutes": "Om {count} min",
       "invitation_sent": "Invitationer sendt",
+      "invitations_denied_title": "Invitationerne kan ikke sendes",
+      "invitations_denied": "Serveren afviste at sende invitationerne: {reason}. Gem begivenheden uden at sende dem?",
+      "save_without_invitations": "Gem uden invitationer",
       "rsvp_updated": "Svar opdateret",
       "rsvp_error": "Kunne ikke opdatere svar",
       "event_duplicated": "Begivenhed duplikeret",
@@ -3318,6 +3339,8 @@
     "rename": "Omdøb",
     "rename_title": "Omdøb",
     "new_name": "Nyt navn",
+    "name_forbidden_chars": "Serveren tillader ikke disse tegn i navne: {chars}",
+    "name_reserved": "Dette navn er reserveret på serveren.",
     "delete": "Slet",
     "delete_confirm_title": "Slet ressource",
     "delete_confirm_message": "Er du sikker på, at du vil slette \"{name}\"? Dette kan ikke fortrydes.",

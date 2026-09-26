@@ -647,7 +647,8 @@
       "name_label": "Feladó neve",
       "name_placeholder": "Név",
       "email_label": "Feladó e-mail címe",
-      "email_placeholder": "alias@example.com"
+      "email_placeholder": "alias@example.com",
+      "envelope_notice": "Ha a szervered nem fogadja el ezt a címet borítékfeladóként, helyette a(z) {identity} cím kerül oda, és a címzettek láthatják a Return-Path fejlécben."
     },
     "use_template": "Sablon",
     "save_as_template": "Mentés sablonként",
@@ -660,6 +661,8 @@
     "upload_progress": "Feltöltés {uploaded} / {total}",
     "upload_cancel": "Feltöltés megszakítása",
     "upload_failed": "Nem sikerült feltölteni: {filename}",
+    "attachment_too_large": "A(z) „{name}” nagyobb, mint amit a kiszolgáló enged (fájlonként {max})",
+    "attachments_total_too_large": "A mellékletek túllépnék a kiszolgáló üzenetenkénti {max} korlátját",
     "drop_files": "Fájlok ejtése a csatoláshoz",
     "show_less": "Kevesebb mutatása",
     "send_failed": "Nem sikerült elküldeni az e-mailt",
@@ -779,6 +782,10 @@
     "email_sent": "E-mail sikeresen elküldve",
     "email_deleted": "E-mail törölve",
     "email_archived": "E-mail archiválva",
+    "emails_deleted": "{count, plural, other {# e-mail törölve}}",
+    "emails_archived": "{count, plural, other {# e-mail archiválva}}",
+    "error_archiving": "Nem sikerült archiválni az e-mailt",
+    "error_updating": "Nem sikerült frissíteni az e-mailt",
     "email_starred": "E-mail csillagozva",
     "email_unstarred": "E-mail csillagozás megszüntetve",
     "email_marked_read": "E-mail olvasottnak jelölve",
@@ -1158,6 +1165,7 @@
         "status_active": "Aktív ezen az eszközön",
         "status_inactive": "Nincs engedélyezve ezen az eszközön",
         "status_unsupported": "Ez a böngésző nem támogatja a Web Push-t",
+        "status_lite": "Web Push is not available in Bulwark Lite; it needs the Bulwark server.",
         "status_busy": "Munka...",
         "enable": "Engedélyezés",
         "reenable": "Újraregisztráció",
@@ -1195,7 +1203,9 @@
         "enabled": "E-mail értesítések",
         "enabled_desc": "Értesítések megjelenítése új e-mailek érkezésekor",
         "sound": "Értesítési hang",
-        "sound_desc": "Hangjelzés lejátszása új e-mailek érkezésekor"
+        "sound_desc": "Hangjelzés lejátszása új e-mailek érkezésekor",
+        "inbox_only": "Inbox only",
+        "inbox_only_desc": "Only notify for mail that lands in the Inbox; skip mail a filter files into another folder"
       },
       "calendar": {
         "title": "Naptár értesítések",
@@ -1773,7 +1783,9 @@
       "warnings": {
         "end_before_start": "A befejező dátumnak a kezdő dátum után kell lennie",
         "start_in_past": "A kezdő dátum a múltban van",
-        "empty_body": "Az üzenet szövege üres - a címzettek üres választ kapnak"
+        "empty_body": "Az üzenet szövege üres - a címzettek üres választ kapnak",
+        "subject_too_long": "A tárgy túl hosszú a kiszolgálónak (legfeljebb {max} bájt).",
+        "body_too_long": "Az üzenet túl hosszú a kiszolgálónak (legfeljebb {max} bájt a formázással együtt)."
       }
     },
     "folders": {
@@ -1994,6 +2006,7 @@
       "actions": "Műveletek",
       "add_action": "Művelet hozzáadása",
       "stop_processing": "További szabályok feldolgozásának leállítása",
+      "include_spam": "A levélszemétnek jelölt üzenetek áthelyezése is",
       "attachment_type_placeholder": "pl. pdf, doc, jpg",
       "value_placeholder_multi": "Érték (több érték vesszővel elválasztva)",
       "condition_fields": {
@@ -2035,6 +2048,8 @@
       "copy_to_folder": "Mappa kiválasztása",
       "forward_to": "Továbbítás e-mail címre",
       "forward_placeholder": "email@example.com",
+      "forward_keep_copy": "Másolat megtartása",
+      "forward_limit": "Továbbítási korlát üzenetenként ezen a kiszolgálón: {count}. A további továbbítások kimaradnak.",
       "reject_message": "Elutasító üzenet",
       "reject_placeholder": "Az e-mailed elutasításra került",
       "label_name": "Címke neve",
@@ -2915,7 +2930,10 @@
       "all_events": "Minden esemény",
       "cancel": "Mégse",
       "save": "Mentés",
-      "delete": "Törlés"
+      "delete": "Törlés",
+      "rsvp_title": "Válasz ismétlődő eseményre",
+      "rsvp_description": "Ez egy ismétlődő esemény. Mely eseményekre vonatkozzon a válaszod?",
+      "respond": "Válasz"
     },
     "alerts": {
       "title": "Emlékeztetők",
@@ -3026,6 +3044,9 @@
       "alert_now": "Most kezdődik",
       "alert_in_minutes": "{count} perc múlva",
       "invitation_sent": "Meghívók elküldve",
+      "invitations_denied_title": "A meghívók nem küldhetők el",
+      "invitations_denied": "A kiszolgáló nem küldte el a meghívókat: {reason}. Mentsük az eseményt a meghívók nélkül?",
+      "save_without_invitations": "Mentés meghívók nélkül",
       "rsvp_updated": "Válasz frissítve",
       "rsvp_error": "Nem sikerült frissíteni a választ",
       "event_duplicated": "Esemény duplikálva",
@@ -3318,6 +3339,8 @@
     "rename": "Átnevezés",
     "rename_title": "Átnevezés",
     "new_name": "Új név",
+    "name_forbidden_chars": "A kiszolgáló nem engedi ezeket a karaktereket a nevekben: {chars}",
+    "name_reserved": "Ez a név a kiszolgálón foglalt.",
     "delete": "Törlés",
     "delete_confirm_title": "Erőforrás törlése",
     "delete_confirm_message": "Biztosan törölni szeretnéd a \"{name}\" elemet? Ez nem vonható vissza.",

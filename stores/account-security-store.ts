@@ -87,11 +87,12 @@ interface AccountSecurityState {
   fetchPublicKeys: () => Promise<void>;
   fetchAll: () => Promise<void>;
 
-  changePassword: (currentPassword: string, newPassword: string) => Promise<void>;
+  /** `otpCode` is required once TOTP is on. */
+  changePassword: (currentPassword: string, newPassword: string, otpCode?: string) => Promise<void>;
   updateDisplayName: (displayName: string) => Promise<void>;
 
   enableTotp: (currentPassword: string, otpUrl: string, otpCode: string) => Promise<void>;
-  disableTotp: (currentPassword: string) => Promise<void>;
+  disableTotp: (currentPassword: string, otpCode?: string) => Promise<void>;
 
   createAppPassword: (input: AppCredentialInput) => Promise<{ id: string; secret: string }>;
   removeAppPassword: (id: string) => Promise<void>;
@@ -255,6 +256,16 @@ async function removeCredential(
  * throw for these. Inspect the response and surface the server's message so the
  * UI doesn't report a failed change as successful.
  */
+/**
+ * With TOTP on, Stalwart wants the current code for any password or OTP
+ * change. Patch only `otpAuth/otpCode`: sending a whole `otpAuth` object
+ * would reset `otpUrl` and switch TOTP off.
+ */
+function otpCodePatch(otpCode: string | undefined): Record<string, string> {
+  const code = otpCode?.trim();
+  return code ? { 'otpAuth/otpCode': code } : {};
+}
+
 function requireAccountPasswordUpdate(responses: JmapMethodResponse[], fallbackError: string): void {
   const result = requireResult<{
     updated?: Record<string, unknown>;
@@ -477,10 +488,32 @@ export const useAccountSecurityStore = create<AccountSecurityState>()((set, get)
   fetchPrincipal: async () => {
     set({ isLoadingPrincipal: true, error: null });
     try {
+      // Without the passthrough (operator switched it off, or the static Lite
+      // build) the principal cannot be read at all; skip the round trip and
+      // leave the aliases unknown, as for a non-Stalwart server. (#904)
+      if (!(await isStalwartJmapPassthroughEnabled())) {
+        set({ isLoadingPrincipal: false });
+        return;
+      }
       const accountId = getPrimaryAccountId();
+      // The name comes from x:AccountSettings, which every user can read.
+      // x:Account/get (aliases, quota, roles) is admin-only; its "forbidden"
+      // arrives as the second response and leaves those fields unknown.
       const responses = await stalwartJmap([
+        ['x:AccountSettings/get', { accountId, ids: ['singleton'] }, 's'],
         ['x:Account/get', { accountId, ids: [accountId] }, '0'],
       ]);
+      const settings = requireResult<{ list?: Array<{ description?: string | null }> }>(
+        responses, 'x:AccountSettings/get',
+      ).list?.[0];
+      set({ displayName: settings?.description ?? '' });
+      const accountError = responses.find((r) => r[0] === 'error' && r[2] === '0')?.[1] as
+        { type?: string; description?: string } | undefined;
+      if (accountError) {
+        debug.log('Principal not readable for this account, aliases unavailable:', accountError.type);
+        set({ isLoadingPrincipal: false });
+        return;
+      }
       const result = requireResult<{
         list: Array<{
           description?: string | null;
@@ -499,7 +532,6 @@ export const useAccountSecurityStore = create<AccountSecurityState>()((set, get)
         : [];
       const primaryEmail = acc?.name ? [acc.name] : [];
       set({
-        displayName: acc?.description ?? '',
         emails: [...primaryEmail, ...aliasAddresses],
         quota: acc?.quotas?.maxDiskQuota ?? 0,
         roles: acc?.roles?.['@type'] ? [acc.roles['@type']] : [],
@@ -544,7 +576,7 @@ export const useAccountSecurityStore = create<AccountSecurityState>()((set, get)
     await Promise.allSettled([fetchAuthInfo(), fetchCryptoInfo(), fetchPrincipal(), fetchPublicKeys()]);
   },
 
-  changePassword: async (currentPassword, newPassword) => {
+  changePassword: async (currentPassword, newPassword, otpCode) => {
     set({ isSaving: true, error: null });
     try {
       const accountId = getPrimaryAccountId();
@@ -553,12 +585,25 @@ export const useAccountSecurityStore = create<AccountSecurityState>()((set, get)
           'x:AccountPassword/set',
           {
             accountId,
-            update: { singleton: { currentSecret: currentPassword, secret: newPassword } },
+            update: {
+              singleton: {
+                currentSecret: currentPassword,
+                secret: newPassword,
+                ...otpCodePatch(otpCode),
+              },
+            },
           },
           '0',
         ],
       ]);
       requireAccountPasswordUpdate(responses, 'Failed to change password');
+      // The session still authenticates with the old password; switch it over
+      // so the next request does not bounce the user to the login page.
+      try {
+        await useAuthStore.getState().updateBasicPassword(newPassword);
+      } catch (error) {
+        debug.warn('auth', 'Password changed, but the session could not switch to it:', error);
+      }
       set({ isSaving: false });
     } catch (error) {
       set({
@@ -573,13 +618,17 @@ export const useAccountSecurityStore = create<AccountSecurityState>()((set, get)
     set({ isSaving: true, error: null });
     try {
       const accountId = getPrimaryAccountId();
-      await stalwartJmap([
+      const responses = await stalwartJmap([
         [
           'x:AccountSettings/set',
           { accountId, update: { singleton: { description: displayName } } },
           '0',
         ],
       ]);
+      const failed = requireResult<{ notUpdated?: Record<string, { type?: string; description?: string }> }>(
+        responses, 'x:AccountSettings/set',
+      ).notUpdated?.singleton;
+      if (failed) throw new Error(failed.description || failed.type || 'Failed to update display name');
       set({ displayName, isSaving: false });
 
       // 1. Immediately update account store so the sidebar avatar, switcher, and account settings update live
@@ -648,7 +697,7 @@ export const useAccountSecurityStore = create<AccountSecurityState>()((set, get)
     }
   },
 
-  disableTotp: async (currentPassword) => {
+  disableTotp: async (currentPassword, otpCode) => {
     set({ isSaving: true, error: null });
     try {
       const accountId = getPrimaryAccountId();
@@ -660,7 +709,7 @@ export const useAccountSecurityStore = create<AccountSecurityState>()((set, get)
             update: {
               singleton: {
                 currentSecret: currentPassword,
-                otpAuth: { otpUrl: null },
+                otpAuth: { otpUrl: null, ...(otpCode?.trim() ? { otpCode: otpCode.trim() } : {}) },
               },
             },
           },

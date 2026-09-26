@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useRef, useMemo, useCallback, useId } from "react";
+import { useEffect, useLayoutEffect, useState, useRef, useMemo, useCallback, useId } from "react";
 import { usePathname } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { Sidebar } from "@/components/layout/sidebar";
@@ -32,7 +32,9 @@ import type { UnifiedAccountClient } from "@/lib/unified-mailbox";
 import { connectedAccountsGrew } from "@/lib/unified-mailbox";
 import { KeyboardShortcutsModal } from "@/components/keyboard-shortcuts-modal";
 import { useEmailStore, buildUnifiedAccountClients, ArchiveMailboxNotFoundError, findArchiveMailbox, resolveUnstampedEmailAccountId } from "@/stores/email-store";
+import { groupSearchScopeFolders } from "@/lib/search-scope-folders";
 import { toast } from "@/stores/toast-store";
+import { runBatchEmailAction } from "@/lib/email-action-toast";
 import { MailboxShareDialog } from "@/components/layout/mailbox-share-dialog";
 import { ShareNotificationToaster } from "@/components/layout/share-notification-toaster";
 import { CalendarEventNotificationToaster } from "@/components/layout/calendar-event-notification-toaster";
@@ -51,9 +53,9 @@ import { usePromptDialog } from "@/hooks/use-prompt-dialog";
 import { useBrowserNavigation, type NavSnapshot } from "@/hooks/use-browser-navigation";
 import { debug } from "@/lib/debug";
 import { playNotificationSound } from "@/lib/notification-sound";
-import { cn } from "@/lib/utils";
+import { cn, getMailboxPath } from "@/lib/utils";
 import { localizeMailboxName } from "@/lib/mailbox-label";
-import { KEYWORD_PREFIX, KEYWORD_PREFIX_LEGACY, groupEmailsByThread } from "@/lib/thread-utils";
+import { KEYWORD_PREFIX, KEYWORD_PREFIX_LEGACY, groupEmailsByThread, threadKeyFor } from "@/lib/thread-utils";
 import { resolveThreadRoute } from "@/lib/thread-routing";
 import {
   ErrorBoundary,
@@ -70,6 +72,7 @@ import { isFilterEmpty, activeFilterCount } from "@/lib/jmap/search-utils";
 import { SearchBox, type ContactSearchField } from "@/components/search/search-box";
 import type { ContactSuggestion } from "@/lib/search-suggestions";
 import type { Attachment } from "@/lib/jmap/types";
+import { requestListAttachments, type ListAttachmentSource, type LoadListAttachments } from "@/lib/list-attachments";
 import { useSearchHistoryStore } from "@/stores/search-history-store";
 import { WelcomeBanner } from "@/components/ui/welcome-banner";
 import { NavigationRail } from "@/components/layout/navigation-rail";
@@ -82,6 +85,8 @@ import { useProTabStore } from "@/stores/pro-tab-store";
 import { useProMultiAccountMailboxes } from "@/hooks/use-pro-multi-account-mailboxes";
 import { Input } from "@/components/ui/input";
 import { FilePreviewModal } from "@/components/files/file-preview-modal";
+import { WopiEditor } from "@/components/files/wopi-editor";
+import { useWopiStatus, canWopiOpen } from "@/hooks/use-wopi-status";
 import { isFilePreviewable } from "@/lib/file-preview";
 import { appendHtmlSignature, appendPlainTextSignature } from "@/lib/signature-utils";
 import { computeReplyThreadingHeaders } from "@/lib/email-threading";
@@ -89,7 +94,7 @@ import { EML_IMPORT_ACCEPT, expandImportableEmails } from "@/lib/eml-import";
 import { findDraftIdentityId, findReplyIdentityId, resolveComposeAccountEmail } from "@/lib/reply-identity";
 import { buildReplyRecipients, isSelfSent } from "@/lib/reply-recipients";
 import { useProMultiAccountIdentities } from "@/hooks/use-pro-multi-account-identities";
-import { Filter, ChevronDown, X, Paperclip, Star, Mail, MailOpen, RotateCcw, PenSquare, PenLine, CheckSquare, Square, AlertTriangle, ArrowLeft } from "lucide-react";
+import { Filter, ChevronDown, X, Paperclip, Star, Mail, MailOpen, RotateCcw, PenSquare, PenLine, CheckSquare, Square, AlertTriangle, ArrowLeft } from "@/components/icons";
 import { ResizeHandle } from "@/components/layout/resize-handle";
 import { Button } from "@/components/ui/button";
 import { useConfig } from "@/hooks/use-config";
@@ -117,6 +122,7 @@ import {
 import { consumePendingDeepLink, subscribePendingDeepLink } from "@/lib/deep-link-handoff";
 import { useProInterfaceActive } from "@/components/pro/pro-interface-redirect";
 import type { QuoteHeader } from "@/lib/plugin-types";
+import { useLiteLinkSegments } from "@/hooks/use-lite-link-segments";
 
 export interface MailAppProps {
   /**
@@ -126,7 +132,9 @@ export interface MailAppProps {
   linkSegments?: string[];
 }
 
-export function MailApp({ linkSegments }: MailAppProps = {}) {
+export function MailApp({ linkSegments: routeSegments }: MailAppProps = {}) {
+  // Static Lite build: the route params are empty, read the link from the URL.
+  const linkSegments = useLiteLinkSegments('mail', routeSegments);
   const t = useTranslations();
   const tCommon = useTranslations('common');
   const tQuote = useTranslations('quote_header');
@@ -163,6 +171,9 @@ export function MailApp({ linkSegments }: MailAppProps = {}) {
   const [isLoadingConversation, setIsLoadingConversation] = useState(false);
   const [rateLimitSecondsLeft, setRateLimitSecondsLeft] = useState<number | null>(null);
   const [previewAttachment, setPreviewAttachment] = useState<{ blobId: string; name: string; type?: string; accountId?: string; clientAccountId?: string } | null>(null);
+  // Office attachments open read-only in the configured WOPI editor (#1047).
+  const [officeAttachment, setOfficeAttachment] = useState<{ blobId: string; name: string; type?: string; size?: number; accountId: string; slot: number | null } | null>(null);
+  const wopiStatus = useWopiStatus(true);
   const [pendingMailtoAccountChoice, setPendingMailtoAccountChoice] = useState<ParsedMailto | null>(null);
   const [isProtocolAccountSwitching, setIsProtocolAccountSwitching] = useState(false);
   const markAsReadTimeoutRef = useRef<NodeJS.Timeout | null>(null);
@@ -422,6 +433,11 @@ export function MailApp({ linkSegments }: MailAppProps = {}) {
     () => (viewingAccountId ? (accountMailboxes[viewingAccountId] ?? mailboxes) : mailboxes),
     [viewingAccountId, accountMailboxes, mailboxes],
   );
+
+  // Search panel's Folder dropdown: own folders flat, shared/group folders
+  // under their owner account so a group's "Inbox" is not mistaken for the
+  // user's own (#1082).
+  const searchScopeFolders = useMemo(() => groupSearchScopeFolders(mailboxes), [mailboxes]);
 
   // Load recent recipients (from the Sent folder) for compose autocomplete.
   // Runs once when the Sent mailbox is known; the store guards against reloads.
@@ -701,15 +717,14 @@ export function MailApp({ linkSegments }: MailAppProps = {}) {
     onArchive: async () => {
       if (isScheduledView) return;
       if (selectedEmailIds.size > 0 && client) {
-        try {
-          await batchArchive(client);
-        } catch (error) {
-          console.error("Failed to batch archive:", error);
-          if (error instanceof ArchiveMailboxNotFoundError) {
-            const { toast } = await import('sonner');
-            toast.error(t('email_viewer.archive_mailbox_not_found'));
-          }
-        }
+        const count = selectedEmailIds.size;
+        await runBatchEmailAction(() => batchArchive(client), {
+          success: t('notifications.emails_archived', { count }),
+          error: t('notifications.error_archiving'),
+          describeError: (error) => error instanceof ArchiveMailboxNotFoundError
+            ? t('email_viewer.archive_mailbox_not_found')
+            : undefined,
+        });
       } else if (selectedEmail) {
         handleArchive();
       }
@@ -735,11 +750,11 @@ export function MailApp({ linkSegments }: MailAppProps = {}) {
           variant: "destructive",
         });
         if (!confirmed) return;
-        try {
-          await batchDelete(client, permanent);
-        } catch (error) {
-          console.error("Failed to batch delete:", error);
-        }
+        const count = selectedEmailIds.size;
+        await runBatchEmailAction(() => batchDelete(client, permanent), {
+          success: t('notifications.emails_deleted', { count }),
+          error: t('notifications.error_deleting'),
+        });
       } else if (selectedEmail) {
         handleDelete();
       }
@@ -775,11 +790,14 @@ export function MailApp({ linkSegments }: MailAppProps = {}) {
         try {
           if (isInJunk) {
             await batchUndoSpam(client, ids);
+            toast.success(t('email_viewer.spam.toast_not_spam_batch', { count: ids.length }));
           } else {
             await batchMarkAsSpam(client, ids);
+            toast.success(t('email_viewer.spam.toast_batch', { count: ids.length }));
           }
         } catch (error) {
           console.error("Failed to batch toggle spam:", error);
+          toast.error(t(isInJunk ? 'email_viewer.spam.error_not_spam' : 'email_viewer.spam.error'));
         }
       } else if (selectedEmail) {
         if (isInJunk) {
@@ -827,14 +845,14 @@ export function MailApp({ linkSegments }: MailAppProps = {}) {
     // thread's messages and marks them read, collapsing only toggles. (#683)
     onToggleThreadExpansion: () => {
       if (isScheduledView || !client) return;
-      const threadId = selectedEmail?.threadId;
-      if (!threadId) return;
+      if (!selectedEmail?.threadId) return;
+      const threadKey = threadKeyFor(selectedEmail);
       const store = useEmailStore.getState();
-      const wasExpanded = store.expandedThreadIds.has(threadId);
-      store.toggleThreadExpansion(threadId);
+      const wasExpanded = store.expandedThreadIds.has(threadKey);
+      store.toggleThreadExpansion(threadKey);
       if (!wasExpanded) {
-        void store.fetchThreadEmails(client, threadId).then(() => {
-          void useEmailStore.getState().markThreadAsRead(client, threadId);
+        void store.fetchThreadEmails(client, threadKey).then(() => {
+          void useEmailStore.getState().markThreadAsRead(client, threadKey);
         });
       }
     },
@@ -1711,8 +1729,7 @@ export function MailApp({ linkSegments }: MailAppProps = {}) {
         // removing the old draft) was rejected - warn instead of staying
         // silent, so a stale draft row is not mistaken for a failed send
         // and re-sent (#592).
-        const toastInstance = (await import('sonner')).toast;
-        toastInstance.warning(t('email_composer.send_filing_warning'));
+        toast.warning(t('email_composer.send_filing_warning'));
       }
       // Mark the original email with $answered or $forwarded keyword. Route the
       // write to the email's own account so the flag lands on shared/group-mailbox
@@ -1735,6 +1752,9 @@ export function MailApp({ linkSegments }: MailAppProps = {}) {
         return;
       }
 
+      // Delayed sends get the undo toast instead; a filing error already warned.
+      if (!result.filingError) toast.success(t('notifications.email_sent'));
+
       // Refresh the current mailbox to update the UI
       if (!isScheduledView) {
         await refreshCurrentMailbox(client);
@@ -1743,7 +1763,7 @@ export function MailApp({ linkSegments }: MailAppProps = {}) {
         if (originalEmailId) {
           const emailState = useEmailStore.getState();
           const repliedEmail = emailState.emails.find(e => e.id === originalEmailId);
-          if (repliedEmail?.threadId && emailState.expandedThreadIds.has(repliedEmail.threadId)) {
+          if (repliedEmail?.threadId && emailState.expandedThreadIds.has(threadKeyFor(repliedEmail))) {
             // Route to the email's own account so shared/group threads refresh
             // from the right server, not the active one. (#281, #814)
             const route = resolveThreadRoute({
@@ -1762,7 +1782,7 @@ export function MailApp({ linkSegments }: MailAppProps = {}) {
             if (fullEmails.length > 0) {
               useEmailStore.setState((state) => {
                 const c = new Map(state.threadEmailsCache);
-                c.set(repliedEmail.threadId!, fullEmails);
+                c.set(threadKeyFor(repliedEmail), fullEmails);
                 return { threadEmailsCache: c };
               });
             }
@@ -2173,8 +2193,10 @@ export function MailApp({ linkSegments }: MailAppProps = {}) {
 
       try {
         await deleteEmail(client, emailToDelete.id, true);
+        toast.success(t('notifications.email_deleted'));
       } catch (error) {
         console.error("Failed to permanently delete email:", error);
+        toast.error(t('notifications.error_deleting'), error instanceof Error ? error.message : undefined);
       }
     } else {
       // Not in trash: always move to trash (in the email's own account). Scope
@@ -2194,13 +2216,12 @@ export function MailApp({ linkSegments }: MailAppProps = {}) {
       if (trashMailbox) {
         try {
           await moveToMailbox(client, emailToDelete.id, trashMailbox.id);
+          toast.success(t('notifications.email_deleted'));
         } catch (error) {
           console.error("Failed to move email to trash:", error);
-          const { toast } = await import('sonner');
           toast.error(error instanceof Error ? error.message : 'Failed to move email to trash');
         }
       } else {
-        const { toast } = await import('sonner');
         toast.error('Trash mailbox not found - cannot move email to trash');
       }
     }
@@ -2238,7 +2259,6 @@ export function MailApp({ linkSegments }: MailAppProps = {}) {
     // the selected shared folder's owner, otherwise the user's own archive. (#889)
     const archiveMailbox = findArchiveMailbox(currentMailboxes, selectedMailbox, archiveAccountId);
     if (!archiveMailbox) {
-      const { toast } = await import('sonner');
       toast.error(t('email_viewer.archive_mailbox_not_found'));
       return;
     }
@@ -2278,16 +2298,35 @@ export function MailApp({ linkSegments }: MailAppProps = {}) {
         }
       }
 
-      if (conversationThread?.threadId === emailToArchive.threadId) {
+      if (conversationThread && conversationThread.threadKey === threadKeyFor(emailToArchive)) {
         setConversationThread(null);
         setConversationEmails([]);
       }
 
+      toast.success(t('notifications.email_archived'));
       void refreshMailboxes();
     } catch (error) {
       console.error("Failed to archive email:", error);
-      const { toast } = await import('sonner');
-      toast.error(error instanceof Error ? error.message : 'Failed to archive email');
+      toast.error(t('notifications.error_archiving'), error instanceof Error ? error.message : undefined);
+    }
+  };
+
+  const handleMoveToMailbox = async (emailId: string, mailboxId: string) => {
+    if (!client) return;
+    const destinationList = [mailboxes, ...Object.values(accountMailboxes)]
+      .find(list => list.some(m => m.id === mailboxId));
+    const destination = destinationList?.find(m => m.id === mailboxId);
+    try {
+      await moveToMailboxCrossAware(client, emailId, mailboxId);
+      toast.success(
+        t('notifications.email_moved'),
+        destination && destinationList
+          ? t('notifications.moved_to_mailbox', { mailbox: getMailboxPath(destination, destinationList) })
+          : undefined,
+      );
+    } catch (error) {
+      console.error("Failed to move email:", error);
+      toast.error(t('notifications.move_failed'), t('notifications.move_error'));
     }
   };
 
@@ -2298,6 +2337,7 @@ export function MailApp({ linkSegments }: MailAppProps = {}) {
       await toggleStar(client, selectedEmail.id);
     } catch (error) {
       console.error("Failed to toggle star:", error);
+      toast.error(t('notifications.error_updating'));
     }
   };
 
@@ -2309,17 +2349,16 @@ export function MailApp({ linkSegments }: MailAppProps = {}) {
     try {
       await markAsSpam(client, emailId);
 
-      const toastInstance = (await import('sonner')).toast;
-      toastInstance.success(t('email_viewer.spam.toast_success'), {
+      toast.success(t('email_viewer.spam.toast_success'), {
         action: {
           label: t('email_viewer.spam.toast_undo'),
           onClick: async () => {
             try {
               await undoSpam(client, emailId);
-              toastInstance.success(t('notifications.email_moved'));
+              toast.success(t('notifications.email_moved'));
             } catch (_error) {
               console.error("Failed to undo spam:", _error);
-              toastInstance.error(t('email_viewer.spam.error'));
+              toast.error(t('email_viewer.spam.error'));
             }
           },
         },
@@ -2327,8 +2366,7 @@ export function MailApp({ linkSegments }: MailAppProps = {}) {
       });
     } catch (_error) {
       console.error("Failed to mark as spam:", _error);
-      const toastInstance = (await import('sonner')).toast;
-      toastInstance.error(t('email_viewer.spam.error'));
+      toast.error(t('email_viewer.spam.error'));
     }
   };
 
@@ -2338,12 +2376,10 @@ export function MailApp({ linkSegments }: MailAppProps = {}) {
     try {
       await undoSpam(client, emailToRestore.id);
 
-      const toastInstance = (await import('sonner')).toast;
-      toastInstance.success(t('email_viewer.spam.toast_not_spam_success'));
+      toast.success(t('email_viewer.spam.toast_not_spam_success'));
     } catch (_error) {
       console.error("Failed to restore email:", _error);
-      const toastInstance = (await import('sonner')).toast;
-      toastInstance.error(t('email_viewer.spam.error_not_spam'));
+      toast.error(t('email_viewer.spam.error_not_spam'));
     }
   };
 
@@ -2374,6 +2410,7 @@ export function MailApp({ linkSegments }: MailAppProps = {}) {
       }
     } catch (error) {
       console.error("Failed to toggle pin:", error);
+      toast.error(t('notifications.error_updating'));
     }
   };
 
@@ -3005,6 +3042,24 @@ export function MailApp({ linkSegments }: MailAppProps = {}) {
     return { blobClient, accountId, clientAccountId };
   }, [isUnifiedView, client]);
 
+  // Opens an attachment the built-in preview cannot render but the office
+  // editor can (docx, odt, xlsx, ...). The launch route runs server-side with
+  // one login's cookie, so it needs that login's slot and an explicit
+  // accountId (the client's default one when the message is not delegated).
+  const openOfficeAttachment = useCallback((
+    blobClient: NonNullable<typeof client>,
+    attachment: { blobId: string; name: string; type?: string; size?: number },
+    accountId: string | undefined,
+    clientAccountId: string | undefined,
+  ): boolean => {
+    if (isFilePreviewable(attachment.name, attachment.type) || !canWopiOpen(wopiStatus, attachment.name)) return false;
+    const slot = clientAccountId
+      ? (useAccountStore.getState().getAccountById(clientAccountId)?.cookieSlot ?? null)
+      : null;
+    setOfficeAttachment({ ...attachment, accountId: accountId || blobClient.getAccountId(), slot });
+    return true;
+  }, [wopiStatus]);
+
   // Opening an attachment straight from a list row. Deliberately resolves
   // the blob source from that row's own email rather than the selected one:
   // in the unified inbox each row can belong to a different account, and
@@ -3019,11 +3074,47 @@ export function MailApp({ linkSegments }: MailAppProps = {}) {
         setPreviewAttachment({ blobId: attachment.blobId, name, type: attachment.type, accountId, clientAccountId });
         return;
       }
+      if (mailAttachmentAction === 'preview' && openOfficeAttachment(
+        blobClient, { blobId: attachment.blobId, name, type: attachment.type, size: attachment.size }, accountId, clientAccountId,
+      )) return;
       await blobClient.downloadBlob(attachment.blobId, name, attachment.type, accountId);
     } catch (error) {
       console.error("Failed to open attachment from the list:", error);
     }
-  }, [resolveBlobSource]);
+  }, [resolveBlobSource, openOfficeAttachment]);
+
+  // Where a list row's attachment parts are fetched from: the same routing
+  // the viewer uses to open that row (source stamps first, then the account
+  // being browsed, then a shared folder's owner). Read through a ref so the
+  // loader stays stable and rows do not re-request on every folder count
+  // change. A layout effect, because the rows ask from their own (passive)
+  // effects in the same commit.
+  const listRowSourceRef = useRef<(email: Email) => { source: ListAttachmentSource; accountId?: string } | null>(() => null);
+  useLayoutEffect(() => {
+    listRowSourceRef.current = (email) => {
+      const auth = useAuthStore.getState();
+      if (email.sourceClientAccountId) {
+        const source = auth.getClientForAccount(email.sourceClientAccountId);
+        return source ? { source, accountId: email.sourceAccountId } : null;
+      }
+      const source = (viewingAccountId ? auth.getClientForAccount(viewingAccountId) : undefined) ?? client;
+      if (!source) return null;
+      const accountId = email.sourceAccountId
+        ?? resolveUnstampedEmailAccountId({
+            mailboxes: viewMailboxes,
+            selectedMailbox,
+            searchActive: !!searchQuery || !isFilterEmpty(searchFilters),
+            searchMailboxId,
+          });
+      return { source, accountId };
+    };
+  }, [client, viewingAccountId, viewMailboxes, selectedMailbox, searchQuery, searchFilters, searchMailboxId]);
+
+  const loadListAttachments = useCallback<LoadListAttachments>((email, onLoad) => {
+    const target = listRowSourceRef.current(email);
+    if (!target) return () => {};
+    return requestListAttachments(target.source, target.accountId, email.id, onLoad);
+  }, []);
 
   const handleDownloadAttachment = async (blobId: string, name: string, type?: string, forceDownload?: boolean) => {
     const { blobClient, accountId, clientAccountId } = resolveBlobSource(selectedEmail);
@@ -3036,6 +3127,9 @@ export function MailApp({ linkSegments }: MailAppProps = {}) {
         setPreviewAttachment({ blobId, name, type, accountId, clientAccountId });
         return;
       }
+      if (!forceDownload && mailAttachmentAction === 'preview' && openOfficeAttachment(
+        blobClient, { blobId, name, type }, accountId, clientAccountId,
+      )) return;
 
       await blobClient.downloadBlob(blobId, name, type, accountId);
     } catch (error) {
@@ -3193,13 +3287,15 @@ export function MailApp({ linkSegments }: MailAppProps = {}) {
       return;
     }
 
+    toast.success(t('notifications.email_sent'));
+
     // Refresh emails to show the sent reply
     await refreshCurrentMailbox(client);
     // Re-fetch the replied thread's cross-folder data so the expanded
     // view shows the newly sent reply without collapsing.
     const emailState = useEmailStore.getState();
     const repliedEmail = emailState.emails.find(e => e.id === originalEmailId);
-    if (repliedEmail?.threadId && emailState.expandedThreadIds.has(repliedEmail.threadId)) {
+    if (repliedEmail?.threadId && emailState.expandedThreadIds.has(threadKeyFor(repliedEmail))) {
       // Route to the email's own account so shared/group threads refresh from
       // the right server, not the active one. (#281, #814)
       const route = resolveThreadRoute({
@@ -3218,7 +3314,7 @@ export function MailApp({ linkSegments }: MailAppProps = {}) {
       if (fullEmails.length > 0) {
         useEmailStore.setState((state) => {
           const c = new Map(state.threadEmailsCache);
-          c.set(repliedEmail.threadId!, fullEmails);
+          c.set(threadKeyFor(repliedEmail), fullEmails);
           return { threadEmailsCache: c };
         });
       }
@@ -3873,8 +3969,11 @@ export function MailApp({ linkSegments }: MailAppProps = {}) {
                       {/* Folder selector. Scopes the search only - it does not
                           navigate the mail list, so it defaults to "All folders"
                           regardless of which folder is open and keeps whatever
-                          the user picked. The unified views already search
-                          across every account's folders, so it is hidden there. */}
+                          the user picked. "All folders" spans the own AND the
+                          group/shared accounts' folders (#1082); the shared
+                          ones are listed under their owner. The unified views
+                          already search across every account's folders, so it
+                          is hidden there. */}
                       {!isUnifiedView && (
                         <div>
                           <label className="text-xs text-muted-foreground mb-1 block">{t("advanced_search.folder")}</label>
@@ -3889,10 +3988,19 @@ export function MailApp({ linkSegments }: MailAppProps = {}) {
                             className="w-full h-8 text-sm rounded-md border border-input bg-background px-3 text-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-1"
                           >
                             <option value="">{t("advanced_search.all_folders")}</option>
-                            {mailboxes.map((mb) => (
+                            {searchScopeFolders.own.map((mb) => (
                               <option key={mb.id} value={mb.id}>
                                 {mb.name}
                               </option>
+                            ))}
+                            {searchScopeFolders.shared.map((group) => (
+                              <optgroup key={group.ownerId} label={group.label}>
+                                {group.mailboxes.map((mb) => (
+                                  <option key={mb.id} value={mb.id}>
+                                    {mb.name}
+                                  </option>
+                                ))}
+                              </optgroup>
                             ))}
                           </select>
                         </div>
@@ -4059,11 +4167,7 @@ export function MailApp({ linkSegments }: MailAppProps = {}) {
                 onSetTag={(emailId, color) => {
                   handleSetTag(emailId, color);
                 }}
-                onMoveToMailbox={async (emailId, mailboxId) => {
-                  if (client) {
-                    await moveToMailboxCrossAware(client, emailId, mailboxId);
-                  }
-                }}
+                onMoveToMailbox={handleMoveToMailbox}
                 onMarkAsSpam={async (email) => {
                   await handleMarkAsSpam(email);
                 }}
@@ -4071,6 +4175,7 @@ export function MailApp({ linkSegments }: MailAppProps = {}) {
                   await handleUndoSpam(email);
                 }}
                 onOpenAttachment={handleOpenListAttachment}
+                loadAttachments={loadListAttachments}
                 onEditDraft={(email) => {
                   handleEditDraft(email);
                 }}
@@ -4338,9 +4443,7 @@ export function MailApp({ linkSegments }: MailAppProps = {}) {
                     mailboxes={mailboxes}
                     selectedMailbox={selectedMailbox}
                     onMoveToMailbox={async (mailboxId) => {
-                      if (client && selectedEmail) {
-                        await moveToMailboxCrossAware(client, selectedEmail.id, mailboxId);
-                      }
+                      if (selectedEmail) await handleMoveToMailbox(selectedEmail.id, mailboxId);
                     }}
                     className={isMobile ? "flex-1" : undefined}
                   />
@@ -4377,6 +4480,15 @@ export function MailApp({ linkSegments }: MailAppProps = {}) {
             onClose={() => setPreviewAttachment(null)}
             onDownload={handlePreviewAttachmentDownload}
             getFileContent={getPreviewAttachmentContent}
+          />
+        )}
+
+        {officeAttachment && (
+          <WopiEditor
+            target={{ kind: "attachment", blobId: officeAttachment.blobId, name: officeAttachment.name, type: officeAttachment.type, size: officeAttachment.size }}
+            accountId={officeAttachment.accountId}
+            slot={officeAttachment.slot}
+            onClose={() => setOfficeAttachment(null)}
           />
         )}
 

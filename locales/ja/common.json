@@ -644,7 +644,8 @@
       "name_label": "差出人名",
       "name_placeholder": "名前",
       "email_label": "差出人メールアドレス",
-      "email_placeholder": "alias@example.com"
+      "email_placeholder": "alias@example.com",
+      "envelope_notice": "サーバーがこのアドレスをエンベロープ送信者として受け付けない場合は、代わりに {identity} が使われ、受信者は Return-Path ヘッダーでそのアドレスを確認できます。"
     },
     "use_template": "テンプレート",
     "save_as_template": "テンプレートとして保存",
@@ -657,6 +658,8 @@
     "upload_progress": "アップロード中 {uploaded} / {total}",
     "upload_cancel": "アップロードをキャンセル",
     "upload_failed": "{filename} のアップロードに失敗しました",
+    "attachment_too_large": "「{name}」はサーバーの上限を超えています（1 ファイルあたり {max}）",
+    "attachments_total_too_large": "添付ファイルがサーバーの上限（1 通あたり {max}）を超えます",
     "send_failed": "メールの送信に失敗しました",
     "smime_sign_on": "S/MIME 署名を有効化しました",
     "smime_sign_off": "S/MIME 署名を無効化しました",
@@ -779,6 +782,10 @@
     "email_sent": "メールを送信しました",
     "email_deleted": "メールを削除しました",
     "email_archived": "メールをアーカイブしました",
+    "emails_deleted": "{count, plural, other {#件のメールを削除しました}}",
+    "emails_archived": "{count, plural, other {#件のメールをアーカイブしました}}",
+    "error_archiving": "メールをアーカイブできませんでした",
+    "error_updating": "メールを更新できませんでした",
     "email_starred": "スターを付けました",
     "email_unstarred": "スターを外しました",
     "email_marked_read": "既読にしました",
@@ -1157,7 +1164,9 @@
         "enabled": "メール通知",
         "enabled_desc": "新しいメールが届いたときに通知を表示",
         "sound": "通知音",
-        "sound_desc": "新しいメールが届いたときに音を鳴らす"
+        "sound_desc": "新しいメールが届いたときに音を鳴らす",
+        "inbox_only": "Inbox only",
+        "inbox_only_desc": "Only notify for mail that lands in the Inbox; skip mail a filter files into another folder"
       },
       "calendar": {
         "title": "カレンダー通知",
@@ -1186,6 +1195,7 @@
         "status_busy": "処理中…",
         "status_inactive": "このデバイスでは有効になっていません",
         "status_unsupported": "このブラウザは Web Push をサポートしていません",
+        "status_lite": "Web Push is not available in Bulwark Lite; it needs the Bulwark server.",
         "title": "バックグラウンド通知",
         "devices_title": "登録済みのデバイス",
         "devices_desc": "このアカウントのバックグラウンド通知を受け取るよう登録されているデバイスの一覧です。取り消すと、そのデバイスはすぐに受信を停止します。",
@@ -1770,7 +1780,9 @@
       "warnings": {
         "end_before_start": "終了日は開始日より後に設定してください",
         "start_in_past": "開始日が過去の日付です",
-        "empty_body": "メッセージ本文が空です - 受信者には空の返信が届きます"
+        "empty_body": "メッセージ本文が空です - 受信者には空の返信が届きます",
+        "subject_too_long": "件名がサーバーの上限を超えています（最大 {max} バイト）。",
+        "body_too_long": "メッセージがサーバーの上限を超えています（書式を含めて最大 {max} バイト）。"
       }
     },
     "folders": {
@@ -1991,6 +2003,7 @@
       "actions": "アクション",
       "add_action": "アクションを追加",
       "stop_processing": "以降のルールの処理を停止",
+      "include_spam": "迷惑メールと判定されたメッセージも移動する",
       "attachment_type_placeholder": "例: pdf, doc, jpg",
       "value_placeholder_multi": "値（カンマで複数指定可）",
       "condition_fields": {
@@ -2032,6 +2045,8 @@
       "copy_to_folder": "フォルダーを選択",
       "forward_to": "転送先メールアドレス",
       "forward_placeholder": "email@example.com",
+      "forward_keep_copy": "コピーを残す",
+      "forward_limit": "このサーバーでの1通あたりの転送上限: {count}。それを超える転送はスキップされます。",
       "reject_message": "拒否メッセージ",
       "reject_placeholder": "あなたのメールは拒否されました",
       "label_name": "ラベル名",
@@ -2915,7 +2930,10 @@
       "all_events": "すべてのイベント",
       "cancel": "キャンセル",
       "save": "保存",
-      "delete": "削除"
+      "delete": "削除",
+      "rsvp_title": "繰り返しイベントに返信",
+      "rsvp_description": "これは繰り返しイベントです。どのイベントに返信しますか？",
+      "respond": "返信"
     },
     "alerts": {
       "title": "リマインダー",
@@ -3000,6 +3018,9 @@
       "alert_now": "まもなく開始",
       "alert_in_minutes": "{count}分後",
       "invitation_sent": "招待を送信しました",
+      "invitations_denied_title": "招待状を送信できません",
+      "invitations_denied": "サーバーが招待状の送信を拒否しました: {reason}。招待状を送らずに予定を保存しますか？",
+      "save_without_invitations": "招待状なしで保存",
       "rsvp_updated": "回答を更新しました",
       "rsvp_error": "回答の更新に失敗しました",
       "event_duplicated": "予定を複製しました",
@@ -3276,6 +3297,8 @@
     "rename": "名前を変更",
     "rename_title": "名前を変更",
     "new_name": "新しい名前",
+    "name_forbidden_chars": "サーバーでは名前に次の文字を使用できません: {chars}",
+    "name_reserved": "この名前はサーバーで予約されています。",
     "delete": "削除",
     "delete_confirm_title": "リソースを削除",
     "delete_confirm_message": "\"{name}\"を削除してもよろしいですか？この操作は元に戻せません。",

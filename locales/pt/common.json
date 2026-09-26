@@ -644,7 +644,8 @@
       "name_label": "Nome do remetente",
       "name_placeholder": "Nome",
       "email_label": "Endereço de email do remetente",
-      "email_placeholder": "alias@example.com"
+      "email_placeholder": "alias@example.com",
+      "envelope_notice": "Se o seu servidor não aceitar este endereço como remetente do envelope, {identity} é usado em seu lugar, e os destinatários podem vê-lo no cabeçalho Return-Path."
     },
     "use_template": "Modelo",
     "save_as_template": "Salvar como modelo",
@@ -657,6 +658,8 @@
     "upload_progress": "Enviando {uploaded} / {total}",
     "upload_cancel": "Cancelar envio",
     "upload_failed": "Falha ao enviar {filename}",
+    "attachment_too_large": "\"{name}\" é maior do que o servidor permite ({max} por ficheiro)",
+    "attachments_total_too_large": "Os anexos excederiam o limite do servidor de {max} por mensagem",
     "send_failed": "Falha ao enviar o e-mail",
     "smime_sign_on": "Assinatura S/MIME ativada",
     "smime_sign_off": "Assinatura S/MIME desativada",
@@ -779,6 +782,10 @@
     "email_sent": "E-mail enviado com sucesso",
     "email_deleted": "E-mail excluído",
     "email_archived": "E-mail arquivado",
+    "emails_deleted": "{count, plural, one {# e-mail excluído} other {# e-mails excluídos}}",
+    "emails_archived": "{count, plural, one {# e-mail arquivado} other {# e-mails arquivados}}",
+    "error_archiving": "Falha ao arquivar o e-mail",
+    "error_updating": "Falha ao atualizar o e-mail",
     "email_starred": "E-mail marcado com estrela",
     "email_unstarred": "Estrela removida do e-mail",
     "email_marked_read": "E-mail marcado como lido",
@@ -1157,7 +1164,9 @@
         "enabled": "Notificações de e-mail",
         "enabled_desc": "Mostrar notificações quando novos e-mails chegarem",
         "sound": "Som de notificação",
-        "sound_desc": "Reproduzir um som quando novos e-mails chegarem"
+        "sound_desc": "Reproduzir um som quando novos e-mails chegarem",
+        "inbox_only": "Inbox only",
+        "inbox_only_desc": "Only notify for mail that lands in the Inbox; skip mail a filter files into another folder"
       },
       "calendar": {
         "title": "Notificações de calendário",
@@ -1186,6 +1195,7 @@
         "status_busy": "Processando…",
         "status_inactive": "Não ativado neste dispositivo",
         "status_unsupported": "Este navegador não oferece suporte a Web Push",
+        "status_lite": "Web Push is not available in Bulwark Lite; it needs the Bulwark server.",
         "title": "Notificações em segundo plano",
         "devices_title": "Dispositivos registrados",
         "devices_desc": "Todos os dispositivos registrados para receber notificações em segundo plano desta conta. Revogar um deles interrompe o recebimento imediatamente.",
@@ -1770,7 +1780,9 @@
       "warnings": {
         "end_before_start": "A data de fim deve ser posterior à data de início",
         "start_in_past": "A data de início está no passado",
-        "empty_body": "O corpo da mensagem está vazio - os destinatários receberão uma resposta em branco"
+        "empty_body": "O corpo da mensagem está vazio - os destinatários receberão uma resposta em branco",
+        "subject_too_long": "O assunto é demasiado longo para o servidor (no máximo {max} bytes).",
+        "body_too_long": "A mensagem é demasiado longa para o servidor (no máximo {max} bytes, incluindo a formatação)."
       }
     },
     "folders": {
@@ -1991,6 +2003,7 @@
       "actions": "Ações",
       "add_action": "Adicionar ação",
       "stop_processing": "Parar o processamento das regras seguintes",
+      "include_spam": "Mover também as mensagens marcadas como spam",
       "attachment_type_placeholder": "ex.: pdf, doc, jpg",
       "value_placeholder_multi": "Valor (vários separados por vírgulas)",
       "condition_fields": {
@@ -2032,6 +2045,8 @@
       "copy_to_folder": "Selecionar pasta",
       "forward_to": "Encaminhar para endereço de e-mail",
       "forward_placeholder": "email@exemplo.com",
+      "forward_keep_copy": "Manter uma cópia",
+      "forward_limit": "Limite de reencaminhamentos por mensagem neste servidor: {count}. Os restantes são ignorados.",
       "reject_message": "Mensagem de rejeição",
       "reject_placeholder": "Seu e-mail foi rejeitado",
       "label_name": "Nome da etiqueta",
@@ -2915,7 +2930,10 @@
       "all_events": "Todos os eventos",
       "cancel": "Cancelar",
       "save": "Salvar",
-      "delete": "Excluir"
+      "delete": "Excluir",
+      "rsvp_title": "Responder a evento recorrente",
+      "rsvp_description": "Este é um evento recorrente. A quais eventos sua resposta se aplica?",
+      "respond": "Responder"
     },
     "alerts": {
       "title": "Lembrete",
@@ -3026,6 +3044,9 @@
       "alert_now": "Começa agora",
       "alert_in_minutes": "Em {count} min",
       "invitation_sent": "Convites enviados",
+      "invitations_denied_title": "Não é possível enviar os convites",
+      "invitations_denied": "O servidor recusou enviar os convites: {reason}. Guardar o evento sem os enviar?",
+      "save_without_invitations": "Guardar sem convites",
       "rsvp_updated": "Resposta atualizada",
       "rsvp_error": "Falha ao atualizar resposta",
       "event_duplicated": "Evento duplicado",
@@ -3276,6 +3297,8 @@
     "rename": "Renomear",
     "rename_title": "Renomear",
     "new_name": "Novo nome",
+    "name_forbidden_chars": "O servidor não permite estes caracteres nos nomes: {chars}",
+    "name_reserved": "Este nome está reservado no servidor.",
     "delete": "Eliminar",
     "delete_confirm_title": "Eliminar recurso",
     "delete_confirm_message": "Tem a certeza de que deseja eliminar \"{name}\"? Esta ação não pode ser desfeita.",

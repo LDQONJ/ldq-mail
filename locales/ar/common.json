@@ -647,7 +647,8 @@
       "name_label": "اسم المرسل",
       "name_placeholder": "الاسم",
       "email_label": "عنوان بريد المرسل",
-      "email_placeholder": "alias@example.com"
+      "email_placeholder": "alias@example.com",
+      "envelope_notice": "إذا لم يقبل خادمك هذا العنوان كمرسل للمغلف، فسيُستخدم {identity} بدلاً منه، ويمكن للمستلمين رؤيته في ترويسة Return-Path."
     },
     "use_template": "قالب",
     "save_as_template": "حفظ كقالب",
@@ -660,6 +661,8 @@
     "upload_progress": "جارٍ الرفع {uploaded} / {total}",
     "upload_cancel": "إلغاء الرفع",
     "upload_failed": "فشل رفع {filename}",
+    "attachment_too_large": "\"{name}\" أكبر مما يسمح به الخادم ({max} لكل ملف)",
+    "attachments_total_too_large": "ستتجاوز المرفقات حد الخادم البالغ {max} لكل رسالة",
     "drop_files": "أفلت الملفات لإرفاقها",
     "show_less": "إظهار أقل",
     "send_failed": "فشل إرسال الرسالة",
@@ -779,6 +782,10 @@
     "email_sent": "تم إرسال الرسالة بنجاح",
     "email_deleted": "تم حذف الرسالة",
     "email_archived": "تمت أرشفة الرسالة",
+    "emails_deleted": "{count, plural, one {تم حذف رسالة واحدة} other {تم حذف # رسائل}}",
+    "emails_archived": "{count, plural, one {تمت أرشفة رسالة واحدة} other {تمت أرشفة # رسائل}}",
+    "error_archiving": "فشل أرشفة الرسالة",
+    "error_updating": "فشل تحديث الرسالة",
     "email_starred": "تم تمييز الرسالة بنجمة",
     "email_unstarred": "تمت إزالة النجمة عن الرسالة",
     "email_marked_read": "تم تمييز الرسالة كمقروءة",
@@ -1158,6 +1165,7 @@
         "status_active": "نشط على هذا الجهاز",
         "status_inactive": "غير مفعّل على هذا الجهاز",
         "status_unsupported": "هذا المتصفح لا يدعم Web Push",
+        "status_lite": "Web Push is not available in Bulwark Lite; it needs the Bulwark server.",
         "status_busy": "جارٍ العمل…",
         "enable": "تفعيل",
         "reenable": "إعادة التسجيل",
@@ -1195,7 +1203,9 @@
         "enabled": "إشعارات البريد",
         "enabled_desc": "إظهار الإشعارات عند وصول رسائل جديدة",
         "sound": "صوت الإشعار",
-        "sound_desc": "تشغيل تنبيه صوتي عند وصول رسائل جديدة"
+        "sound_desc": "تشغيل تنبيه صوتي عند وصول رسائل جديدة",
+        "inbox_only": "Inbox only",
+        "inbox_only_desc": "Only notify for mail that lands in the Inbox; skip mail a filter files into another folder"
       },
       "calendar": {
         "title": "إشعارات التقويم",
@@ -1777,7 +1787,9 @@
       "warnings": {
         "end_before_start": "يجب أن يكون تاريخ الانتهاء بعد تاريخ البدء",
         "start_in_past": "تاريخ البدء في الماضي",
-        "empty_body": "نص الرسالة فارغ - سيتلقى المستلمون ردًا فارغًا"
+        "empty_body": "نص الرسالة فارغ - سيتلقى المستلمون ردًا فارغًا",
+        "subject_too_long": "الموضوع طويل جدًا بالنسبة للخادم (بحد أقصى {max} بايت).",
+        "body_too_long": "الرسالة طويلة جدًا بالنسبة للخادم (بحد أقصى {max} بايت بما في ذلك التنسيق)."
       }
     },
     "folders": {
@@ -1998,6 +2010,7 @@
       "actions": "الإجراءات",
       "add_action": "إضافة إجراء",
       "stop_processing": "إيقاف معالجة القواعد التالية",
+      "include_spam": "نقل الرسائل المصنفة كرسائل مزعجة أيضًا",
       "attachment_type_placeholder": "مثال: pdf, doc, jpg",
       "value_placeholder_multi": "القيمة (عدة قيم مفصولة بفواصل)",
       "condition_fields": {
@@ -2039,6 +2052,8 @@
       "copy_to_folder": "اختر المجلد",
       "forward_to": "إعادة التوجيه إلى عنوان بريد إلكتروني",
       "forward_placeholder": "email@example.com",
+      "forward_keep_copy": "الاحتفاظ بنسخة",
+      "forward_limit": "حد إعادة التوجيه لكل رسالة على هذا الخادم: {count}. يتم تخطي عمليات إعادة التوجيه الإضافية.",
       "reject_message": "رسالة الرفض",
       "reject_placeholder": "تم رفض رسالتك",
       "label_name": "اسم الوسم",
@@ -2915,7 +2930,10 @@
       "all_events": "جميع الأحداث",
       "cancel": "إلغاء",
       "save": "حفظ",
-      "delete": "حذف"
+      "delete": "حذف",
+      "rsvp_title": "الرد على حدث متكرر",
+      "rsvp_description": "هذا حدث متكرر. على أي الأحداث ينطبق ردك؟",
+      "respond": "رد"
     },
     "alerts": {
       "title": "التذكيرات",
@@ -3026,6 +3044,9 @@
       "alert_now": "يبدأ الآن",
       "alert_in_minutes": "خلال {count} دقيقة",
       "invitation_sent": "تم إرسال الدعوات",
+      "invitations_denied_title": "تعذر إرسال الدعوات",
+      "invitations_denied": "رفض الخادم إرسال الدعوات: {reason}. هل تريد حفظ الحدث دون إرسالها؟",
+      "save_without_invitations": "حفظ دون دعوات",
       "rsvp_updated": "تم تحديث الرد",
       "rsvp_error": "فشل تحديث الرد",
       "event_duplicated": "تم تكرار الحدث",
@@ -3318,6 +3339,8 @@
     "rename": "إعادة تسمية",
     "rename_title": "إعادة تسمية",
     "new_name": "الاسم الجديد",
+    "name_forbidden_chars": "لا يسمح الخادم بهذه الأحرف في الأسماء: {chars}",
+    "name_reserved": "هذا الاسم محجوز على الخادم.",
     "delete": "حذف",
     "delete_confirm_title": "حذف المورد",
     "delete_confirm_message": "هل أنت متأكد أنك تريد حذف \"{name}\"؟ لا يمكن التراجع عن هذا.",

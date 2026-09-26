@@ -644,7 +644,8 @@
       "name_label": "Afzendernaam",
       "name_placeholder": "Naam",
       "email_label": "E-mailadres afzender",
-      "email_placeholder": "alias@example.com"
+      "email_placeholder": "alias@example.com",
+      "envelope_notice": "Als je server dit adres niet accepteert als envelopafzender, wordt daar {identity} gebruikt, en ontvangers kunnen dat zien in de Return-Path-header."
     },
     "use_template": "Sjabloon",
     "save_as_template": "Opslaan als sjabloon",
@@ -657,6 +658,8 @@
     "upload_progress": "Uploaden {uploaded} / {total}",
     "upload_cancel": "Upload annuleren",
     "upload_failed": "Uploaden van {filename} mislukt",
+    "attachment_too_large": "\"{name}\" is groter dan de server toestaat ({max} per bestand)",
+    "attachments_total_too_large": "De bijlagen zouden de serverlimiet van {max} per bericht overschrijden",
     "send_failed": "E-mail verzenden mislukt",
     "smime_sign_on": "S/MIME-ondertekening ingeschakeld",
     "smime_sign_off": "S/MIME-ondertekening uitgeschakeld",
@@ -779,6 +782,10 @@
     "email_sent": "E-mail succesvol verzonden",
     "email_deleted": "E-mail verwijderd",
     "email_archived": "E-mail gearchiveerd",
+    "emails_deleted": "{count, plural, one {# e-mail verwijderd} other {# e-mails verwijderd}}",
+    "emails_archived": "{count, plural, one {# e-mail gearchiveerd} other {# e-mails gearchiveerd}}",
+    "error_archiving": "E-mail kon niet worden gearchiveerd",
+    "error_updating": "E-mail kon niet worden bijgewerkt",
     "email_starred": "Ster toegevoegd aan e-mail",
     "email_unstarred": "Ster verwijderd van e-mail",
     "email_marked_read": "E-mail gemarkeerd als gelezen",
@@ -1157,7 +1164,9 @@
         "enabled": "E-mailmeldingen",
         "enabled_desc": "Meldingen tonen wanneer nieuwe e-mails binnenkomen",
         "sound": "Meldingsgeluid",
-        "sound_desc": "Een geluid afspelen wanneer nieuwe e-mails binnenkomen"
+        "sound_desc": "Een geluid afspelen wanneer nieuwe e-mails binnenkomen",
+        "inbox_only": "Inbox only",
+        "inbox_only_desc": "Only notify for mail that lands in the Inbox; skip mail a filter files into another folder"
       },
       "calendar": {
         "title": "Agendameldingen",
@@ -1186,6 +1195,7 @@
         "status_busy": "Bezig…",
         "status_inactive": "Niet ingeschakeld op dit apparaat",
         "status_unsupported": "Deze browser ondersteunt geen Web Push",
+        "status_lite": "Web Push is not available in Bulwark Lite; it needs the Bulwark server.",
         "title": "Achtergrondmeldingen",
         "devices_title": "Geregistreerde apparaten",
         "devices_desc": "Alle apparaten die achtergrondmeldingen voor dit account ontvangen. Trek je er een in, dan stopt de ontvangst meteen.",
@@ -1770,7 +1780,9 @@
       "warnings": {
         "end_before_start": "De einddatum moet na de startdatum liggen",
         "start_in_past": "De startdatum ligt in het verleden",
-        "empty_body": "De berichttekst is leeg - ontvangers krijgen een leeg antwoord"
+        "empty_body": "De berichttekst is leeg - ontvangers krijgen een leeg antwoord",
+        "subject_too_long": "Het onderwerp is te lang voor de server (maximaal {max} bytes).",
+        "body_too_long": "Het bericht is te lang voor de server (maximaal {max} bytes, inclusief opmaak)."
       }
     },
     "folders": {
@@ -1991,6 +2003,7 @@
       "actions": "Acties",
       "add_action": "Actie toevoegen",
       "stop_processing": "Verwerking van volgende regels stoppen",
+      "include_spam": "Ook berichten verplaatsen die als spam zijn gemarkeerd",
       "attachment_type_placeholder": "bijv. pdf, doc, jpg",
       "value_placeholder_multi": "Waarde (meerdere met komma's gescheiden)",
       "condition_fields": {
@@ -2032,6 +2045,8 @@
       "copy_to_folder": "Map selecteren",
       "forward_to": "Doorsturen naar e-mailadres",
       "forward_placeholder": "email@voorbeeld.nl",
+      "forward_keep_copy": "Kopie bewaren",
+      "forward_limit": "Maximaal aantal doorsturingen per bericht op deze server: {count}. Extra doorsturingen worden overgeslagen.",
       "reject_message": "Afwijzingsbericht",
       "reject_placeholder": "Uw e-mail is afgewezen",
       "label_name": "Labelnaam",
@@ -2915,7 +2930,10 @@
       "all_events": "Alle evenementen",
       "cancel": "Annuleren",
       "save": "Opslaan",
-      "delete": "Verwijderen"
+      "delete": "Verwijderen",
+      "rsvp_title": "Reageren op terugkerend evenement",
+      "rsvp_description": "Dit is een terugkerend evenement. Voor welke evenementen geldt uw reactie?",
+      "respond": "Reageren"
     },
     "alerts": {
       "title": "Herinnering",
@@ -3000,6 +3018,9 @@
       "alert_now": "Begint nu",
       "alert_in_minutes": "Over {count} min",
       "invitation_sent": "Uitnodigingen verzonden",
+      "invitations_denied_title": "Uitnodigingen kunnen niet worden verzonden",
+      "invitations_denied": "De server weigerde de uitnodigingen te verzenden: {reason}. Het evenement opslaan zonder ze te verzenden?",
+      "save_without_invitations": "Opslaan zonder uitnodigingen",
       "rsvp_updated": "Reactie bijgewerkt",
       "rsvp_error": "Reactie kon niet worden bijgewerkt",
       "event_duplicated": "Evenement gedupliceerd",
@@ -3276,6 +3297,8 @@
     "rename": "Hernoemen",
     "rename_title": "Hernoemen",
     "new_name": "Nieuwe naam",
+    "name_forbidden_chars": "De server staat deze tekens niet toe in namen: {chars}",
+    "name_reserved": "Deze naam is gereserveerd op de server.",
     "delete": "Verwijderen",
     "delete_confirm_title": "Bron verwijderen",
     "delete_confirm_message": "Weet u zeker dat u \"{name}\" wilt verwijderen? Dit kan niet ongedaan worden gemaakt.",

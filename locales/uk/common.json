@@ -644,7 +644,8 @@
       "name_label": "Ім'я відправника",
       "name_placeholder": "Ім'я",
       "email_label": "Електронна адреса відправника",
-      "email_placeholder": "alias@example.com"
+      "email_placeholder": "alias@example.com",
+      "envelope_notice": "Якщо ваш сервер не приймає цю адресу як відправника конверта, замість неї використовується {identity}, і одержувачі бачитимуть її в заголовку Return-Path."
     },
     "use_template": "Шаблон",
     "save_as_template": "Зберегти як шаблон",
@@ -657,6 +658,8 @@
     "upload_progress": "Завантаження {uploaded} / {total}",
     "upload_cancel": "Скасувати завантаження",
     "upload_failed": "Не вдалося завантажити {filename}",
+    "attachment_too_large": "«{name}» більший, ніж дозволяє сервер ({max} на файл)",
+    "attachments_total_too_large": "Вкладення перевищать ліміт сервера {max} на лист",
     "drop_files": "Перетягніть файли, щоб прикріпити",
     "show_less": "Показувати менше",
     "send_failed": "Не вдалося надіслати електронний лист",
@@ -779,6 +782,10 @@
     "email_sent": "Електронна пошта успішно надіслана",
     "email_deleted": "Електронну пошту видалено",
     "email_archived": "Електронний лист заархівовано",
+    "emails_deleted": "{count, plural, one {# лист видалено} few {# листи видалено} many {# листів видалено} other {# листа видалено}}",
+    "emails_archived": "{count, plural, one {# лист архівовано} few {# листи архівовано} many {# листів архівовано} other {# листа архівовано}}",
+    "error_archiving": "Не вдалося архівувати лист",
+    "error_updating": "Не вдалося оновити лист",
     "email_starred": "Електронна пошта позначена зірочкою",
     "email_unstarred": "З електронної пошти знято зірочку",
     "email_marked_read": "Електронна пошта позначена як прочитана",
@@ -1157,7 +1164,9 @@
         "enabled": "Сповіщення електронною поштою",
         "enabled_desc": "Показувати сповіщення про надходження нових електронних листів",
         "sound": "Звук сповіщення",
-        "sound_desc": "Відтворення звукового сповіщення про надходження нових електронних листів"
+        "sound_desc": "Відтворення звукового сповіщення про надходження нових електронних листів",
+        "inbox_only": "Inbox only",
+        "inbox_only_desc": "Only notify for mail that lands in the Inbox; skip mail a filter files into another folder"
       },
       "calendar": {
         "title": "Сповіщення календаря",
@@ -1186,6 +1195,7 @@
         "status_busy": "Виконується…",
         "status_inactive": "Не ввімкнено на цьому пристрої",
         "status_unsupported": "Цей браузер не підтримує Web Push",
+        "status_lite": "Web Push is not available in Bulwark Lite; it needs the Bulwark server.",
         "title": "Фонові сповіщення",
         "devices_title": "Зареєстровані пристрої",
         "devices_desc": "Усі пристрої, зареєстровані для отримання фонових сповіщень цього облікового запису. Після відкликання пристрій одразу перестає їх отримувати.",
@@ -1770,7 +1780,9 @@
       "warnings": {
         "end_before_start": "Дата завершення має бути після дати початку",
         "start_in_past": "Дата початку в минулому",
-        "empty_body": "Тіло повідомлення порожнє - одержувачі отримають порожню відповідь"
+        "empty_body": "Тіло повідомлення порожнє - одержувачі отримають порожню відповідь",
+        "subject_too_long": "Тема задовга для сервера (не більше {max} байтів).",
+        "body_too_long": "Повідомлення задовге для сервера (не більше {max} байтів разом із форматуванням)."
       }
     },
     "folders": {
@@ -1991,6 +2003,7 @@
       "actions": "Дії",
       "add_action": "Додати дію",
       "stop_processing": "Зупинити обробку наступних правил",
+      "include_spam": "Переміщувати також листи, позначені як спам",
       "attachment_type_placeholder": "напр. pdf, doc, jpg",
       "value_placeholder_multi": "Значення (декілька через кому)",
       "condition_fields": {
@@ -2032,6 +2045,8 @@
       "copy_to_folder": "Виберіть папку",
       "forward_to": "Переслати на електронну адресу",
       "forward_placeholder": "email@example.com",
+      "forward_keep_copy": "Зберегти копію",
+      "forward_limit": "Ліміт пересилань на один лист на цьому сервері: {count}. Зайві пересилання пропускаються.",
       "reject_message": "Повідомлення про відмову",
       "reject_placeholder": "Ваш лист було відхилено",
       "label_name": "Назва мітки",
@@ -2915,7 +2930,10 @@
       "all_events": "Всі події",
       "cancel": "Скасувати",
       "save": "зберегти",
-      "delete": "Видалити"
+      "delete": "Видалити",
+      "rsvp_title": "Відповісти на повторювану подію",
+      "rsvp_description": "Це повторювана подія. До яких подій стосується ваша відповідь?",
+      "respond": "Відповісти"
     },
     "alerts": {
       "title": "Нагадування",
@@ -3000,6 +3018,9 @@
       "alert_now": "Починаючи зараз",
       "alert_in_minutes": "Через {count} хв",
       "invitation_sent": "Запрошення надіслано",
+      "invitations_denied_title": "Не вдається надіслати запрошення",
+      "invitations_denied": "Сервер відмовився надіслати запрошення: {reason}. Зберегти подію без їх надсилання?",
+      "save_without_invitations": "Зберегти без запрошень",
       "rsvp_updated": "Відповідь оновлено",
       "rsvp_error": "Не вдалося оновити відповідь",
       "event_duplicated": "Подія дублюється",
@@ -3276,6 +3297,8 @@
     "rename": "Перейменувати",
     "rename_title": "Перейменувати",
     "new_name": "Нова назва",
+    "name_forbidden_chars": "Сервер не дозволяє ці символи в назвах: {chars}",
+    "name_reserved": "Ця назва зарезервована на сервері.",
     "delete": "Видалити",
     "delete_confirm_title": "Видалити ресурс",
     "delete_confirm_message": "Ви впевнені, що хочете видалити \"{name}\"? Це неможливо скасувати.",

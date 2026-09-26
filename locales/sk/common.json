@@ -647,7 +647,8 @@
       "name_label": "Meno odosielateľa",
       "name_placeholder": "Meno",
       "email_label": "E-mailová adresa odosielateľa",
-      "email_placeholder": "alias@example.com"
+      "email_placeholder": "alias@example.com",
+      "envelope_notice": "Ak váš server túto adresu neprijme ako odosielateľa obálky, použije sa namiesto nej {identity} a príjemcovia ju uvidia v hlavičke Return-Path."
     },
     "use_template": "Šablóna",
     "save_as_template": "Uložiť ako šablónu",
@@ -660,6 +661,8 @@
     "upload_progress": "Nahrávanie {uploaded} / {total}",
     "upload_cancel": "Zrušiť nahrávanie",
     "upload_failed": "Súbor {filename} sa nepodarilo nahrať",
+    "attachment_too_large": "„{name}“ je väčší, než server povoľuje ({max} na súbor)",
+    "attachments_total_too_large": "Prílohy by prekročili limit servera {max} na správu",
     "drop_files": "Presuňte súbory sem na priloženie",
     "show_less": "Zobraziť menej",
     "send_failed": "Odoslanie e-mailu zlyhalo",
@@ -779,6 +782,10 @@
     "email_sent": "E-mail bol úspešne odoslaný",
     "email_deleted": "E-mail bol odstránený",
     "email_archived": "E-mail bol archivovaný",
+    "emails_deleted": "{count, plural, one {# e-mail odstránený} few {# e-maily odstránené} other {# e-mailov odstránených}}",
+    "emails_archived": "{count, plural, one {# e-mail archivovaný} few {# e-maily archivované} other {# e-mailov archivovaných}}",
+    "error_archiving": "E-mail sa nepodarilo archivovať",
+    "error_updating": "E-mail sa nepodarilo aktualizovať",
     "email_starred": "E-mail bol označený hviezdičkou",
     "email_unstarred": "Hviezdička bola odstránená",
     "email_marked_read": "E-mail bol označený ako prečítaný",
@@ -1160,7 +1167,9 @@
         "enabled": "E-mailové oznámenia",
         "enabled_desc": "Zobrazovať oznámenia pri príchode nových e-mailov",
         "sound": "Zvuk oznámenia",
-        "sound_desc": "Prehrať zvukové upozornenie pri príchode nových e-mailov"
+        "sound_desc": "Prehrať zvukové upozornenie pri príchode nových e-mailov",
+        "inbox_only": "Inbox only",
+        "inbox_only_desc": "Only notify for mail that lands in the Inbox; skip mail a filter files into another folder"
       },
       "calendar": {
         "title": "Oznámenia kalendára",
@@ -1182,6 +1191,7 @@
         "status_active": "Aktívne na tomto zariadení",
         "status_inactive": "Nie je povolené na tomto zariadení",
         "status_unsupported": "Tento prehliadač nepodporuje Web Push",
+        "status_lite": "Web Push is not available in Bulwark Lite; it needs the Bulwark server.",
         "status_busy": "Pracujem…",
         "enable": "Povoliť",
         "reenable": "Znovu zaregistrovať",
@@ -1777,7 +1787,9 @@
       "warnings": {
         "end_before_start": "Dátum ukončenia musí byť po dátume začiatku",
         "start_in_past": "Dátum začiatku je v minulosti",
-        "empty_body": "Telo správy je prázdne – príjemcovia dostanú prázdnu odpoveď"
+        "empty_body": "Telo správy je prázdne – príjemcovia dostanú prázdnu odpoveď",
+        "subject_too_long": "Predmet je pre server príliš dlhý (najviac {max} bajtov).",
+        "body_too_long": "Správa je pre server príliš dlhá (najviac {max} bajtov vrátane formátovania)."
       }
     },
     "folders": {
@@ -1998,6 +2010,7 @@
       "actions": "Akcie",
       "add_action": "Pridať akciu",
       "stop_processing": "Zastaviť spracovanie ďalších pravidiel",
+      "include_spam": "Presúvať aj správy označené ako spam",
       "attachment_type_placeholder": "napr. pdf, doc, jpg",
       "value_placeholder_multi": "Hodnota (viac oddelených čiarkami)",
       "condition_fields": {
@@ -2039,6 +2052,8 @@
       "copy_to_folder": "Vybrať priečinok",
       "forward_to": "Preposlať na e-mailovú adresu",
       "forward_placeholder": "email@example.com",
+      "forward_keep_copy": "Ponechať kópiu",
+      "forward_limit": "Limit preposlaní na správu na tomto serveri: {count}. Ďalšie preposlania sa preskočia.",
       "reject_message": "Správa o odmietnutí",
       "reject_placeholder": "Váš e-mail bol odmietnutý",
       "label_name": "Názov štítku",
@@ -2915,7 +2930,10 @@
       "all_events": "Všetky udalosti",
       "cancel": "Zrušiť",
       "save": "Uložiť",
-      "delete": "Odstrániť"
+      "delete": "Odstrániť",
+      "rsvp_title": "Odpovedať na opakujúcu sa udalosť",
+      "rsvp_description": "Toto je opakujúca sa udalosť. Na ktoré udalosti sa vzťahuje vaša odpoveď?",
+      "respond": "Odpovedať"
     },
     "alerts": {
       "title": "Pripomenutia",
@@ -3026,6 +3044,9 @@
       "alert_now": "Začína teraz",
       "alert_in_minutes": "Za {count} min",
       "invitation_sent": "Pozvánky boli odoslané",
+      "invitations_denied_title": "Pozvánky nie je možné odoslať",
+      "invitations_denied": "Server odmietol odoslať pozvánky: {reason}. Uložiť udalosť bez ich odoslania?",
+      "save_without_invitations": "Uložiť bez pozvánok",
       "rsvp_updated": "Odpoveď bola aktualizovaná",
       "rsvp_error": "Aktualizácia odpovede zlyhala",
       "event_duplicated": "Udalosť bola duplikovaná",
@@ -3318,6 +3339,8 @@
     "rename": "Premenovať",
     "rename_title": "Premenovať",
     "new_name": "Nový názov",
+    "name_forbidden_chars": "Server nepovoľuje v názvoch tieto znaky: {chars}",
+    "name_reserved": "Tento názov je na serveri vyhradený.",
     "delete": "Odstrániť",
     "delete_confirm_title": "Odstrániť položku",
     "delete_confirm_message": "Naozaj chcete odstrániť \"{name}\"? Túto akciu nie je možné vrátiť.",

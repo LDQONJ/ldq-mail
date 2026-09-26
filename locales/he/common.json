@@ -603,6 +603,8 @@
     "upload_progress": "מעלה את{uploaded}/{total}",
     "upload_cancel": "בטל העלאה",
     "upload_failed": "העלאת{filename}נכשלה",
+    "attachment_too_large": "\"{name}\" גדול ממה שהשרת מאפשר ({max} לקובץ)",
+    "attachments_total_too_large": "הקבצים המצורפים יחרגו ממגבלת השרת של {max} להודעה",
     "drop_files": "שחרר קבצים לצירוף",
     "show_less": "הצג פחות",
     "send_failed": "שליחת האימייל נכשלה",
@@ -639,7 +641,8 @@
       "name_label": "שם ממנו",
       "name_placeholder": "שם",
       "email_label": "כתובת דוא״ל ממנו",
-      "email_placeholder": "alias@example.com"
+      "email_placeholder": "alias@example.com",
+      "envelope_notice": "אם השרת שלך לא מקבל את הכתובת הזו כשולח המעטפה, ייעשה שימוש ב-{identity} במקומה, והנמענים יכולים לראות אותה בכותרת Return-Path."
     },
     "forgot_attachment": {
       "title": "נשכחת קובץ מצורף?",
@@ -744,6 +747,10 @@
     "email_sent": "האימייל נשלח בהצלחה",
     "email_deleted": "האימייל נמחק",
     "email_archived": "האימייל הועבר לארכיון",
+    "emails_deleted": "{count, plural, one {הודעה אחת נמחקה} other {# הודעות נמחקו}}",
+    "emails_archived": "{count, plural, one {הודעה אחת הועברה לארכיון} other {# הודעות הועברו לארכיון}}",
+    "error_archiving": "העברת ההודעה לארכיון נכשלה",
+    "error_updating": "עדכון ההודעה נכשל",
     "email_starred": "אימייל מסומן בכוכב",
     "email_unstarred": "דוא\"ל בוטל בכוכב",
     "email_marked_read": "אימייל סומן כנקראה",
@@ -1122,7 +1129,9 @@
         "enabled": "התראות באימייל",
         "enabled_desc": "הצג התראות כשמגיעות אימיילים חדשים",
         "sound": "צליל התראה",
-        "sound_desc": "הפעל התראת שמע כשמגיעות הודעות דוא\"ל חדשות"
+        "sound_desc": "הפעל התראת שמע כשמגיעות הודעות דוא\"ל חדשות",
+        "inbox_only": "Inbox only",
+        "inbox_only_desc": "Only notify for mail that lands in the Inbox; skip mail a filter files into another folder"
       },
       "calendar": {
         "title": "הודעות לוח שנה",
@@ -1144,6 +1153,7 @@
         "status_active": "פעיל בהתקן זה",
         "status_inactive": "לא מופעל בהתקן זה",
         "status_unsupported": "דפדפן זה אינו תומך בדחיפה ברשת",
+        "status_lite": "Web Push is not available in Bulwark Lite; it needs the Bulwark server.",
         "status_busy": "עובד…",
         "enable": "הפעל",
         "reenable": "רשום מחדש",
@@ -1735,7 +1745,9 @@
       "warnings": {
         "end_before_start": "תאריך הסיום חייב להיות אחרי תאריך ההתחלה",
         "start_in_past": "תאריך ההתחלה הוא בעבר",
-        "empty_body": "גוף ההודעה ריק - הנמענים יקבלו תשובה ריקה"
+        "empty_body": "גוף ההודעה ריק - הנמענים יקבלו תשובה ריקה",
+        "subject_too_long": "הנושא ארוך מדי עבור השרת (לכל היותר {max} בתים).",
+        "body_too_long": "ההודעה ארוכה מדי עבור השרת (לכל היותר {max} בתים, כולל עיצוב)."
       }
     },
     "folders": {
@@ -1913,6 +1925,7 @@
       "actions": "פעולות",
       "add_action": "הוסף פעולה",
       "stop_processing": "הפסק לעבד את הכללים הבאים",
+      "include_spam": "להעביר גם הודעות שסומנו כדואר זבל",
       "condition_fields": {
         "from": "מ",
         "to": "ל",
@@ -1952,6 +1965,8 @@
       "copy_to_folder": "בחר תיקייה",
       "forward_to": "העבר לכתובת המייל",
       "forward_placeholder": "email@example.com",
+      "forward_keep_copy": "שמור עותק",
+      "forward_limit": "מגבלת העברות לכל הודעה בשרת זה: {count}. העברות נוספות מדולגות.",
       "reject_message": "הודעת דחייה",
       "reject_placeholder": "האימייל שלך נדחה",
       "label_name": "שם התווית",
@@ -2839,7 +2854,10 @@
       "all_events": "כל האירועים",
       "cancel": "לְבַטֵל",
       "save": "שמור",
-      "delete": "לִמְחוֹק"
+      "delete": "לִמְחוֹק",
+      "rsvp_title": "השב לאירוע חוזר",
+      "rsvp_description": "זהו אירוע שחוזר על עצמו. על אילו אירועים חלה התשובה שלך?",
+      "respond": "השב"
     },
     "alerts": {
       "title": "תזכורת",
@@ -2924,6 +2942,9 @@
       "alert_now": "מתחיל עכשיו",
       "alert_in_minutes": "ב-{count}דקות",
       "invitation_sent": "נשלחו הזמנות",
+      "invitations_denied_title": "לא ניתן לשלוח את ההזמנות",
+      "invitations_denied": "השרת סירב לשלוח את ההזמנות: {reason}. לשמור את האירוע בלי לשלוח אותן?",
+      "save_without_invitations": "שמור בלי הזמנות",
       "rsvp_updated": "התגובה עודכנה",
       "rsvp_error": "עדכון התגובה נכשל",
       "event_duplicated": "האירוע שוכפל",
@@ -3199,6 +3220,8 @@
     "rename": "שנה שם",
     "rename_title": "שנה שם",
     "new_name": "שם חדש",
+    "name_forbidden_chars": "השרת אינו מתיר את התווים האלה בשמות: {chars}",
+    "name_reserved": "השם הזה שמור בשרת.",
     "delete": "לִמְחוֹק",
     "delete_confirm_title": "מחק משאב",
     "delete_confirm_message": "האם אתה בטוח שברצונך למחוק את \"{name}\"? לא ניתן לבטל זאת.",

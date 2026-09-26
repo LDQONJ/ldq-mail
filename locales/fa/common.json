@@ -647,7 +647,8 @@
       "name_label": "نام فرستنده",
       "name_placeholder": "نام",
       "email_label": "آدرس ایمیل فرستنده",
-      "email_placeholder": "alias@example.com"
+      "email_placeholder": "alias@example.com",
+      "envelope_notice": "اگر سرور شما این آدرس را به‌عنوان فرستندهٔ پاکت نپذیرد، به‌جای آن {identity} استفاده می‌شود و گیرندگان می‌توانند آن را در سرآیند Return-Path ببینند."
     },
     "use_template": "قالب",
     "save_as_template": "ذخیره به عنوان قالب",
@@ -660,6 +661,8 @@
     "upload_progress": "در حال بارگذاری {uploaded} / {total}",
     "upload_cancel": "لغو بارگذاری",
     "upload_failed": "بارگذاری {filename} ناموفق بود",
+    "attachment_too_large": "«{name}» بزرگ‌تر از حدی است که سرور اجازه می‌دهد ({max} برای هر فایل)",
+    "attachments_total_too_large": "پیوست‌ها از سقف {max} سرور برای هر پیام بیشتر می‌شوند",
     "drop_files": "فایل‌ها را اینجا رها کنید",
     "show_less": "نمایش کمتر",
     "send_failed": "ارسال ایمیل ناموفق بود",
@@ -779,6 +782,10 @@
     "email_sent": "ایمیل با موفقیت ارسال شد",
     "email_deleted": "ایمیل حذف شد",
     "email_archived": "ایمیل بایگانی شد",
+    "emails_deleted": "{count, plural, other {# ایمیل حذف شد}}",
+    "emails_archived": "{count, plural, other {# ایمیل بایگانی شد}}",
+    "error_archiving": "بایگانی ایمیل ناموفق بود",
+    "error_updating": "به‌روزرسانی ایمیل ناموفق بود",
     "email_starred": "ایمیل ستاره‌دار شد",
     "email_unstarred": "ستاره ایمیل برداشته شد",
     "email_marked_read": "ایمیل خوانده شده علامت‌گذاری شد",
@@ -1158,6 +1165,7 @@
         "status_active": "فعال روی این دستگاه",
         "status_inactive": "فعال نشده",
         "status_unsupported": "مرورگر پشتیبانی نمی‌کند",
+        "status_lite": "Web Push is not available in Bulwark Lite; it needs the Bulwark server.",
         "status_busy": "در حال کار…",
         "enable": "فعال کردن",
         "reenable": "ثبت مجدد",
@@ -1195,7 +1203,9 @@
         "enabled": "اعلان‌های ایمیل",
         "enabled_desc": "نمایش اعلان هنگام ایمیل جدید",
         "sound": "صدای اعلان",
-        "sound_desc": "پخش هشدار صوتی"
+        "sound_desc": "پخش هشدار صوتی",
+        "inbox_only": "Inbox only",
+        "inbox_only_desc": "Only notify for mail that lands in the Inbox; skip mail a filter files into another folder"
       },
       "calendar": {
         "title": "اعلان‌های تقویم",
@@ -1777,7 +1787,9 @@
       "warnings": {
         "end_before_start": "تاریخ پایان باید بعد از تاریخ شروع باشد",
         "start_in_past": "تاریخ شروع در گذشته است",
-        "empty_body": "بدنه پیام خالی است - گیرندگان پاسخ خالی دریافت می‌کنند"
+        "empty_body": "بدنه پیام خالی است - گیرندگان پاسخ خالی دریافت می‌کنند",
+        "subject_too_long": "موضوع برای سرور بیش از حد طولانی است (حداکثر {max} بایت).",
+        "body_too_long": "پیام برای سرور بیش از حد طولانی است (حداکثر {max} بایت، همراه با قالب‌بندی)."
       }
     },
     "folders": {
@@ -1998,6 +2010,7 @@
       "actions": "عملیات‌ها",
       "add_action": "افزودن عملیات",
       "stop_processing": "توقف پردازش قوانین بعدی",
+      "include_spam": "پیام‌های علامت‌خورده به‌عنوان هرزنامه هم منتقل شوند",
       "attachment_type_placeholder": "مثال: pdf, doc, jpg",
       "value_placeholder_multi": "مقدار (چندتا با کاما جدا شوند)",
       "condition_fields": {
@@ -2039,6 +2052,8 @@
       "copy_to_folder": "انتخاب پوشه",
       "forward_to": "ارسال به آدرس ایمیل",
       "forward_placeholder": "email@example.com",
+      "forward_keep_copy": "نگه‌داشتن یک نسخه",
+      "forward_limit": "سقف بازارسال برای هر پیام در این سرور: {count}. بازارسال‌های اضافه نادیده گرفته می‌شوند.",
       "reject_message": "پیام رد",
       "reject_placeholder": "ایمیل شما رد شد",
       "label_name": "نام برچسب",
@@ -2915,7 +2930,10 @@
       "all_events": "همه رویدادها",
       "cancel": "انصراف",
       "save": "ذخیره",
-      "delete": "حذف"
+      "delete": "حذف",
+      "rsvp_title": "پاسخ به رویداد تکراری",
+      "rsvp_description": "این یک رویداد تکراری است. پاسخ شما برای کدام رویدادها اعمال شود؟",
+      "respond": "پاسخ"
     },
     "alerts": {
       "title": "یادآورها",
@@ -3026,6 +3044,9 @@
       "alert_now": "همین الان شروع می‌شود",
       "alert_in_minutes": "{count} دقیقه دیگر",
       "invitation_sent": "دعوت‌نامه‌ها ارسال شد",
+      "invitations_denied_title": "ارسال دعوت‌نامه‌ها ممکن نیست",
+      "invitations_denied": "سرور از ارسال دعوت‌نامه‌ها خودداری کرد: {reason}. رویداد بدون ارسال آن‌ها ذخیره شود؟",
+      "save_without_invitations": "ذخیره بدون دعوت‌نامه",
       "rsvp_updated": "پاسخ به‌روزرسانی شد",
       "rsvp_error": "به‌روزرسانی پاسخ ناموفق بود",
       "event_duplicated": "رویداد کپی شد",
@@ -3318,6 +3339,8 @@
     "rename": "تغییر نام",
     "rename_title": "تغییر نام",
     "new_name": "نام جدید",
+    "name_forbidden_chars": "سرور این نویسه‌ها را در نام‌ها مجاز نمی‌داند: {chars}",
+    "name_reserved": "این نام در سرور رزرو شده است.",
     "delete": "حذف",
     "delete_confirm_title": "حذف منبع",
     "delete_confirm_message": "آیا از حذف \"{name}\" اطمینان دارید؟ این عملیات قابل بازگشت نیست.",

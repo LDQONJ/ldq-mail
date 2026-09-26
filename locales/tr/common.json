@@ -647,7 +647,8 @@
       "name_label": "Gönderen adı",
       "name_placeholder": "Ad",
       "email_label": "Gönderen e-posta adresi",
-      "email_placeholder": "alias@example.com"
+      "email_placeholder": "alias@example.com",
+      "envelope_notice": "Sunucunuz bu adresi zarf göndereni olarak kabul etmezse yerine {identity} kullanılır ve alıcılar bunu Return-Path başlığında görebilir."
     },
     "use_template": "Şablon",
     "save_as_template": "Şablon Olarak Kaydet",
@@ -660,6 +661,8 @@
     "upload_progress": "{uploaded} / {total} yükleniyor",
     "upload_cancel": "Yüklemeyi iptal et",
     "upload_failed": "{filename} yüklenemedi",
+    "attachment_too_large": "\"{name}\" sunucunun izin verdiğinden büyük (dosya başına {max})",
+    "attachments_total_too_large": "Ekler sunucunun ileti başına {max} sınırını aşar",
     "drop_files": "Eklemek için dosyaları buraya bırakın",
     "show_less": "Daha az göster",
     "send_failed": "E-posta gönderilemedi",
@@ -779,6 +782,10 @@
     "email_sent": "E-posta başarıyla gönderildi",
     "email_deleted": "E-posta silindi",
     "email_archived": "E-posta arşivlendi",
+    "emails_deleted": "{count, plural, other {# e-posta silindi}}",
+    "emails_archived": "{count, plural, other {# e-posta arşivlendi}}",
+    "error_archiving": "E-posta arşivlenemedi",
+    "error_updating": "E-posta güncellenemedi",
     "email_starred": "E-posta yıldızlandı",
     "email_unstarred": "E-postanın yıldızı kaldırıldı",
     "email_marked_read": "E-posta okundu olarak işaretlendi",
@@ -1157,7 +1164,9 @@
         "enabled": "E-posta bildirimleri",
         "enabled_desc": "Yeni e-postalar geldiğinde bildirim göster",
         "sound": "Bildirim sesi",
-        "sound_desc": "Yeni e-postalar geldiğinde sesli uyarı çal"
+        "sound_desc": "Yeni e-postalar geldiğinde sesli uyarı çal",
+        "inbox_only": "Inbox only",
+        "inbox_only_desc": "Only notify for mail that lands in the Inbox; skip mail a filter files into another folder"
       },
       "calendar": {
         "title": "Takvim Bildirimleri",
@@ -1186,6 +1195,7 @@
         "status_busy": "Çalışıyor…",
         "status_inactive": "Bu cihazda etkinleştirilmedi",
         "status_unsupported": "Bu tarayıcı Web Push'u desteklemiyor",
+        "status_lite": "Web Push is not available in Bulwark Lite; it needs the Bulwark server.",
         "title": "Arka plan bildirimleri",
         "devices_title": "Kayıtlı cihazlar",
         "devices_desc": "Bu hesap için arka plan bildirimleri almak üzere kayıtlı tüm cihazlar. Birini iptal ettiğinizde o cihaz bildirimleri hemen almayı bırakır.",
@@ -1770,7 +1780,9 @@
       "warnings": {
         "end_before_start": "Bitiş tarihi başlangıç tarihinden sonra olmalıdır",
         "start_in_past": "Başlangıç tarihi geçmişte",
-        "empty_body": "İleti gövdesi boş - alıcılar boş bir yanıt alacak"
+        "empty_body": "İleti gövdesi boş - alıcılar boş bir yanıt alacak",
+        "subject_too_long": "Konu sunucu için çok uzun (en fazla {max} bayt).",
+        "body_too_long": "İleti sunucu için çok uzun (biçimlendirme dahil en fazla {max} bayt)."
       }
     },
     "folders": {
@@ -1991,6 +2003,7 @@
       "actions": "İşlemler",
       "add_action": "İşlem Ekle",
       "stop_processing": "Sonraki kuralları işlemeyi durdur",
+      "include_spam": "İstenmeyen olarak işaretlenen iletileri de taşı",
       "attachment_type_placeholder": "örn. pdf, doc, jpg",
       "value_placeholder_multi": "Değer (birden fazla virgülle ayrılır)",
       "condition_fields": {
@@ -2032,6 +2045,8 @@
       "copy_to_folder": "Klasör seçin",
       "forward_to": "E-posta adresine ilet",
       "forward_placeholder": "email@example.com",
+      "forward_keep_copy": "Bir kopyasını sakla",
+      "forward_limit": "Bu sunucuda ileti başına yönlendirme sınırı: {count}. Fazla yönlendirmeler atlanır.",
       "reject_message": "Reddetme iletisi",
       "reject_placeholder": "E-postanız reddedildi",
       "label_name": "Etiket adı",
@@ -2915,7 +2930,10 @@
       "all_events": "Tüm etkinlikler",
       "cancel": "İptal",
       "save": "Kaydet",
-      "delete": "Sil"
+      "delete": "Sil",
+      "rsvp_title": "Yinelenen etkinliğe yanıt ver",
+      "rsvp_description": "Bu yinelenen bir etkinlik. Yanıtınız hangi etkinlikler için geçerli?",
+      "respond": "Yanıtla"
     },
     "alerts": {
       "title": "Hatırlatıcı",
@@ -3026,6 +3044,9 @@
       "alert_now": "Şimdi başlıyor",
       "alert_in_minutes": "{count} dk içinde",
       "invitation_sent": "Davetler gönderildi",
+      "invitations_denied_title": "Davetler gönderilemiyor",
+      "invitations_denied": "Sunucu davetleri göndermeyi reddetti: {reason}. Etkinlik davet gönderilmeden kaydedilsin mi?",
+      "save_without_invitations": "Davetsiz kaydet",
       "rsvp_updated": "Yanıt güncellendi",
       "rsvp_error": "Yanıt güncellenemedi",
       "event_duplicated": "Etkinlik çoğaltıldı",
@@ -3318,6 +3339,8 @@
     "rename": "Yeniden Adlandır",
     "rename_title": "Yeniden Adlandır",
     "new_name": "Yeni ad",
+    "name_forbidden_chars": "Sunucu adlarda şu karakterlere izin vermiyor: {chars}",
+    "name_reserved": "Bu ad sunucuda ayrılmış.",
     "delete": "Sil",
     "delete_confirm_title": "Kaynağı sil",
     "delete_confirm_message": "\"{name}\" silinsin mi? Bu geri alınamaz.",

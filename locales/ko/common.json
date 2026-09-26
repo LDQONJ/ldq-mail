@@ -644,7 +644,8 @@
       "name_label": "보낸 사람 이름",
       "name_placeholder": "이름",
       "email_label": "보낸 사람 이메일 주소",
-      "email_placeholder": "alias@example.com"
+      "email_placeholder": "alias@example.com",
+      "envelope_notice": "서버가 이 주소를 봉투 발신자로 허용하지 않으면 대신 {identity}이(가) 사용되며, 수신자는 Return-Path 헤더에서 이 주소를 볼 수 있습니다."
     },
     "use_template": "템플릿",
     "save_as_template": "템플릿으로 저장",
@@ -657,6 +658,8 @@
     "upload_progress": "{uploaded} / {total} 업로드 중",
     "upload_cancel": "업로드 취소",
     "upload_failed": "{filename} 파일 업로드에 실패했어요",
+    "attachment_too_large": "\"{name}\"이(가) 서버 허용 크기보다 커요(파일당 {max})",
+    "attachments_total_too_large": "첨부 파일이 서버의 메시지당 한도({max})를 넘어요",
     "drop_files": "첨부할 파일을 여기에 놓아주세요",
     "show_less": "간략히 보기",
     "send_failed": "메일 전송에 실패했어요",
@@ -779,6 +782,10 @@
     "email_sent": "메일이 전송되었어요",
     "email_deleted": "메일이 삭제되었어요",
     "email_archived": "메일이 보관되었어요",
+    "emails_deleted": "{count, plural, other {이메일 #개 삭제됨}}",
+    "emails_archived": "{count, plural, other {이메일 #개 보관됨}}",
+    "error_archiving": "이메일을 보관하지 못했습니다",
+    "error_updating": "이메일을 업데이트하지 못했습니다",
     "email_starred": "별표가 추가되었어요",
     "email_unstarred": "별표가 해제되었어요",
     "email_marked_read": "읽은 상태로 변경되었어요",
@@ -1157,7 +1164,9 @@
         "enabled": "이메일 알림",
         "enabled_desc": "새 이메일이 도착하면 알림을 보여줘요",
         "sound": "알림음",
-        "sound_desc": "새 이메일이 도착하면 소리로 알려줘요"
+        "sound_desc": "새 이메일이 도착하면 소리로 알려줘요",
+        "inbox_only": "Inbox only",
+        "inbox_only_desc": "Only notify for mail that lands in the Inbox; skip mail a filter files into another folder"
       },
       "calendar": {
         "title": "캘린더 알림",
@@ -1186,6 +1195,7 @@
         "status_busy": "처리 중…",
         "status_inactive": "이 기기에서 활성화되지 않음",
         "status_unsupported": "이 브라우저는 Web Push를 지원하지 않습니다",
+        "status_lite": "Web Push is not available in Bulwark Lite; it needs the Bulwark server.",
         "title": "백그라운드 알림",
         "devices_title": "등록된 기기",
         "devices_desc": "이 계정의 백그라운드 알림을 받도록 등록된 모든 기기입니다. 해지하면 해당 기기는 즉시 수신을 멈추니다.",
@@ -1770,7 +1780,9 @@
       "warnings": {
         "end_before_start": "종료일은 시작일보다 나중이어야 해요",
         "start_in_past": "시작일이 이미 지났어요",
-        "empty_body": "메시지 내용이 비어있어요. 상대방에게 빈 메일이 가게 돼요"
+        "empty_body": "메시지 내용이 비어있어요. 상대방에게 빈 메일이 가게 돼요",
+        "subject_too_long": "제목이 서버에 비해 너무 깁니다(최대 {max}바이트).",
+        "body_too_long": "메시지가 서버에 비해 너무 깁니다(서식 포함 최대 {max}바이트)."
       }
     },
     "folders": {
@@ -1991,6 +2003,7 @@
       "actions": "동작",
       "add_action": "동작 추가",
       "stop_processing": "이후 규칙 무시하기",
+      "include_spam": "스팸으로 표시된 메시지도 이동",
       "attachment_type_placeholder": "예: pdf, doc, jpg",
       "value_placeholder_multi": "값 (쉼표로 여러 개 구분)",
       "condition_fields": {
@@ -2032,6 +2045,8 @@
       "copy_to_folder": "폴더 선택",
       "forward_to": "전달할 이메일 주소",
       "forward_placeholder": "email@example.com",
+      "forward_keep_copy": "사본 보관",
+      "forward_limit": "이 서버의 메시지당 전달 한도: {count}. 초과된 전달은 건너뜁니다.",
       "reject_message": "거부 메시지",
       "reject_placeholder": "메일 수신이 거부되었습니다",
       "label_name": "태그 이름",
@@ -2915,7 +2930,10 @@
       "all_events": "모든 일정",
       "cancel": "취소",
       "save": "저장",
-      "delete": "삭제"
+      "delete": "삭제",
+      "rsvp_title": "반복 일정에 응답",
+      "rsvp_description": "반복되는 일정이에요. 어떤 일정에 응답할까요?",
+      "respond": "응답"
     },
     "alerts": {
       "title": "알림",
@@ -3000,6 +3018,9 @@
       "alert_now": "지금 시작해요",
       "alert_in_minutes": "{count}분 후 시작",
       "invitation_sent": "초대장이 전송되었어요",
+      "invitations_denied_title": "초대장을 보낼 수 없어요",
+      "invitations_denied": "서버가 초대장 발송을 거부했어요: {reason}. 초대장 없이 일정을 저장할까요?",
+      "save_without_invitations": "초대장 없이 저장",
       "rsvp_updated": "응답이 업데이트되었어요",
       "rsvp_error": "응답을 업데이트하지 못했어요",
       "event_duplicated": "일정이 복제되었어요",
@@ -3276,6 +3297,8 @@
     "rename": "이름 바꾸기",
     "rename_title": "이름 바꾸기",
     "new_name": "새 이름",
+    "name_forbidden_chars": "서버에서 이름에 다음 문자를 허용하지 않습니다: {chars}",
+    "name_reserved": "이 이름은 서버에서 예약되어 있습니다.",
     "delete": "삭제",
     "delete_confirm_title": "항목 삭제",
     "delete_confirm_message": "정말 \"{name}\"을(를) 삭제할까요? 이 작업은 되돌릴 수 없어요.",

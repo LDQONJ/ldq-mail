@@ -647,7 +647,8 @@
       "name_label": "Navn i Fra-feltet",
       "name_placeholder": "Navn",
       "email_label": "E-postadresse i Fra-feltet",
-      "email_placeholder": "alias@example.com"
+      "email_placeholder": "alias@example.com",
+      "envelope_notice": "Hvis serveren din ikke godtar denne adressen som konvoluttavsender, brukes {identity} i stedet, og mottakerne kan se den i Return-Path-overskriften."
     },
     "use_template": "Mal",
     "save_as_template": "Lagre som mal",
@@ -660,6 +661,8 @@
     "upload_progress": "Laster opp {uploaded} / {total}",
     "upload_cancel": "Avbryt opplasting",
     "upload_failed": "Kunne ikke laste opp {filename}",
+    "attachment_too_large": "«{name}» er større enn serveren tillater ({max} per fil)",
+    "attachments_total_too_large": "Vedleggene ville overskride serverens grense på {max} per melding",
     "drop_files": "Slipp filer for å legge ved",
     "show_less": "Vis færre",
     "send_failed": "Kunne ikke sende e-post",
@@ -779,6 +782,10 @@
     "email_sent": "E-posten er sendt",
     "email_deleted": "E-posten er slettet",
     "email_archived": "E-posten er arkivert",
+    "emails_deleted": "{count, plural, one {# e-post slettet} other {# e-poster slettet}}",
+    "emails_archived": "{count, plural, one {# e-post arkivert} other {# e-poster arkivert}}",
+    "error_archiving": "Kunne ikke arkivere e-posten",
+    "error_updating": "Kunne ikke oppdatere e-posten",
     "email_starred": "E-posten er stjernemerket",
     "email_unstarred": "E-posten er ikke lenger stjernemerket",
     "email_marked_read": "E-posten er merket som lest",
@@ -1158,6 +1165,7 @@
         "status_active": "Aktiv på denne enheten",
         "status_inactive": "Ikke aktivert på denne enheten",
         "status_unsupported": "Denne nettleseren støtter ikke Web Push",
+        "status_lite": "Web Push is not available in Bulwark Lite; it needs the Bulwark server.",
         "status_busy": "Behandler...",
         "enable": "Aktiver",
         "reenable": "Registrer på nytt",
@@ -1195,7 +1203,9 @@
         "enabled": "E-postvarsler",
         "enabled_desc": "Vis varsler når nye e-poster kommer",
         "sound": "Varslingslyd",
-        "sound_desc": "Spill av et lydvarsel når nye e-poster kommer"
+        "sound_desc": "Spill av et lydvarsel når nye e-poster kommer",
+        "inbox_only": "Inbox only",
+        "inbox_only_desc": "Only notify for mail that lands in the Inbox; skip mail a filter files into another folder"
       },
       "calendar": {
         "title": "Kalendervarsler",
@@ -1777,7 +1787,9 @@
       "warnings": {
         "end_before_start": "Sluttdatoen må være etter startdatoen",
         "start_in_past": "Startdatoen er i fortiden",
-        "empty_body": "Meldingsteksten er tom – mottakerne får et tomt svar"
+        "empty_body": "Meldingsteksten er tom – mottakerne får et tomt svar",
+        "subject_too_long": "Emnet er for langt for serveren (maks. {max} byte).",
+        "body_too_long": "Meldingen er for lang for serveren (maks. {max} byte inkludert formatering)."
       }
     },
     "folders": {
@@ -1998,6 +2010,7 @@
       "actions": "Handlinger",
       "add_action": "Legg til handling",
       "stop_processing": "Ikke behandle flere regler",
+      "include_spam": "Flytt også meldinger som er merket som søppelpost",
       "attachment_type_placeholder": "f.eks. pdf, doc, jpg",
       "value_placeholder_multi": "Verdi (skill flere verdier med komma)",
       "condition_fields": {
@@ -2039,6 +2052,8 @@
       "copy_to_folder": "Velg mappe",
       "forward_to": "Videresend til e-postadresse",
       "forward_placeholder": "email@example.com",
+      "forward_keep_copy": "Behold en kopi",
+      "forward_limit": "Grense for videresendinger per melding på denne serveren: {count}. Flere videresendinger hoppes over.",
       "reject_message": "Avvisningsmelding",
       "reject_placeholder": "Meldingen din er avvist",
       "label_name": "Etikettnavn",
@@ -2915,7 +2930,10 @@
       "all_events": "Alle hendelser",
       "cancel": "Avbryt",
       "save": "Lagre",
-      "delete": "Slett"
+      "delete": "Slett",
+      "rsvp_title": "Svar på gjentakende hendelse",
+      "rsvp_description": "Dette er en gjentakende hendelse. Hvilke hendelser gjelder svaret ditt for?",
+      "respond": "Svar"
     },
     "alerts": {
       "title": "Påminnelser",
@@ -3026,6 +3044,9 @@
       "alert_now": "Starter nå",
       "alert_in_minutes": "Om {count} min",
       "invitation_sent": "Invitasjonene er sendt",
+      "invitations_denied_title": "Invitasjonene kan ikke sendes",
+      "invitations_denied": "Serveren nektet å sende invitasjonene: {reason}. Lagre hendelsen uten å sende dem?",
+      "save_without_invitations": "Lagre uten invitasjoner",
       "rsvp_updated": "Svaret er oppdatert",
       "rsvp_error": "Kunne ikke oppdatere svaret",
       "event_duplicated": "Hendelsen er duplisert",
@@ -3318,6 +3339,8 @@
     "rename": "Gi nytt navn",
     "rename_title": "Gi nytt navn",
     "new_name": "Nytt navn",
+    "name_forbidden_chars": "Serveren tillater ikke disse tegnene i navn: {chars}",
+    "name_reserved": "Dette navnet er reservert på serveren.",
     "delete": "Slett",
     "delete_confirm_title": "Slett fil eller mappe",
     "delete_confirm_message": "Er du sikker på at du vil slette «{name}»? Dette kan ikke angres.",

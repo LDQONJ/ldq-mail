@@ -1,5 +1,6 @@
-import type { Email, Mailbox, MailboxRights, StateChange, AccountStates, CollectionChanges, ShareNotification, BusyPeriod, CalendarParticipantIdentity, CalendarEventNotification, Thread, Identity, EmailAddress, ContactCard, AddressBook, AddressBookRights, VacationResponse, Calendar, CreateCalendarOptions, CalendarRights, CalendarEvent, CalendarEventFilter, CalendarTask, FileNode, FileNodeRights, Principal, PushSubscription, EmailPushConfig, ScheduledEmail, SendEmailResult, SharedAccount } from "./types";
+import type { Attachment, Email, Mailbox, MailboxRights, StateChange, AccountStates, CollectionChanges, ShareNotification, BusyPeriod, CalendarParticipantIdentity, CalendarEventNotification, Thread, Identity, EmailAddress, ContactCard, AddressBook, AddressBookRights, VacationResponse, Calendar, CreateCalendarOptions, CalendarRights, CalendarEvent, CalendarEventFilter, CalendarTask, FileNode, FileNodeRights, Principal, PushSubscription, EmailPushConfig, ScheduledEmail, SendEmailResult, SharedAccount } from "./types";
 import type { SieveScript, SieveCapabilities } from "./sieve-types";
+import type { FileNameRules } from "@/lib/file-name-rules";
 import type { SortLevel } from "@/lib/message-list-order";
 
 /** What `migrateKeyword` managed to do. */
@@ -38,6 +39,15 @@ export interface KeywordDiscoveryResult {
  * (in-memory/browser-only) implement this interface so that stores
  * and UI code never need to know which one is active.
  */
+export interface CalendarEventUpdateOptions {
+  /**
+   * Send `sequence` instead of stripping it with the other server-managed
+   * fields. Only for a patch that creates a recurrence override and must carry
+   * the series' sequence (see buildOccurrenceRsvpPatch).
+   */
+  keepSequence?: boolean;
+}
+
 export interface IJMAPClient {
   // ── Connection lifecycle ──────────────────────────────────────
   connect(): Promise<void>;
@@ -58,7 +68,11 @@ export interface IJMAPClient {
   // ── Capabilities ──────────────────────────────────────────────
   getCapabilities(): Record<string, unknown>;
   hasAccountCapability(capability: string, accountId?: string): boolean;
+  /** FileNode naming rules the server publishes (Stalwart 0.16.6+), if any. */
+  getFileNameRules?(accountId?: string): FileNameRules | null;
   getMaxSizeUpload(): number;
+  /** RFC 8621 maxSizeAttachmentsPerEmail of the mail account (0 = unknown). */
+  getMaxSizeAttachmentsPerEmail?(): number;
   getMaxCallsInRequest(): number;
   getMaxObjectsInGet(): number;
   getMaxObjectsInSet(): number;
@@ -170,6 +184,12 @@ export interface IJMAPClient {
   getEmailsInMailbox(mailboxId: string): Promise<Email[]>;
   getEmail(emailId: string, accountId?: string): Promise<Email | null>;
   getSomeEmails(emailsId: string[], accountId?: string): Promise<Email[]>
+  /**
+   * Attachment parts per email id for list-row chips, fetched lazily because
+   * the server reads each full raw message to answer it (#1089). Optional:
+   * clients whose list emails already carry `attachments` need not implement it.
+   */
+  getEmailAttachments?(emailIds: string[], accountId?: string): Promise<Map<string, Attachment[]>>;
   /**
    * Total / unread message counts per tag id. `accountId` scopes the count to
    * a group/shared account reached through this client (defaults to the
@@ -284,6 +304,9 @@ export interface IJMAPClient {
     inReplyTo?: string[],
     references?: string[],
     delayedUntil?: string,
+    // The SMTP MAIL FROM wanted instead of the identity's address (a From
+    // override). Sent through the identity that owns it when there is one;
+    // a server that refuses it gets the identity's address instead.
     envelopeMailFrom?: string,
     // requestDsn / requireTls map to RFC 3461 / RFC 8689 envelope parameters
     // and need the matching `submissionExtensions` entry (see
@@ -391,7 +414,7 @@ export interface IJMAPClient {
   createAddressBook(name: string): Promise<AddressBook>;
   updateAddressBook(addressBookId: string, updates: Partial<AddressBook>, targetAccountId?: string): Promise<void>;
   setDefaultAddressBook(addressBookId: string, targetAccountId?: string): Promise<void>;
-  deleteAddressBook(addressBookId: string, targetAccountId?: string): Promise<void>;
+  deleteAddressBook(addressBookId: string, targetAccountId?: string, options?: { removeContents?: boolean }): Promise<void>;
   getContacts(addressBookId?: string, options?: { throwOnError?: boolean }): Promise<ContactCard[]>;
   getAllContacts(): Promise<ContactCard[]>;
   getContact(contactId: string, accountId?: string): Promise<ContactCard | null>;
@@ -417,6 +440,7 @@ export interface IJMAPClient {
     updates: Partial<CalendarEvent>,
     sendSchedulingMessages?: boolean,
     targetAccountId?: string,
+    options?: CalendarEventUpdateOptions,
   ): Promise<void>;
   deleteCalendarEvent(eventId: string, sendSchedulingMessages?: boolean, targetAccountId?: string): Promise<void>;
   batchDeleteCalendarEvents(eventIds: string[], targetAccountId?: string): Promise<{ destroyed: string[]; notDestroyed: Record<string, { type?: string; description?: string }> }>;

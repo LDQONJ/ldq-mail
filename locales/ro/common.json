@@ -647,7 +647,8 @@
       "name_label": "Numele expeditorului",
       "name_placeholder": "Nume",
       "email_label": "De la adresa de e-mail",
-      "email_placeholder": "alias@example.com"
+      "email_placeholder": "alias@example.com",
+      "envelope_notice": "Dacă serverul dvs. nu acceptă această adresă ca expeditor al plicului, se folosește în schimb {identity}, iar destinatarii o pot vedea în antetul Return-Path."
     },
     "use_template": "Șablon",
     "save_as_template": "Salvează ca șablon",
@@ -660,6 +661,8 @@
     "upload_progress": "Încărcare {uploaded} / {total}",
     "upload_cancel": "Anulează încărcarea",
     "upload_failed": "Nu s-a putut încărca {filename}",
+    "attachment_too_large": "„{name}” depășește dimensiunea permisă de server ({max} per fișier)",
+    "attachments_total_too_large": "Atașamentele ar depăși limita serverului de {max} per mesaj",
     "drop_files": "Trageți fișierele pentru a le atașa",
     "show_less": "Afișați mai puțin",
     "send_failed": "Nu s-a putut trimite e-mailul",
@@ -779,6 +782,10 @@
     "email_sent": "E-mailul a fost trimis cu succes",
     "email_deleted": "E-mail șters",
     "email_archived": "E-mail arhivat",
+    "emails_deleted": "{count, plural, one {# e-mail șters} few {# e-mailuri șterse} other {# de e-mailuri șterse}}",
+    "emails_archived": "{count, plural, one {# e-mail arhivat} few {# e-mailuri arhivate} other {# de e-mailuri arhivate}}",
+    "error_archiving": "Arhivarea e-mailului a eșuat",
+    "error_updating": "Actualizarea e-mailului a eșuat",
     "email_starred": "E-mail marcat cu stea",
     "email_unstarred": "E-mail fără stea",
     "email_marked_read": "E-mail marcat ca citit",
@@ -1158,6 +1165,7 @@
         "status_active": "Activ pe acest dispozitiv",
         "status_inactive": "Nu este activat pe acest dispozitiv",
         "status_unsupported": "Acest browser nu acceptă Web Push",
+        "status_lite": "Web Push is not available in Bulwark Lite; it needs the Bulwark server.",
         "status_busy": "Se lucrează…",
         "enable": "Activați",
         "reenable": "Reînregistrează-te",
@@ -1195,7 +1203,9 @@
         "enabled": "Notificări prin e-mail",
         "enabled_desc": "Afișați notificări la primirea de e-mailuri noi",
         "sound": "Sunet de notificare",
-        "sound_desc": "Redă o alertă audio la sosirea unor e-mailuri noi"
+        "sound_desc": "Redă o alertă audio la sosirea unor e-mailuri noi",
+        "inbox_only": "Inbox only",
+        "inbox_only_desc": "Only notify for mail that lands in the Inbox; skip mail a filter files into another folder"
       },
       "calendar": {
         "title": "Notificări din calendar",
@@ -1777,7 +1787,9 @@
       "warnings": {
         "end_before_start": "Data de încheiere trebuie să fie ulterioară datei de începere",
         "start_in_past": "Data de începere este în trecut",
-        "empty_body": "Corpul mesajului este gol – destinatarii vor primi un răspuns gol"
+        "empty_body": "Corpul mesajului este gol – destinatarii vor primi un răspuns gol",
+        "subject_too_long": "Subiectul este prea lung pentru server (cel mult {max} octeți).",
+        "body_too_long": "Mesajul este prea lung pentru server (cel mult {max} octeți, inclusiv formatarea)."
       }
     },
     "folders": {
@@ -1998,6 +2010,7 @@
       "actions": "Acțiuni",
       "add_action": "Adăugare acțiune",
       "stop_processing": "Opriți procesarea regulilor următoare",
+      "include_spam": "Mută și mesajele marcate ca spam",
       "attachment_type_placeholder": "de ex. pdf, doc, jpg",
       "value_placeholder_multi": "Valoare (mai multe valori separate prin virgule)",
       "condition_fields": {
@@ -2039,6 +2052,8 @@
       "copy_to_folder": "Selectează folderul",
       "forward_to": "Redirecționează către adresa de e-mail",
       "forward_placeholder": "email@example.com",
+      "forward_keep_copy": "Păstrează o copie",
+      "forward_limit": "Limita de redirecționări per mesaj pe acest server: {count}. Redirecționările în plus sunt omise.",
       "reject_message": "Mesaj de respingere",
       "reject_placeholder": "E-mailul dvs. a fost respins",
       "label_name": "Numele etichetei",
@@ -2915,7 +2930,10 @@
       "all_events": "Toate evenimentele",
       "cancel": "Anulează",
       "save": "Salvare",
-      "delete": "Șterge"
+      "delete": "Șterge",
+      "rsvp_title": "Răspundeți la evenimentul recurent",
+      "rsvp_description": "Acesta este un eveniment recurent. Pentru ce evenimente se aplică răspunsul dvs.?",
+      "respond": "Răspundeți"
     },
     "alerts": {
       "title": "Memento-uri",
@@ -3026,6 +3044,9 @@
       "alert_now": "Începând de acum",
       "alert_in_minutes": "În {count} min",
       "invitation_sent": "Invitații trimise",
+      "invitations_denied_title": "Invitațiile nu pot fi trimise",
+      "invitations_denied": "Serverul a refuzat trimiterea invitațiilor: {reason}. Salvezi evenimentul fără a le trimite?",
+      "save_without_invitations": "Salvează fără invitații",
       "rsvp_updated": "Răspuns actualizat",
       "rsvp_error": "Nu s-a putut actualiza răspunsul",
       "event_duplicated": "Eveniment duplicat",
@@ -3318,6 +3339,8 @@
     "rename": "Redenumire",
     "rename_title": "Redenumire",
     "new_name": "Nume nou",
+    "name_forbidden_chars": "Serverul nu permite aceste caractere în nume: {chars}",
+    "name_reserved": "Acest nume este rezervat pe server.",
     "delete": "Șterge",
     "delete_confirm_title": "Ștergeți resursa",
     "delete_confirm_message": "Sunteți sigur că doriți să ștergeți „{name}”? Această acțiune nu poate fi anulată.",

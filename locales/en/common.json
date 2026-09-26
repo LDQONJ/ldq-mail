@@ -649,7 +649,8 @@
       "name_label": "From name",
       "name_placeholder": "Name",
       "email_label": "From email address",
-      "email_placeholder": "alias@example.com"
+      "email_placeholder": "alias@example.com",
+      "envelope_notice": "If your server doesn't accept this address as the envelope sender, {identity} is used there instead, and recipients can see it in the Return-Path header."
     },
     "use_template": "Template",
     "save_as_template": "Save as Template",
@@ -662,6 +663,8 @@
     "upload_progress": "Uploading {uploaded} / {total}",
     "upload_cancel": "Cancel upload",
     "upload_failed": "Failed to upload {filename}",
+    "attachment_too_large": "\"{name}\" is larger than the server allows ({max} per file)",
+    "attachments_total_too_large": "The attachments would exceed the server's limit of {max} per message",
     "drop_files": "Drop files to attach",
     "show_less": "Show less",
     "send_failed": "Failed to send email",
@@ -781,6 +784,10 @@
     "email_sent": "Email sent successfully",
     "email_deleted": "Email deleted",
     "email_archived": "Email archived",
+    "emails_deleted": "{count, plural, one {# email deleted} other {# emails deleted}}",
+    "emails_archived": "{count, plural, one {# email archived} other {# emails archived}}",
+    "error_archiving": "Failed to archive email",
+    "error_updating": "Failed to update email",
     "email_starred": "Email starred",
     "email_unstarred": "Email unstarred",
     "email_marked_read": "Email marked as read",
@@ -1160,6 +1167,7 @@
         "status_active": "Active on this device",
         "status_inactive": "Not enabled on this device",
         "status_unsupported": "This browser does not support Web Push",
+        "status_lite": "Web Push is not available in Bulwark Lite; it needs the Bulwark server.",
         "status_busy": "Working…",
         "enable": "Enable",
         "reenable": "Re-register",
@@ -1197,7 +1205,9 @@
         "enabled": "Email notifications",
         "enabled_desc": "Show notifications when new emails arrive",
         "sound": "Notification sound",
-        "sound_desc": "Play an audio alert when new emails arrive"
+        "sound_desc": "Play an audio alert when new emails arrive",
+        "inbox_only": "Inbox only",
+        "inbox_only_desc": "Only notify for mail that lands in the Inbox; skip mail a filter files into another folder"
       },
       "calendar": {
         "title": "Calendar Notifications",
@@ -1779,7 +1789,9 @@
       "warnings": {
         "end_before_start": "End date must be after start date",
         "start_in_past": "Start date is in the past",
-        "empty_body": "Message body is empty - recipients will receive a blank reply"
+        "empty_body": "Message body is empty - recipients will receive a blank reply",
+        "subject_too_long": "The subject is too long for the server (at most {max} bytes).",
+        "body_too_long": "The message is too long for the server (at most {max} bytes, formatting included)."
       }
     },
     "folders": {
@@ -2000,6 +2012,7 @@
       "actions": "Actions",
       "add_action": "Add Action",
       "stop_processing": "Stop processing subsequent rules",
+      "include_spam": "Also move messages marked as spam",
       "attachment_type_placeholder": "e.g. pdf, doc, jpg",
       "value_placeholder_multi": "Value (multiple separated by commas)",
       "condition_fields": {
@@ -2041,6 +2054,8 @@
       "copy_to_folder": "Select folder",
       "forward_to": "Forward to email address",
       "forward_placeholder": "email@example.com",
+      "forward_keep_copy": "Keep a copy",
+      "forward_limit": "Forward limit per message on this server: {count}. Extra forwards are skipped.",
       "reject_message": "Rejection message",
       "reject_placeholder": "Your email has been rejected",
       "label_name": "Tag name",
@@ -2917,7 +2932,10 @@
       "all_events": "All events",
       "cancel": "Cancel",
       "save": "Save",
-      "delete": "Delete"
+      "delete": "Delete",
+      "rsvp_title": "Respond to recurring event",
+      "rsvp_description": "This is a recurring event. Which events does your response apply to?",
+      "respond": "Respond"
     },
     "alerts": {
       "title": "Reminders",
@@ -3028,6 +3046,9 @@
       "alert_now": "Starting now",
       "alert_in_minutes": "In {count} min",
       "invitation_sent": "Invitations sent",
+      "invitations_denied_title": "Invitations can't be sent",
+      "invitations_denied": "The server refused to send the invitations: {reason}. Save the event without sending them?",
+      "save_without_invitations": "Save without invitations",
       "rsvp_updated": "Response updated",
       "rsvp_error": "Failed to update response",
       "event_duplicated": "Event duplicated",
@@ -3320,6 +3341,8 @@
     "rename": "Rename",
     "rename_title": "Rename",
     "new_name": "New name",
+    "name_forbidden_chars": "The server does not allow these characters in names: {chars}",
+    "name_reserved": "This name is reserved on the server.",
     "delete": "Delete",
     "delete_confirm_title": "Delete resource",
     "delete_confirm_message": "Are you sure you want to delete \"{name}\"? This cannot be undone.",

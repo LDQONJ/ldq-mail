@@ -644,7 +644,8 @@
       "name_label": "Sūtītāja vārds",
       "name_placeholder": "Vārds",
       "email_label": "Sūtītāja e-pasta adrese",
-      "email_placeholder": "alias@example.com"
+      "email_placeholder": "alias@example.com",
+      "envelope_notice": "Ja jūsu serveris nepieņem šo adresi kā aploksnes sūtītāju, tās vietā tiek izmantota {identity}, un adresāti to var redzēt galvenē Return-Path."
     },
     "use_template": "Veidne",
     "save_as_template": "Saglabāt kā veidni",
@@ -657,6 +658,8 @@
     "upload_progress": "Augšupielāde {uploaded} / {total}",
     "upload_cancel": "Atcelt augšupielādi",
     "upload_failed": "Neizdevās augšupielādēt {filename}",
+    "attachment_too_large": "“{name}” ir lielāks, nekā serveris atļauj ({max} vienam failam)",
+    "attachments_total_too_large": "Pielikumi pārsniegtu servera ierobežojumu – {max} vienai ziņai",
     "drop_files": "Velciet failus šeit, lai pievienotu",
     "show_less": "Rādīt mazāk",
     "send_failed": "Neizdevās nosūtīt vēstuli",
@@ -779,6 +782,10 @@
     "email_sent": "Vēstule veiksmīgi nosūtīta",
     "email_deleted": "Vēstule izdzēsta",
     "email_archived": "Vēstule arhivēta",
+    "emails_deleted": "{count, plural, zero {# e-pasti dzēsti} one {# e-pasts dzēsts} other {# e-pasti dzēsti}}",
+    "emails_archived": "{count, plural, zero {# e-pasti arhivēti} one {# e-pasts arhivēts} other {# e-pasti arhivēti}}",
+    "error_archiving": "Neizdevās arhivēt e-pastu",
+    "error_updating": "Neizdevās atjaunināt e-pastu",
     "email_starred": "Vēstulei pievienota zvaigznīte",
     "email_unstarred": "Zvaigznīte noņemta",
     "email_marked_read": "Vēstule atzīmēta kā izlasīta",
@@ -1157,7 +1164,9 @@
         "enabled": "E-pasta paziņojumi",
         "enabled_desc": "Rādīt paziņojumus, saņemot jaunas vēstules",
         "sound": "Paziņojuma skaņa",
-        "sound_desc": "Atskaņot skaņas signālu, saņemot jaunas vēstules"
+        "sound_desc": "Atskaņot skaņas signālu, saņemot jaunas vēstules",
+        "inbox_only": "Inbox only",
+        "inbox_only_desc": "Only notify for mail that lands in the Inbox; skip mail a filter files into another folder"
       },
       "calendar": {
         "title": "Kalendāra paziņojumi",
@@ -1186,6 +1195,7 @@
         "status_busy": "Notiek darbs…",
         "status_inactive": "Nav iespējots šajā ierīcē",
         "status_unsupported": "Šī pārlūkprogramma neatbalsta Web Push",
+        "status_lite": "Web Push is not available in Bulwark Lite; it needs the Bulwark server.",
         "title": "Fona paziņojumi",
         "devices_title": "Reģistrētās ierīces",
         "devices_desc": "Visas ierīces, kas reģistrētas šī konta fona paziņojumu saņemšanai. Atsaucot ierīci, tā nekavējoties pārstāj tās saņemt.",
@@ -1770,7 +1780,9 @@
       "warnings": {
         "end_before_start": "Beigu datumam jābūt vēlāk par sākuma datumu",
         "start_in_past": "Sākuma datums ir pagātnē",
-        "empty_body": "Ziņojuma teksts ir tukšs - saņēmēji saņems tukšu atbildi"
+        "empty_body": "Ziņojuma teksts ir tukšs - saņēmēji saņems tukšu atbildi",
+        "subject_too_long": "Temats serverim ir pārāk garš (ne vairāk kā {max} baiti).",
+        "body_too_long": "Ziņa serverim ir pārāk gara (ne vairāk kā {max} baiti, ieskaitot formatējumu)."
       }
     },
     "folders": {
@@ -1991,6 +2003,7 @@
       "actions": "Darbības",
       "add_action": "Pievienot darbību",
       "stop_processing": "Pārtraukt nākamo noteikumu apstrādi",
+      "include_spam": "Pārvietot arī ziņas, kas atzīmētas kā mēstules",
       "attachment_type_placeholder": "piem. pdf, doc, jpg",
       "value_placeholder_multi": "Vērtība (vairākas atdalītas ar komatu)",
       "condition_fields": {
@@ -2032,6 +2045,8 @@
       "copy_to_folder": "Izvēlēties mapi",
       "forward_to": "Pārsūtīt uz e-pastu",
       "forward_placeholder": "lietotajs@piemers.lv",
+      "forward_keep_copy": "Saglabāt kopiju",
+      "forward_limit": "Pārsūtīšanas ierobežojums vienai ziņai šajā serverī: {count}. Papildu pārsūtīšanas tiek izlaistas.",
       "reject_message": "Noraidīšanas ziņojums",
       "reject_placeholder": "Jūsu e-pasts tika noraidīts",
       "label_name": "Taga nosaukums",
@@ -2914,7 +2929,10 @@
       "all_events": "Visus pasākumus",
       "cancel": "Atcelt",
       "save": "Saglabāt",
-      "delete": "Dzēst"
+      "delete": "Dzēst",
+      "rsvp_title": "Atbildēt uz atkārtotu pasākumu",
+      "rsvp_description": "Šis ir atkārtots pasākums. Uz kurām instancēm attiecas jūsu atbilde?",
+      "respond": "Atbildēt"
     },
     "alerts": {
       "title": "Atgādinājums",
@@ -2999,6 +3017,9 @@
       "alert_now": "Sākas tagad",
       "alert_in_minutes": "Pēc {count} min",
       "invitation_sent": "Uzaicinājumi nosūtīti",
+      "invitations_denied_title": "Ielūgumus nevar nosūtīt",
+      "invitations_denied": "Serveris atteicās nosūtīt ielūgumus: {reason}. Saglabāt notikumu, tos nenosūtot?",
+      "save_without_invitations": "Saglabāt bez ielūgumiem",
       "rsvp_updated": "Atbilde atjaunināta",
       "rsvp_error": "Neizdevās atjaunināt atbildi",
       "event_duplicated": "Pasākums dublēts",
@@ -3276,6 +3297,8 @@
     "rename": "Pārdēvēt",
     "rename_title": "Pārdēvēt",
     "new_name": "Jauns nosaukums",
+    "name_forbidden_chars": "Serveris neatļauj šīs rakstzīmes nosaukumos: {chars}",
+    "name_reserved": "Šis nosaukums serverī ir rezervēts.",
     "delete": "Dzēst",
     "delete_confirm_title": "Dzēst resursu",
     "delete_confirm_message": "Vai tiešām vēlaties dzēst «{name}»? Šo darbību nevar atcelt.",

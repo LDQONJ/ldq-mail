@@ -647,7 +647,8 @@
       "name_label": "Нэрнээс",
       "name_placeholder": "Нэр",
       "email_label": "Имэйл хаягаас",
-      "email_placeholder": "user@example.com"
+      "email_placeholder": "user@example.com",
+      "envelope_notice": "Хэрэв таны сервер энэ хаягийг дугтуйн илгээгчээр хүлээн авахгүй бол оронд нь {identity} ашиглагдах бөгөөд хүлээн авагчид үүнийг Return-Path гарчигт харж болно."
     },
     "use_template": "Загвар",
     "save_as_template": "Загвар болгон хадгалах",
@@ -660,6 +661,8 @@
     "upload_progress": "{uploaded} / {total}",
     "upload_cancel": "Байршуулалтыг цуцлах",
     "upload_failed": "{filename}",
+    "attachment_too_large": "\"{name}\" сервер зөвшөөрөхөөс том байна (нэг файлд {max})",
+    "attachments_total_too_large": "Хавсралтууд серверийн нэг захидалд ногдох {max} хязгаараас хэтэрнэ",
     "drop_files": "Файлуудыг хавсаргах",
     "show_less": "Бага харуулах",
     "send_failed": "Имэйл илгээж чадсангүй",
@@ -779,6 +782,10 @@
     "email_sent": "Имэйл амжилттай илгээгдсэн",
     "email_deleted": "Имэйл устгасан",
     "email_archived": "Имэйл архивлагдсан",
+    "emails_deleted": "{count, plural, other {# имэйл устгагдлаа}}",
+    "emails_archived": "{count, plural, other {# имэйл архивлагдлаа}}",
+    "error_archiving": "Имэйлийг архивлаж чадсангүй",
+    "error_updating": "Имэйлийг шинэчилж чадсангүй",
     "email_starred": "И-мэйл одоор тэмдэглэгдсэн",
     "email_unstarred": "И-мэйл одыг арилгасан",
     "email_marked_read": "И-мэйл уншсан гэж тэмдэглэсэн",
@@ -1158,6 +1165,7 @@
         "status_active": "Энэ төхөөрөмжид идэвхтэй байна",
         "status_inactive": "Энэ төхөөрөмж дээр идэвхжээгүй",
         "status_unsupported": "Энэ хөтөч Web Push-ийг дэмждэггүй",
+        "status_lite": "Web Push is not available in Bulwark Lite; it needs the Bulwark server.",
         "status_busy": "Ажиллаж байна…",
         "enable": "Идэвхжүүлэх",
         "reenable": "Дахин бүртгүүлэх",
@@ -1195,7 +1203,9 @@
         "enabled": "И-мэйл мэдэгдэл",
         "enabled_desc": "Шинэ имэйл ирэх үед мэдэгдлийг харуулах",
         "sound": "Мэдэгдэлийн дуу",
-        "sound_desc": "Шинэ имэйл ирэх үед аудио дохиог тоглуулах"
+        "sound_desc": "Шинэ имэйл ирэх үед аудио дохиог тоглуулах",
+        "inbox_only": "Inbox only",
+        "inbox_only_desc": "Only notify for mail that lands in the Inbox; skip mail a filter files into another folder"
       },
       "calendar": {
         "title": "Календарийн мэдэгдэл",
@@ -1777,7 +1787,9 @@
       "warnings": {
         "end_before_start": "Төгсгөлийн огноо нь эхлэх огнооноос хойш байх ёстой",
         "start_in_past": "Эхлэх огноо өнгөрсөн байна",
-        "empty_body": "Зурвасны хэсэг хоосон байна - хүлээн авагчид хоосон хариу ирэх болно"
+        "empty_body": "Зурвасны хэсэг хоосон байна - хүлээн авагчид хоосон хариу ирэх болно",
+        "subject_too_long": "Гарчиг сервертэй харьцуулахад хэт урт байна (дээд тал нь {max} байт).",
+        "body_too_long": "Захидал сервертэй харьцуулахад хэт урт байна (форматыг оруулаад дээд тал нь {max} байт)."
       }
     },
     "folders": {
@@ -1998,6 +2010,7 @@
       "actions": "Үйлдэл",
       "add_action": "Үйлдэл нэмэх",
       "stop_processing": "Дараагийн дүрмийг боловсруулахаа зогсоох",
+      "include_spam": "Спам гэж тэмдэглэсэн захидлыг мөн зөөх",
       "attachment_type_placeholder": "жишээ нь pdf, doc, jpg",
       "value_placeholder_multi": "Утга (олон тоог таслалаар тусгаарласан)",
       "condition_fields": {
@@ -2039,6 +2052,8 @@
       "copy_to_folder": "Фолдер сонгох",
       "forward_to": "Имэйл хаяг руу шилжүүлэх",
       "forward_placeholder": "email@example.com",
+      "forward_keep_copy": "Хуулбар хадгалах",
+      "forward_limit": "Энэ сервер дээрх нэг захидлын дамжуулах хязгаар: {count}. Илүү дамжуулалтыг алгасна.",
       "reject_message": "Татгалзсан мессеж",
       "reject_placeholder": "Таны имэйл татгалзсан байна",
       "label_name": "Тагийн нэр",
@@ -2915,7 +2930,10 @@
       "all_events": "Бүх арга хэмжээ",
       "cancel": "Цуцлах",
       "save": "Хадгалах",
-      "delete": "Устгах"
+      "delete": "Устгах",
+      "rsvp_title": "Давтагдах үйл явдалд хариулах",
+      "rsvp_description": "Энэ бол давтагдах үйл явдал. Таны хариу аль үйл явдлуудад хамаарах вэ?",
+      "respond": "Хариулах"
     },
     "alerts": {
       "title": "Сануулгууд",
@@ -3026,6 +3044,9 @@
       "alert_now": "Одооноос эхлэн",
       "alert_in_minutes": "{count} мин",
       "invitation_sent": "Урилга илгээсэн",
+      "invitations_denied_title": "Урилга илгээх боломжгүй",
+      "invitations_denied": "Сервер урилга илгээхээс татгалзлаа: {reason}. Урилга илгээхгүйгээр үйл явдлыг хадгалах уу?",
+      "save_without_invitations": "Урилгагүйгээр хадгалах",
       "rsvp_updated": "Хариулт шинэчлэгдсэн",
       "rsvp_error": "Хариултыг шинэчилж чадсангүй",
       "event_duplicated": "Үйл явдал давхардсан",
@@ -3318,6 +3339,8 @@
     "rename": "Нэрээ өөрчлөх",
     "rename_title": "Нэрээ өөрчлөх",
     "new_name": "Шинэ нэр",
+    "name_forbidden_chars": "Сервер нэрэнд эдгээр тэмдэгтийг зөвшөөрдөггүй: {chars}",
+    "name_reserved": "Энэ нэр сервер дээр нөөцлөгдсөн.",
     "delete": "Устгах",
     "delete_confirm_title": "Нөөцийг устгах",
     "delete_confirm_message": "Та \"{name}\"-г устгахдаа итгэлтэй байна уу? Үүнийг буцаах боломжгүй.",

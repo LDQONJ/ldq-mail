@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useRouter } from "@/i18n/navigation";
 import { useTranslations } from "next-intl";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft } from "@/components/icons";
 import { Button } from "@/components/ui/button";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { useConfirmDialog } from "@/hooks/use-confirm-dialog";
@@ -27,23 +27,26 @@ import type { FileNodeRights } from "@/lib/jmap/types";
 import { ImagePreviewModal } from "@/components/files/image-preview-modal";
 import { FilePreviewModal } from "@/components/files/file-preview-modal";
 import { WopiEditor } from "@/components/files/wopi-editor";
-import { useWopiStatus, fileExtension } from "@/hooks/use-wopi-status";
+import { useWopiStatus, canWopiOpen } from "@/hooks/use-wopi-status";
 import { loadFilesSettings } from "@/components/files/files-settings-dialog";
 import type { FolderLayout } from "@/components/files/files-settings-dialog";
 import { AppTopBannerSlot } from "@/components/plugins/app-top-banner-slot";
-import { AlertTriangle, Loader2 } from "lucide-react";
+import { AlertTriangle, Loader2 } from "@/components/icons";
 import { isFilePreviewable } from "@/lib/file-preview";
 import { appPath, buildFilesPath, parseFilesPath, type FilesDeepLink } from "@/lib/deep-links";
 import { consumePendingDeepLinkEntry, subscribePendingDeepLink } from "@/lib/deep-link-handoff";
 import { useDeepLinkUrl } from "@/hooks/use-deep-link-url";
 import { useProInterfaceActive } from "@/components/pro/pro-interface-redirect";
+import { useLiteLinkSegments } from "@/hooks/use-lite-link-segments";
 
 export interface FilesAppProps {
   /** Path segments after `/files` - the folder path, one segment per level. */
   linkSegments?: string[];
 }
 
-export function FilesApp({ linkSegments }: FilesAppProps = {}) {
+export function FilesApp({ linkSegments: routeSegments }: FilesAppProps = {}) {
+  // Static Lite build: the route params are empty, read the link from the URL.
+  const linkSegments = useLiteLinkSegments('files', routeSegments);
   const router = useRouter();
   const t = useTranslations("files");
   const tDeepLink = useTranslations("deep_link");
@@ -132,11 +135,7 @@ export function FilesApp({ linkSegments }: FilesAppProps = {}) {
   // WOPI document editing (#425): name of the file open in the editor overlay.
   const [editFile, setEditFile] = useState<string | null>(null);
   const wopiStatus = useWopiStatus(filesEnabled);
-  const isOfficeEditable = useCallback((name: string) => {
-    if (!wopiStatus?.enabled) return false;
-    const ext = fileExtension(name);
-    return wopiStatus.editExtensions.includes(ext) || wopiStatus.viewExtensions.includes(ext);
-  }, [wopiStatus]);
+  const isOfficeEditable = useCallback((name: string) => canWopiOpen(wopiStatus, name), [wopiStatus]);
   const [showDetails, setShowDetails] = useState(false);
   const [detailName, setDetailName] = useState<string | null>(null);
 
@@ -724,7 +723,7 @@ export function FilesApp({ linkSegments }: FilesAppProps = {}) {
         const editResource = resources.find(r => r.name === editFile);
         return editResource ? (
           <WopiEditor
-            resource={editResource}
+            target={{ kind: "file", id: editResource.id, name: editResource.name }}
             accountId={filesAccountId}
             onClose={() => {
               setEditFile(null);

@@ -647,7 +647,8 @@
       "name_label": "Nom del remitent",
       "name_placeholder": "Nom",
       "email_label": "Adreça electrònica del remitent",
-      "email_placeholder": "alias@exemple.com"
+      "email_placeholder": "alias@exemple.com",
+      "envelope_notice": "Si el vostre servidor no accepta aquesta adreça com a remitent del sobre, s'hi fa servir {identity}, i els destinataris la poden veure a la capçalera Return-Path."
     },
     "use_template": "Plantilla",
     "save_as_template": "Desa com a plantilla",
@@ -660,6 +661,8 @@
     "upload_progress": "Pujant {uploaded} / {total}",
     "upload_cancel": "Cancel·la la pujada",
     "upload_failed": "No s'ha pogut pujar {filename}",
+    "attachment_too_large": "«{name}» supera la mida que permet el servidor ({max} per fitxer)",
+    "attachments_total_too_large": "Els adjunts superarien el límit del servidor de {max} per missatge",
     "drop_files": "Deixeu anar els fitxers per adjuntar-los",
     "show_less": "Mostra'n menys",
     "send_failed": "No s'ha pogut enviar el correu",
@@ -779,6 +782,10 @@
     "email_sent": "Correu enviat correctament",
     "email_deleted": "Correu suprimit",
     "email_archived": "Correu arxivat",
+    "emails_deleted": "{count, plural, one {# correu suprimit} other {# correus suprimits}}",
+    "emails_archived": "{count, plural, one {# correu arxivat} other {# correus arxivats}}",
+    "error_archiving": "No s'ha pogut arxivar el correu",
+    "error_updating": "No s'ha pogut actualitzar el correu",
     "email_starred": "Correu destacat",
     "email_unstarred": "S'ha tret l'estrella del correu",
     "email_marked_read": "Correu marcat com a llegit",
@@ -1158,6 +1165,7 @@
         "status_active": "Actiu en aquest dispositiu",
         "status_inactive": "No activat en aquest dispositiu",
         "status_unsupported": "Aquest navegador no admet Web Push",
+        "status_lite": "Web Push is not available in Bulwark Lite; it needs the Bulwark server.",
         "status_busy": "Treballant…",
         "enable": "Activa",
         "reenable": "Torna a registrar",
@@ -1195,7 +1203,9 @@
         "enabled": "Notificacions de correu",
         "enabled_desc": "Mostra notificacions quan arribin correus nous",
         "sound": "So de notificació",
-        "sound_desc": "Reprodueix un avís sonor quan arribin correus nous"
+        "sound_desc": "Reprodueix un avís sonor quan arribin correus nous",
+        "inbox_only": "Inbox only",
+        "inbox_only_desc": "Only notify for mail that lands in the Inbox; skip mail a filter files into another folder"
       },
       "calendar": {
         "title": "Notificacions de calendari",
@@ -1777,7 +1787,9 @@
       "warnings": {
         "end_before_start": "La data de finalització ha de ser posterior a la data d'inici",
         "start_in_past": "La data d'inici és al passat",
-        "empty_body": "El cos del missatge està buit - els destinataris rebran una resposta en blanc"
+        "empty_body": "El cos del missatge està buit - els destinataris rebran una resposta en blanc",
+        "subject_too_long": "L'assumpte és massa llarg per al servidor (com a màxim {max} bytes).",
+        "body_too_long": "El missatge és massa llarg per al servidor (com a màxim {max} bytes, amb el format inclòs)."
       }
     },
     "folders": {
@@ -1998,6 +2010,7 @@
       "actions": "Accions",
       "add_action": "Afegeix una acció",
       "stop_processing": "Atura el processament de les regles següents",
+      "include_spam": "Mou també els missatges marcats com a correu brossa",
       "attachment_type_placeholder": "p. ex. pdf, doc, jpg",
       "value_placeholder_multi": "Valor (múltiples separats per comes)",
       "condition_fields": {
@@ -2039,6 +2052,8 @@
       "copy_to_folder": "Selecciona una carpeta",
       "forward_to": "Reenvia a l'adreça electrònica",
       "forward_placeholder": "correu@exemple.com",
+      "forward_keep_copy": "Conserva'n una còpia",
+      "forward_limit": "Límit de reenviaments per missatge en aquest servidor: {count}. Els reenviaments addicionals s'ometen.",
       "reject_message": "Missatge de rebuig",
       "reject_placeholder": "El vostre correu ha estat rebutjat",
       "label_name": "Nom de l'etiqueta",
@@ -2915,7 +2930,10 @@
       "all_events": "Tots els esdeveniments",
       "cancel": "Cancel·la",
       "save": "Desa",
-      "delete": "Suprimeix"
+      "delete": "Suprimeix",
+      "rsvp_title": "Respon a l'esdeveniment periòdic",
+      "rsvp_description": "Aquest és un esdeveniment periòdic. A quins esdeveniments s'aplica la vostra resposta?",
+      "respond": "Respon"
     },
     "alerts": {
       "title": "Recordatoris",
@@ -3026,6 +3044,9 @@
       "alert_now": "Comença ara",
       "alert_in_minutes": "D'aquí a {count} min",
       "invitation_sent": "Invitacions enviades",
+      "invitations_denied_title": "No es poden enviar les invitacions",
+      "invitations_denied": "El servidor ha refusat enviar les invitacions: {reason}. Voleu desar l'esdeveniment sense enviar-les?",
+      "save_without_invitations": "Desa sense invitacions",
       "rsvp_updated": "Resposta actualitzada",
       "rsvp_error": "No s'ha pogut actualitzar la resposta",
       "event_duplicated": "Esdeveniment duplicat",
@@ -3318,6 +3339,8 @@
     "rename": "Canvia el nom",
     "rename_title": "Canvia el nom",
     "new_name": "Nom nou",
+    "name_forbidden_chars": "El servidor no permet aquests caràcters als noms: {chars}",
+    "name_reserved": "Aquest nom està reservat al servidor.",
     "delete": "Suprimeix",
     "delete_confirm_title": "Suprimeix el recurs",
     "delete_confirm_message": "Segur que voleu suprimir «{name}»? Això no es pot desfer.",

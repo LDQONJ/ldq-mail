@@ -5,7 +5,7 @@ import { useFocusTrap } from "@/hooks/use-focus-trap";
 import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { X, Paperclip, Send, Save, Check, Loader2, AlertCircle, FileText, BookmarkPlus, CalendarClock, ChevronDown, MailCheck, Search, Users, PackageCheck, LockKeyhole, Type } from "lucide-react";
+import { X, Paperclip, Send, Save, Check, Loader2, AlertCircle, FileText, BookmarkPlus, CalendarClock, ChevronDown, MailCheck, Search, Users, PackageCheck, LockKeyhole, Type } from "@/components/icons";
 import { cn, formatFileSize, formatDateTime, generateUUID } from "@/lib/utils";
 import { debug } from "@/lib/debug";
 import { toast } from "@/stores/toast-store";
@@ -46,7 +46,7 @@ import { appendPlainTextSignature, getPlainTextSignature, plainTextBodyHasSignat
 import { findComposeIdentityId, findDraftIdentityId, findReplyIdentityId, resolveReplyFrom } from "@/lib/reply-identity";
 import { buildReplyRecipients, isSelfSent } from "@/lib/reply-recipients";
 import { computeReplyThreadingHeaders } from "@/lib/email-threading";
-import { RequestTimeoutError } from "@/lib/jmap/client";
+import { RequestTimeoutError, ScheduleTooLateError } from "@/lib/jmap/client";
 import {
   rewriteCidImagesForEditor,
   replaceInlineImagePlaceholders,
@@ -131,7 +131,7 @@ export interface ComposerDraftData {
    * next save/send rebuilds the draft without them - silent data loss (#849).
    */
   attachments?: Array<{ blobId: string; name?: string; type?: string; size: number; cid?: string; disposition?: string }>;
-  /** When set, overrides the header From: - sent through the selected identity's envelope. */
+  /** When set, overrides the header From: and the envelope MAIL FROM, where the server allows it. */
   fromOverrideEmail?: string;
   fromOverrideName?: string;
   fromOverrideEnabled?: boolean;
@@ -699,6 +699,16 @@ export function EmailComposer({
   const composerClientRef = useRef(composerClient);
   composerClientRef.current = composerClient;
   const currentIdentityRawId = currentIdentityParts.rawId ?? currentIdentity?.id;
+  // A From override is asked for as the envelope MAIL FROM too, but a server
+  // may only accept the identity's own address there (Stalwart does), which
+  // then shows in the Return-Path. Unless one of the account's identities owns
+  // the override address - the send goes through that one - say so (#1009).
+  const overrideAddress = fromOverrideEnabled ? fromOverrideEmail.trim().toLowerCase() : '';
+  const overrideEnvelopeFallback = overrideAddress && currentIdentity?.email
+    && !identities.some((identity) => identity.email.toLowerCase() === overrideAddress
+      && stripCrossAccountIdentityPrefix(identity.id).localAccountId === currentIdentityParts.localAccountId)
+    ? currentIdentity.email
+    : null;
   // Alias identities often lack a configured signature - fall back to the primary
   // identity's signature so replies (which auto-select a matching alias) still
   // populate the user's signature.
@@ -1446,6 +1456,31 @@ export function EmailComposer({
     if (allowedFiles.length === 0) return;
     files = allowedFiles;
 
+    // Refuse what the server would refuse after the upload (maxSizeUpload per
+    // blob, maxSizeAttachmentsPerEmail per message) instead of failing late.
+    const uploadClient = composerClientRef.current ?? client;
+    const maxUpload = uploadClient.getMaxSizeUpload?.() ?? 0;
+    const oversized = maxUpload > 0 ? files.find(f => f.size > maxUpload) : undefined;
+    if (oversized) {
+      toast.error(t('attachment_too_large', { name: oversized.name, max: formatFileSize(maxUpload) }));
+      files = files.filter(f => f.size <= maxUpload);
+    }
+    const maxTotal = uploadClient.getMaxSizeAttachmentsPerEmail?.() ?? 0;
+    if (maxTotal > 0) {
+      let total = attachmentsRef.current.reduce((sum, att) => sum + (att.size || 0), 0);
+      const fitting: File[] = [];
+      for (const f of files) {
+        if (total + f.size > maxTotal) continue;
+        total += f.size;
+        fitting.push(f);
+      }
+      if (fitting.length < files.length) {
+        toast.error(t('attachments_total_too_large', { max: formatFileSize(maxTotal) }));
+      }
+      files = fitting;
+    }
+    if (files.length === 0) return;
+
     const newAttachments: ComposerAttachment[] = files.map(file => {
       const controller = new AbortController();
       return {
@@ -1517,14 +1552,22 @@ export function EmailComposer({
           const newFileId = typeof transformed === 'string' ? transformed : fileId;
 
           const newFile = await fileStorage.getFile(newFileId) || file;
-          await fileStorage.deleteFile(newFileId);
 
           // Passing the signal also makes cancel abort the transfer itself,
           // instead of only being checked once the upload has finished.
-          const { blobId } = await (composerClientRef.current ?? client).uploadBlob(newFile, {
-            onProgress: reportProgress,
-            signal: controller?.signal,
-          });
+          // The staged copy is deleted only after the upload: in Firefox the
+          // File read back from IndexedDB is backed by the stored record, and
+          // deleting it first races the send - XHR then declares the full
+          // Content-Length but sends 0 bytes, and nginx answers 400.
+          let blobId: string;
+          try {
+            ({ blobId } = await (composerClientRef.current ?? client).uploadBlob(newFile, {
+              onProgress: reportProgress,
+              signal: controller?.signal,
+            }));
+          } finally {
+            await fileStorage.deleteFile(newFileId).catch(() => {});
+          }
 
           if (controller?.signal.aborted) continue;
           setAttachments(prev =>
@@ -2087,7 +2130,10 @@ export function EmailComposer({
     }
 
     const ccAddresses = expandRecipients(withInput(cc, ccInput));
-    const bccAddresses = expandRecipients(withInput(bcc, bccInput));
+    // RFC 8621 Identity.bcc: addresses to Bcc on every message sent with the
+    // identity. The server does not add them; only the send carries them, so
+    // a saved draft does not pick up a copy each time it is reopened.
+    const bccAddresses = expandRecipients([...withInput(bcc, bccInput), ...(currentIdentity?.bcc ?? [])]);
 
     if (!canSend) {
       const errors: { to?: boolean; body?: boolean } = {};
@@ -2171,15 +2217,16 @@ export function EmailComposer({
         : currentIdentity.email
       : undefined;
     // When the user has typed a From override, that becomes the header From
-    // (and MIME-builder From in the S/MIME path). The identity still drives
-    // the SMTP envelope MAIL FROM - set explicitly so it doesn't mistakenly
-    // default to the override address.
+    // (and MIME-builder From in the S/MIME path) and is asked for as the SMTP
+    // envelope MAIL FROM too, so the Return-Path doesn't reveal the identity's
+    // address (#1009). A server that only accepts the identity's own address
+    // there gets that instead; the From row says so before sending.
     const overrideActive = fromOverrideEnabled && fromOverrideEmail.trim().length > 0;
     const fromEmail = overrideActive ? fromOverrideEmail.trim() : identityFromEmail;
     const fromName = overrideActive
       ? (fromOverrideName.trim() || undefined)
       : (currentIdentity?.name || undefined);
-    const envelopeMailFrom = overrideActive ? identityFromEmail : undefined;
+    const envelopeMailFrom = overrideActive ? fromEmail : undefined;
 
     // Body is already HTML from the rich text editor (or plain text in plain
     // text mode). Where the signature is already part of it (compose mode,
@@ -2382,7 +2429,9 @@ export function EmailComposer({
       toast.error(
         err instanceof RequestTimeoutError
           ? t('send_timeout')
-          : err instanceof Error ? err.message : t('send_failed')
+          : err instanceof ScheduleTooLateError
+            ? t('schedule_send_too_late')
+            : err instanceof Error ? err.message : t('send_failed')
       );
     } finally {
       isSendingRef.current = false;
@@ -2796,6 +2845,11 @@ export function EmailComposer({
               </Button>
             </div>
           </div>
+          {overrideEnvelopeFallback && (
+            <p className="ps-[4.5rem] md:ps-[5.5rem] pe-4 py-1.5 text-xs text-muted-foreground border-b border-border/50">
+              {t('from_override.envelope_notice', { identity: overrideEnvelopeFallback })}
+            </p>
+          )}
 
           {/* To field */}
           <div data-testid="composer-to" className={cn("flex items-center gap-2 px-4 py-2.5 border-b border-border/50 relative", shakeField === 'to' && "animate-shake")}>

@@ -644,7 +644,8 @@
       "name_label": "Nazwa nadawcy",
       "name_placeholder": "Nazwa",
       "email_label": "Adres e-mail nadawcy",
-      "email_placeholder": "alias@example.com"
+      "email_placeholder": "alias@example.com",
+      "envelope_notice": "Jeśli twój serwer nie akceptuje tego adresu jako nadawcy koperty, zostanie użyty {identity}, a odbiorcy zobaczą go w nagłówku Return-Path."
     },
     "use_template": "Szablon",
     "save_as_template": "Zapisz jako szablon",
@@ -657,6 +658,8 @@
     "upload_progress": "Przesyłanie {uploaded} / {total}",
     "upload_cancel": "Anuluj przesyłanie",
     "upload_failed": "Nie udało się przesłać {filename}",
+    "attachment_too_large": "„{name}” jest większy, niż pozwala serwer ({max} na plik)",
+    "attachments_total_too_large": "Załączniki przekroczyłyby limit serwera {max} na wiadomość",
     "drop_files": "Upuść pliki, aby załączyć",
     "show_less": "Pokaż mniej",
     "send_failed": "Nie udało się wysłać wiadomości",
@@ -779,6 +782,10 @@
     "email_sent": "Wiadomość wysłana pomyślnie",
     "email_deleted": "Wiadomość usunięta",
     "email_archived": "Wiadomość zarchiwizowana",
+    "emails_deleted": "{count, plural, one {# wiadomość usunięta} few {# wiadomości usunięte} many {# wiadomości usuniętych} other {# wiadomości usuniętych}}",
+    "emails_archived": "{count, plural, one {# wiadomość zarchiwizowana} few {# wiadomości zarchiwizowane} many {# wiadomości zarchiwizowanych} other {# wiadomości zarchiwizowanych}}",
+    "error_archiving": "Nie udało się zarchiwizować wiadomości",
+    "error_updating": "Nie udało się zaktualizować wiadomości",
     "email_starred": "Wiadomość oznaczona gwiazdką",
     "email_unstarred": "Gwiazdka usunięta",
     "email_marked_read": "Wiadomość oznaczona jako przeczytana",
@@ -1157,7 +1164,9 @@
         "enabled": "Powiadomienia e-mail",
         "enabled_desc": "Pokazuj powiadomienia po nadejściu nowych wiadomości e-mail",
         "sound": "Dźwięk powiadomienia",
-        "sound_desc": "Odtwarzaj sygnał dźwiękowy po nadejściu nowych wiadomości e-mail"
+        "sound_desc": "Odtwarzaj sygnał dźwiękowy po nadejściu nowych wiadomości e-mail",
+        "inbox_only": "Inbox only",
+        "inbox_only_desc": "Only notify for mail that lands in the Inbox; skip mail a filter files into another folder"
       },
       "calendar": {
         "title": "Powiadomienia kalendarza",
@@ -1186,6 +1195,7 @@
         "status_busy": "Przetwarzanie…",
         "status_inactive": "Niewłączone na tym urządzeniu",
         "status_unsupported": "Ta przeglądarka nie obsługuje Web Push",
+        "status_lite": "Web Push is not available in Bulwark Lite; it needs the Bulwark server.",
         "title": "Powiadomienia w tle",
         "devices_title": "Zarejestrowane urządzenia",
         "devices_desc": "Wszystkie urządzenia zarejestrowane do odbioru powiadomień w tle dla tego konta. Unieważnienie natychmiast wstrzymuje ich odbiór.",
@@ -1770,7 +1780,9 @@
       "warnings": {
         "end_before_start": "Data zakończenia musi być późniejsza niż data rozpoczęcia",
         "start_in_past": "Data rozpoczęcia jest w przeszłości",
-        "empty_body": "Treść wiadomości jest pusta - odbiorcy otrzymają pustą odpowiedź"
+        "empty_body": "Treść wiadomości jest pusta - odbiorcy otrzymają pustą odpowiedź",
+        "subject_too_long": "Temat jest za długi dla serwera (maksymalnie {max} bajtów).",
+        "body_too_long": "Wiadomość jest za długa dla serwera (maksymalnie {max} bajtów wraz z formatowaniem)."
       }
     },
     "folders": {
@@ -1991,6 +2003,7 @@
       "actions": "Akcje",
       "add_action": "Dodaj akcję",
       "stop_processing": "Zatrzymaj przetwarzanie kolejnych reguł",
+      "include_spam": "Przenoś również wiadomości oznaczone jako spam",
       "attachment_type_placeholder": "np. pdf, doc, jpg",
       "value_placeholder_multi": "Wartość (kilka oddzielonych przecinkami)",
       "condition_fields": {
@@ -2032,6 +2045,8 @@
       "copy_to_folder": "Wybierz folder",
       "forward_to": "Prześlij dalej na adres e-mail",
       "forward_placeholder": "email@example.com",
+      "forward_keep_copy": "Zachowaj kopię",
+      "forward_limit": "Limit przekazań na wiadomość na tym serwerze: {count}. Dodatkowe przekazania są pomijane.",
       "reject_message": "Wiadomość odrzucenia",
       "reject_placeholder": "Twoja wiadomość e-mail została odrzucona",
       "label_name": "Nazwa etykiety",
@@ -2915,7 +2930,10 @@
       "all_events": "Wszystkie wydarzenia",
       "cancel": "Anuluj",
       "save": "Zapisz",
-      "delete": "Usuń"
+      "delete": "Usuń",
+      "rsvp_title": "Odpowiedz na wydarzenie cykliczne",
+      "rsvp_description": "To jest wydarzenie cykliczne. Których wydarzeń dotyczy Twoja odpowiedź?",
+      "respond": "Odpowiedz"
     },
     "alerts": {
       "title": "Przypomnienie",
@@ -3000,6 +3018,9 @@
       "alert_now": "Zaczyna się teraz",
       "alert_in_minutes": "Za {count} min",
       "invitation_sent": "Zaproszenia wysłano",
+      "invitations_denied_title": "Nie można wysłać zaproszeń",
+      "invitations_denied": "Serwer odmówił wysłania zaproszeń: {reason}. Zapisać wydarzenie bez ich wysyłania?",
+      "save_without_invitations": "Zapisz bez zaproszeń",
       "rsvp_updated": "Odpowiedź zaktualizowano",
       "rsvp_error": "Nie udało się zaktualizować odpowiedzi",
       "event_duplicated": "Wydarzenie zduplikowano",
@@ -3276,6 +3297,8 @@
     "rename": "Zmień nazwę",
     "rename_title": "Zmień nazwę",
     "new_name": "Nowa nazwa",
+    "name_forbidden_chars": "Serwer nie zezwala na te znaki w nazwach: {chars}",
+    "name_reserved": "Ta nazwa jest zarezerwowana na serwerze.",
     "delete": "Usuń",
     "delete_confirm_title": "Usuń zasób",
     "delete_confirm_message": "Czy na pewno chcesz usunąć \"{name}\"? Tej operacji nie można cofnąć.",

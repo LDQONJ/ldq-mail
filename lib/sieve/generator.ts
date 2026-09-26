@@ -91,15 +91,31 @@ function generateCondition(condition: FilterCondition): string {
   }
 }
 
-function generateActions(actions: FilterAction[]): string[] {
-  return actions.map(action => {
+const FLAG_ACTIONS = new Set<FilterAction['type']>(['mark_read', 'star', 'add_label']);
+
+function fileintoTarget(action: FilterAction, useMailboxId: boolean): string {
+  const path = `"${escapeString(action.value || '')}"`;
+  // RFC 9042: the path is the fallback when the id no longer exists.
+  return useMailboxId && action.mailboxId
+    ? `:mailboxid "${escapeString(action.mailboxId)}" ${path}`
+    : path;
+}
+
+function generateActions(actions: FilterAction[], useMailboxId: boolean): string[] {
+  // fileinto (and the implicit keep) store the flags set at that moment, so a
+  // flag action placed after a move in the UI would be lost. Set flags first.
+  const ordered = [
+    ...actions.filter(a => FLAG_ACTIONS.has(a.type)),
+    ...actions.filter(a => !FLAG_ACTIONS.has(a.type)),
+  ];
+  return ordered.map(action => {
     switch (action.type) {
       case 'move':
-        return `fileinto "${escapeString(action.value || '')}";`;
+        return `fileinto ${fileintoTarget(action, useMailboxId)};`;
       case 'copy':
-        return `fileinto :copy "${escapeString(action.value || '')}";`;
+        return `fileinto :copy ${fileintoTarget(action, useMailboxId)};`;
       case 'forward':
-        return `redirect "${escapeString(action.value || '')}";`;
+        return `redirect ${action.keepCopy ? ':copy ' : ''}"${escapeString(action.value || '')}";`;
       case 'mark_read':
         return 'addflag "\\\\Seen";';
       case 'star':
@@ -114,7 +130,8 @@ function generateActions(actions: FilterAction[]): string[] {
         // A bare `keep;` delivers to the "default place", which on Stalwart is
         // Junk for a message its spam filter has already classified, so an
         // allow-list rule made with "Keep" would change nothing. An explicit
-        // `fileinto "INBOX"` is honored over the spam verdict (#1027).
+        // `fileinto "INBOX"` is honored over the spam verdict (#1027), but
+        // only from Stalwart 0.16.22; older versions still move it to Junk.
         return 'fileinto "INBOX";';
       case 'stop':
         return 'stop;';
@@ -122,7 +139,32 @@ function generateActions(actions: FilterAction[]): string[] {
   });
 }
 
-function computeRequires(rules: FilterRule[], vacation?: VacationSieveConfig): string[] {
+// Stalwart maps its spam verdict to 100 % (0.16.0) or to a graded value where
+// 50 % is the spam threshold (0.16.19+), so ">= 50" matches "is spam" on both.
+const SPAM_GUARD = 'not spamtest :percent :value "ge" :comparator "i;ascii-numeric" "50"';
+const SPAM_GUARD_REQUIRES = ['spamtestplus', 'relational', 'comparator-i;ascii-numeric'];
+
+function supportsSpamGuard(extensions: string[] | undefined): boolean {
+  return ['spamtestplus', 'relational'].every(e => extensions?.includes(e));
+}
+
+/**
+ * A folder move takes a message out of the Junk folder the server would have
+ * put it in, so move/copy rules skip spam unless the rule opts in. "Keep"
+ * rules are allow-lists and stay unguarded.
+ */
+function needsSpamGuard(rule: FilterRule, extensions: string[] | undefined): boolean {
+  return !rule.includeSpam &&
+    rule.actions.some(a => a.type === 'move' || a.type === 'copy') &&
+    supportsSpamGuard(extensions);
+}
+
+function computeRequires(
+  rules: FilterRule[],
+  vacation: VacationSieveConfig | undefined,
+  useMailboxId: boolean,
+  serverExtensions: string[] | undefined,
+): string[] {
   const extensions = new Set<string>();
   const enabledRules = rules.filter(r => r.enabled);
 
@@ -131,6 +173,9 @@ function computeRequires(rules: FilterRule[], vacation?: VacationSieveConfig): s
   }
 
   for (const rule of enabledRules) {
+    if (needsSpamGuard(rule, serverExtensions)) {
+      for (const e of SPAM_GUARD_REQUIRES) extensions.add(e);
+    }
     for (const condition of rule.conditions) {
       if (condition.field === 'body') extensions.add('body');
       if (condition.field === 'attachment') extensions.add('mime');
@@ -138,12 +183,20 @@ function computeRequires(rules: FilterRule[], vacation?: VacationSieveConfig): s
     for (const action of rule.actions) {
       switch (action.type) {
         case 'move':
+        case 'copy':
+          extensions.add('fileinto');
+          if (action.type === 'copy') extensions.add('copy');
+          if (useMailboxId && action.mailboxId) {
+            // Stalwart rejects :mailboxid unless "mailbox" is declared too.
+            extensions.add('mailbox');
+            extensions.add('mailboxid');
+          }
+          break;
         case 'keep':
           extensions.add('fileinto');
           break;
-        case 'copy':
-          extensions.add('fileinto');
-          extensions.add('copy');
+        case 'forward':
+          if (action.keepCopy) extensions.add('copy');
           break;
         case 'mark_read':
         case 'star':
@@ -169,6 +222,7 @@ function stripRuleForMetadata(r: FilterRule): Omit<FilterRule, 'origin' | 'origi
     conditions: r.conditions,
     actions: r.actions,
     stopProcessing: r.stopProcessing,
+    ...(r.includeSpam ? { includeSpam: true } : {}),
   };
 }
 
@@ -179,7 +233,21 @@ export interface GenerateOptions {
    * own requires are deduplicated.
    */
   externalRequires?: string[];
+  /**
+   * Run the server-managed "vacation" script (VacationResponse) from this
+   * one. Only one script can be active, so this keeps the auto-reply working
+   * while the filters stay active.
+   */
+  includeVacation?: boolean;
+  /**
+   * The server's `sieveExtensions`. Folder moves use `:mailboxid` when it
+   * lists "mailboxid"; without it they target the folder path only.
+   */
+  extensions?: string[];
 }
+
+/** Name of the script a server builds for VacationResponse (RFC 9661). */
+export const VACATION_SCRIPT_NAME = 'vacation';
 
 export function generateScript(
   rules: FilterRule[],
@@ -201,6 +269,9 @@ export function generateScript(
   if (vacation?.isEnabled) {
     metadata.vacation = vacation;
   }
+  if (options.includeVacation) {
+    metadata.includeVacation = true;
+  }
   const metadataJson = JSON.stringify(metadata);
   const lines: string[] = [];
 
@@ -209,12 +280,22 @@ export function generateScript(
   lines.push('@metadata:end */');
   lines.push('');
 
-  const bulwarkRequires = computeRequires(bulwarkRules, vacation);
+  const useMailboxId = options.extensions?.includes('mailboxid') ?? false;
+  const bulwarkRequires = computeRequires(bulwarkRules, vacation, useMailboxId, options.extensions);
+  if (options.includeVacation) bulwarkRequires.push('include');
   const externalRequires = options.externalRequires ?? [];
   const allRequires = [...new Set([...bulwarkRequires, ...externalRequires])].sort();
 
   if (allRequires.length > 0) {
     lines.push(`require [${allRequires.map(r => `"${r}"`).join(', ')}];`);
+  }
+
+  if (options.includeVacation) {
+    // The "# Vacation auto-reply" comment marks the block as Bulwark's, so
+    // the parser does not re-import it as an external rule.
+    lines.push('');
+    lines.push('# Vacation auto-reply');
+    lines.push(`include :personal :optional "${VACATION_SCRIPT_NAME}";`);
   }
 
   if (vacation?.isEnabled) {
@@ -251,7 +332,13 @@ export function generateScript(
       conditionStr = `${wrapper}(${conditions.join(', ')})`;
     }
 
-    const actionLines = generateActions(rule.actions);
+    if (needsSpamGuard(rule, options.extensions)) {
+      conditionStr = conditions.length > 1 && rule.matchType === 'all'
+        ? `allof(${conditions.join(', ')}, ${SPAM_GUARD})`
+        : `allof(${conditionStr}, ${SPAM_GUARD})`;
+    }
+
+    const actionLines = generateActions(rule.actions, useMailboxId);
 
     if (rule.stopProcessing) {
       const lastAction = rule.actions[rule.actions.length - 1];

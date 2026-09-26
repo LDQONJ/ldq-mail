@@ -644,7 +644,8 @@
       "name_label": "Имя отправителя",
       "name_placeholder": "Имя",
       "email_label": "Email отправителя",
-      "email_placeholder": "alias@example.com"
+      "email_placeholder": "alias@example.com",
+      "envelope_notice": "Если ваш сервер не принимает этот адрес как отправителя конверта, вместо него используется {identity}, и получатели увидят его в заголовке Return-Path."
     },
     "use_template": "Шаблон",
     "save_as_template": "Сохранить как шаблон",
@@ -657,6 +658,8 @@
     "upload_progress": "Загрузка {uploaded} / {total}",
     "upload_cancel": "Отменить загрузку",
     "upload_failed": "Не удалось загрузить {filename}",
+    "attachment_too_large": "«{name}» больше, чем разрешает сервер ({max} на файл)",
+    "attachments_total_too_large": "Вложения превысят лимит сервера в {max} на письмо",
     "drop_files": "Перетащите файлы для прикрепления",
     "show_less": "Свернуть",
     "send_failed": "Не удалось отправить письмо",
@@ -779,6 +782,10 @@
     "email_sent": "Письмо успешно отправлено",
     "email_deleted": "Письмо удалено",
     "email_archived": "Письмо архивировано",
+    "emails_deleted": "{count, plural, one {# письмо удалено} few {# письма удалены} many {# писем удалено} other {# письма удалено}}",
+    "emails_archived": "{count, plural, one {# письмо архивировано} few {# письма архивированы} many {# писем архивировано} other {# письма архивировано}}",
+    "error_archiving": "Не удалось архивировать письмо",
+    "error_updating": "Не удалось обновить письмо",
     "email_starred": "Письмо помечено",
     "email_unstarred": "Пометка снята",
     "email_marked_read": "Письмо отмечено прочитанным",
@@ -1157,7 +1164,9 @@
         "enabled": "Уведомления о почте",
         "enabled_desc": "Показывать уведомления при получении новых писем",
         "sound": "Звук уведомления",
-        "sound_desc": "Воспроизводить звуковой сигнал при получении новых писем"
+        "sound_desc": "Воспроизводить звуковой сигнал при получении новых писем",
+        "inbox_only": "Inbox only",
+        "inbox_only_desc": "Only notify for mail that lands in the Inbox; skip mail a filter files into another folder"
       },
       "calendar": {
         "title": "Уведомления календаря",
@@ -1186,6 +1195,7 @@
         "status_busy": "Выполняется…",
         "status_inactive": "Не включено на этом устройстве",
         "status_unsupported": "Этот браузер не поддерживает Web Push",
+        "status_lite": "Web Push is not available in Bulwark Lite; it needs the Bulwark server.",
         "title": "Фоновые уведомления",
         "devices_title": "Зарегистрированные устройства",
         "devices_desc": "Все устройства, зарегистрированные для получения фоновых уведомлений этой учётной записи. После отзыва устройство сразу перестаёт их получать.",
@@ -1770,7 +1780,9 @@
       "warnings": {
         "end_before_start": "Дата окончания должна быть позже даты начала",
         "start_in_past": "Дата начала в прошлом",
-        "empty_body": "Текст сообщения пуст - получатели получат пустой ответ"
+        "empty_body": "Текст сообщения пуст - получатели получат пустой ответ",
+        "subject_too_long": "Тема слишком длинная для сервера (не более {max} байт).",
+        "body_too_long": "Сообщение слишком длинное для сервера (не более {max} байт с учётом форматирования)."
       }
     },
     "folders": {
@@ -1991,6 +2003,7 @@
       "actions": "Действия",
       "add_action": "Добавить действие",
       "stop_processing": "Прекратить обработку последующих правил",
+      "include_spam": "Перемещать также письма, помеченные как спам",
       "attachment_type_placeholder": "напр. pdf, doc, jpg",
       "value_placeholder_multi": "Значение (несколько через запятую)",
       "condition_fields": {
@@ -2032,6 +2045,8 @@
       "copy_to_folder": "Выбрать папку",
       "forward_to": "Переслать на адрес электронной почты",
       "forward_placeholder": "user@пример.рф",
+      "forward_keep_copy": "Сохранить копию",
+      "forward_limit": "Лимит пересылок на одно письмо на этом сервере: {count}. Лишние пересылки пропускаются.",
       "reject_message": "Сообщение об отклонении",
       "reject_placeholder": "Ваше письмо было отклонено",
       "label_name": "Название тега",
@@ -2915,7 +2930,10 @@
       "all_events": "Все события",
       "cancel": "Отмена",
       "save": "Сохранить",
-      "delete": "Удалить"
+      "delete": "Удалить",
+      "rsvp_title": "Ответить на повторяющееся событие",
+      "rsvp_description": "Это повторяющееся событие. К каким событиям относится ваш ответ?",
+      "respond": "Ответить"
     },
     "alerts": {
       "title": "Напоминание",
@@ -3000,6 +3018,9 @@
       "alert_now": "Начинается сейчас",
       "alert_in_minutes": "Через {count} мин",
       "invitation_sent": "Приглашения отправлены",
+      "invitations_denied_title": "Не удаётся отправить приглашения",
+      "invitations_denied": "Сервер отказался отправить приглашения: {reason}. Сохранить событие без их отправки?",
+      "save_without_invitations": "Сохранить без приглашений",
       "rsvp_updated": "Ответ обновлён",
       "rsvp_error": "Не удалось обновить ответ",
       "event_duplicated": "Событие дублировано",
@@ -3276,6 +3297,8 @@
     "rename": "Переименовать",
     "rename_title": "Переименовать",
     "new_name": "Новое название",
+    "name_forbidden_chars": "Сервер не допускает эти символы в именах: {chars}",
+    "name_reserved": "Это имя зарезервировано на сервере.",
     "delete": "Удалить",
     "delete_confirm_title": "Удалить ресурс",
     "delete_confirm_message": "Вы уверены, что хотите удалить «{name}»? Это действие нельзя отменить.",
