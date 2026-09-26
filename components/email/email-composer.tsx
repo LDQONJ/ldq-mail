@@ -2571,12 +2571,18 @@ export function EmailComposer({
       {/* Header - mobile: clean bar with close/send, desktop: title bar */}
       <div className="flex items-center justify-between px-4 py-3 border-b bg-background">
         <div className="flex items-center gap-3">
-          <Button variant="ghost" size="icon" onClick={() => handleClose()} className="h-9 w-9 md:h-8 md:w-8">
+          <Button variant="ghost" size="icon" onClick={() => handleClose()} disabled={isSending} className="h-9 w-9 md:h-8 md:w-8">
             <X className="w-5 h-5 md:w-4 md:h-4" />
           </Button>
-          <div className="flex items-center gap-2" data-testid="composer-save-status" data-status={saveStatus}>
+          <div className="flex items-center gap-2" data-testid="composer-save-status" data-status={isSending ? 'sending' : saveStatus}>
             <h3 className="font-semibold text-base">{t('new_message')}</h3>
-            {saveStatus === 'saving' && (
+            {isSending && (
+              <div className="flex items-center gap-1 text-xs text-primary font-medium">
+                <Loader2 className="w-3 h-3 animate-spin" />
+                <span>{t('sending')}</span>
+              </div>
+            )}
+            {!isSending && saveStatus === 'saving' && (
               <div className="flex items-center gap-1 text-xs text-muted-foreground">
                 <Save className="w-3 h-3 animate-pulse" />
                 <span className="hidden md:inline">{t('saving')}</span>
@@ -2607,8 +2613,17 @@ export function EmailComposer({
               data-testid="composer-send"
               className="h-9 rounded-e-none border-e border-primary-foreground/20 px-3"
             >
-              <Send className="w-4 h-4 me-1.5" />
-              {t('send')}
+              {isSending ? (
+                <>
+                  <Loader2 className="w-4 h-4 me-1.5 animate-spin" />
+                  {t('sending')}
+                </>
+              ) : (
+                <>
+                  <Send className="w-4 h-4 me-1.5" />
+                  {t('send')}
+                </>
+              )}
             </Button>
             <Button
               type="button"
@@ -2645,8 +2660,17 @@ export function EmailComposer({
             data-testid="composer-send"
             className="md:hidden h-9 px-4"
           >
-            <Send className="w-4 h-4 me-1.5" />
-            {t('send')}
+            {isSending ? (
+              <>
+                <Loader2 className="w-4 h-4 me-1.5 animate-spin" />
+                {t('sending')}
+              </>
+            ) : (
+              <>
+                <Send className="w-4 h-4 me-1.5" />
+                {t('send')}
+              </>
+            )}
           </Button>
         )}
       </div>
@@ -3190,19 +3214,24 @@ export function EmailComposer({
 
           {/* Right side - Discard + Send (desktop) */}
           <div className="flex items-center gap-3">
-            <label className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground cursor-pointer select-none me-1">
+            <label className={cn(
+              "flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground cursor-pointer select-none me-1",
+              isSending && "opacity-50 pointer-events-none cursor-not-allowed"
+            )}>
               <input
                 type="checkbox"
                 checked={useOracleRelay}
+                disabled={isSending}
                 onChange={(e) => setUseOracleRelay(e.target.checked)}
-                className="rounded border-border text-primary focus:ring-primary h-3.5 w-3.5 cursor-pointer"
+                className="rounded border-border text-primary focus:ring-primary h-3.5 w-3.5 cursor-pointer disabled:cursor-not-allowed"
               />
               <span>{t('use_oracle_relay')}</span>
             </label>
             <button
               type="button"
               onClick={() => handleClose()}
-              className="text-sm text-muted-foreground hover:text-red-500 transition-colors px-2 py-1"
+              disabled={isSending}
+              className="text-sm text-muted-foreground hover:text-red-500 transition-colors px-2 py-1 disabled:opacity-50 disabled:pointer-events-none"
             >
               {t('discard')}
             </button>
@@ -3215,8 +3244,17 @@ export function EmailComposer({
                   data-testid="composer-send"
                   className="rounded-e-none border-e border-primary-foreground/20"
                 >
-                  <Send className="w-4 h-4 me-2" />
-                  {t('send')}
+                  {isSending ? (
+                    <>
+                      <Loader2 className="w-4 h-4 me-2 animate-spin" />
+                      {t('sending')}
+                    </>
+                  ) : (
+                    <>
+                      <Send className="w-4 h-4 me-2" />
+                      {t('send')}
+                    </>
+                  )}
                 </Button>
                 <Button
                   type="button"
@@ -3254,8 +3292,17 @@ export function EmailComposer({
                 data-testid="composer-send"
                 className="hidden md:inline-flex"
               >
-                <Send className="w-4 h-4 me-2" />
-                {t('send')}
+                {isSending ? (
+                  <>
+                    <Loader2 className="w-4 h-4 me-2 animate-spin" />
+                    {t('sending')}
+                  </>
+                ) : (
+                  <>
+                    <Send className="w-4 h-4 me-2" />
+                    {t('send')}
+                  </>
+                )}
               </Button>
             )}
           </div>

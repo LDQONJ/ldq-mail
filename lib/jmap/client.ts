@@ -3590,33 +3590,27 @@ export class JMAPClient implements IJMAPClient {
         throw new Error(errJson.error || `Oracle 代发失败 (HTTP ${oracleRes.status})`);
       }
 
-      // Save directly to Sent mailbox in Stalwart
+      // Save directly to Sent mailbox in Stalwart and clean up old draft in one request
       const sentEmailCreate = {
         ...emailCreate,
         keywords: { "$seen": true },
         mailboxIds: { [sentMailbox.id]: true },
       };
 
+      const setArgs: Record<string, unknown> = {
+        accountId: targetAccountId,
+        create: { [emailId]: sentEmailCreate },
+      };
+      if (draftId) {
+        setArgs.destroy = [draftId];
+      }
+
       const saveResponse = await this.request([
-        ["Email/set", {
-          accountId: targetAccountId,
-          create: { [emailId]: sentEmailCreate },
-        }, "0"]
+        ["Email/set", setArgs, "0"]
       ]);
 
       const createResult = saveResponse.methodResponses?.[0]?.[1];
       const createdId = createResult?.created?.[emailId]?.id;
-
-      // Clean up old draft if exists
-      if (draftId) {
-        try {
-          await this.request([
-            ["Email/set", { accountId: this.accountId, destroy: [draftId] }, "0"],
-          ]);
-        } catch (err) {
-          console.error('[sendEmail] old draft cleanup failed:', err);
-        }
-      }
 
       return {
         scheduled: false,

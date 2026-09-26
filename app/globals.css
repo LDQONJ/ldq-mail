@@ -693,11 +693,27 @@ option {
   animation: cal-slide-in-left 0.25s ease-out;
 }
 
-/* Reduced motion: respect user OS preference */
+/* Ensure spinning loading animations always spin properly with centered origin */
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.animate-spin {
+  animation: spin 1s linear infinite !important;
+  transform-origin: center !important;
+}
+
+/* Reduced motion: respect user OS preference for decorative transitions,
+   while exempting essential loading indicators so the app doesn't appear frozen. */
 @media (prefers-reduced-motion: reduce) {
-  *,
-  *::before,
-  *::after {
+  *:not(.animate-spin):not([class*="animate-spin"]):not([class*="spin"]),
+  *:not(.animate-spin):not([class*="animate-spin"]):not([class*="spin"])::before,
+  *:not(.animate-spin):not([class*="animate-spin"]):not([class*="spin"])::after {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;

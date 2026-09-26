@@ -5,6 +5,35 @@ import { rejectCrossOriginRequest } from '@/lib/security/same-origin';
 
 export const runtime = 'nodejs';
 
+let cachedTransporter: ReturnType<typeof nodemailer.createTransport> | null = null;
+let cachedTransporterKey = '';
+
+function getTransporter(host: string, port: number, user: string, pass: string) {
+  const servername = process.env.ORACLE_SMTP_SERVERNAME || (host.includes('oraclecloud.com') ? undefined : 'smtp.email.ap-singapore-1.oci.oraclecloud.com');
+  const key = `${host}:${port}:${user}:${pass}:${servername || ''}`;
+  if (!cachedTransporter || cachedTransporterKey !== key) {
+    cachedTransporter = nodemailer.createTransport({
+      pool: true,
+      maxConnections: 3,
+      maxMessages: 100,
+      host,
+      port,
+      secure: port === 465,
+      auth: {
+        user,
+        pass,
+      },
+      tls: {
+        minVersion: 'TLSv1.2',
+        rejectUnauthorized: true,
+        ...(servername ? { servername } : {}),
+      },
+    });
+    cachedTransporterKey = key;
+  }
+  return cachedTransporter;
+}
+
 export async function POST(request: NextRequest) {
   const crossOrigin = rejectCrossOriginRequest(request);
   if (crossOrigin) return crossOrigin;
@@ -93,19 +122,7 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    const transporter = nodemailer.createTransport({
-      host,
-      port,
-      secure: port === 465,
-      auth: {
-        user,
-        pass,
-      },
-      tls: {
-        minVersion: 'TLSv1.2',
-        rejectUnauthorized: true,
-      },
-    });
+    const transporter = getTransporter(host, port, user, pass);
 
     const mailOptions: Parameters<typeof transporter.sendMail>[0] = {
       from: from.name ? `"${from.name}" <${from.email}>` : from.email,
