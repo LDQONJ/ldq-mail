@@ -594,7 +594,7 @@ function generateMessageId(fromEmail: string): string {
   // On a plain-http LAN origin it is undefined, so this line threw AFTER the draft was saved and
   // BEFORE EmailSubmission/set — send silently failed with drafts piling up. generateUUID() from
   // lib/utils falls back to crypto.getRandomValues, which insecure contexts do provide.
-  return `${Date.now().toString(36)}.${generateUUID()}@${domain}`;
+  return `${Date.now().toString(36)}.${generateUUID()}@mail.${domain}`;
 }
 
 /**
