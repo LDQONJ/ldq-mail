@@ -145,7 +145,7 @@
     "unified_all_starred": "全部加星标",
     "unified_all_mail": "全部邮件",
     "remove_account": "Remove account",
-    "remove_account_confirm": "Remove {account} from this device? You can add it back later."
+    "remove_account_confirm": "从该设备移除 {account}？稍后您可以重新添加它。"
   },
   "protocol_handlers": {
     "title": "默认应用",
@@ -298,7 +298,7 @@
     "forward": "转发",
     "delete": "删除",
     "archive": "归档",
-    "archive_mailbox_not_found": "Archive mailbox not found - cannot archive email",
+    "archive_mailbox_not_found": "未找到归档文件夹 - 无法归档邮件",
     "star": "加星标",
     "unstar": "取消星标",
     "mark_unread": "标记为未读",
@@ -608,7 +608,7 @@
     "send": "发送",
     "cancel": "取消",
     "attach": "附件",
-    "attach_photos": "Photos & Videos",
+    "attach_photos": "照片与视频",
     "attach_files": "Files",
     "discard": "丢弃",
     "discard_draft_title": "丢弃草稿？",
@@ -933,7 +933,9 @@
       "downloads": "下载",
       "content_senders": "内容和发件人",
       "about_data": "关于和数据",
-      "debug": "调试"
+      "debug": "调试",
+      "themes": "主题",
+      "plugins": "插件"
     },
     "tab_groups": {
       "general": "通用",
@@ -1051,8 +1053,8 @@
         "label": "全部邮箱",
         "description": "显示所有已登录账号的合并文件夹（收件箱、已发送等）",
         "cross_account": {
-          "label": "Across all accounts",
-          "description": "Merge the unified mailbox across every connected account instead of staying within the active account."
+          "label": "跨所有账户",
+          "description": "在所有已连接的账户间合并统一邮箱，而不仅限于当前活跃账户。"
         },
         "include_group": {
           "label": "包含群组收件箱",
@@ -1062,8 +1064,8 @@
       "all_mail": {
         "folders_label": "Folders in All Mail",
         "folders_description": "Choose which folders are merged into the All Mail view.",
-        "account_hint": "Applies to {account}.",
-        "no_folders": "No folders available."
+        "account_hint": "适用于 {account}。",
+        "no_folders": "暂无可用文件夹。"
       },
       "colorful_sidebar_icons": {
         "label": "彩色侧边栏图标",
@@ -1167,8 +1169,8 @@
         "enabled_desc": "新邮件到达时显示通知",
         "sound": "通知声音",
         "sound_desc": "新邮件到达时播放音频提醒",
-        "inbox_only": "Inbox only",
-        "inbox_only_desc": "Only notify for mail that lands in the Inbox; skip mail a filter files into another folder"
+        "inbox_only": "仅限收件箱",
+        "inbox_only_desc": "仅对进入收件箱的邮件发送通知；跳过被过滤器分流到其他文件夹的邮件"
       },
       "calendar": {
         "title": "日历通知",
@@ -1197,7 +1199,7 @@
         "status_busy": "修改中…",
         "status_inactive": "在此设备上未启用",
         "status_unsupported": "此浏览器不支持 Web 推送",
-        "status_lite": "Web Push is not available in Bulwark Lite; it needs the Bulwark server.",
+        "status_lite": "Bulwark Lite 模式下不可使用 Web 推送；该功能需要 Bulwark 完整服务器。",
         "title": "后台通知",
         "devices_title": "已注册的设备",
         "devices_desc": "已注册接收此账户后台通知的所有设备。撤销后，该设备会立即停止接收后台通知。",
@@ -1237,9 +1239,9 @@
         "preview_older": "更早："
       },
       "date_locale": {
-        "label": "Date format region",
-        "description": "How numeric dates are ordered (day, month, year)",
-        "auto": "Automatic (match language)",
+        "label": "日期格式地区",
+        "description": "数字日期的排列顺序（日、月、年）",
+        "auto": "自动（跟随语言）",
         "iso": "ISO 8601 (YYYY-MM-DD)",
         "dmy": "Day/Month/Year",
         "mdy": "Month/Day/Year"
@@ -1258,8 +1260,8 @@
       },
       "time_zone": {
         "label": "Time zone",
-        "description": "Show email and calendar times in this time zone instead of the one reported by your browser",
-        "auto": "Automatic ({zone})",
+        "description": "在此时区中显示邮件与日历时间，而不是使用浏览器报告的时区",
+        "auto": "自动（{zone}）",
         "preview_now": "Now:"
       }
     },
@@ -1875,8 +1877,8 @@
         "button": "查看快捷方式"
       },
       "refresh_cache": {
-        "label": "Refresh cached data",
-        "description": "Reload contacts, calendars, and folders from the server. Keeps your accounts and sessions — fixes a stale or wrong view without signing out.",
+        "label": "刷新缓存数据",
+        "description": "从服务器重新加载联系人、日历和文件夹。保留您的账户与登录状态——无需退出即可修复陈旧或异常的视图。",
         "button": "Refresh"
       },
       "reset_settings": {
@@ -2203,6 +2205,36 @@
     "scoped": {
       "back": "返回我的账户",
       "managing": "管理：{name}"
+    },
+    "themes": {
+      "title": "主题",
+      "description": "选择由管理员部署的主题或内置预设。",
+      "locked_by_admin": "主题选择已被管理员锁定。",
+      "admin_enforced": "管理员强制应用",
+      "default_theme": "默认",
+      "author_bulwark": "Bulwark",
+      "activated": "主题已启用",
+      "default_restored": "已恢复默认主题",
+      "forced_notice": "管理员已强制应用主题“{name}”，无法更改",
+      "admin_theme": "管理员主题"
+    },
+    "plugins": {
+      "title": "插件",
+      "description": "由管理员部署的插件。切换开关以为您的账户启用或禁用。",
+      "no_plugins": "暂无可用插件",
+      "no_plugins_desc": "管理员尚未部署任何插件",
+      "syncing": "正在同步插件策略和管理状态…",
+      "forced_by_admin": "插件“{name}”由管理员强制启用，无法禁用",
+      "requires_approval": "插件“{name}”需要管理员批准后才能启用",
+      "enabled_toast": "插件“{name}”已启用",
+      "disabled_toast": "插件“{name}”已禁用",
+      "forced_badge": "强制应用",
+      "managed_badge": "托管",
+      "awaiting_approval": "等待批准",
+      "forced_desc": "此插件由管理员强制启用，无法禁用。",
+      "awaiting_approval_desc": "此插件正在等待管理员批准，获得批准前无法启用。",
+      "permissions": "权限：",
+      "settings_label": "设置："
     }
   },
   "errors": {
@@ -2565,11 +2597,11 @@
     "activity": {
       "recent_emails": "Recent Emails",
       "upcoming_events": "Upcoming Events",
-      "no_emails": "No recent emails",
-      "no_events": "No upcoming events",
+      "no_emails": "无最近邮件",
+      "no_events": "无即将到来的日程",
       "no_subject": "(No subject)",
       "no_title": "(No title)",
-      "load_failed": "Failed to load",
+      "load_failed": "加载失败",
       "unknown_sender": "Unknown sender",
       "all_day": "All day"
     },
@@ -2692,11 +2724,11 @@
       "search_members": "搜索联系人以添加...",
       "no_members": "该群组中没有成员",
       "member_count": "{count, plural, =0 {无成员} one {1 位成员} other {# 位成员}}",
-      "send_email": "Send email to group",
+      "send_email": "向群组发送邮件",
       "send_email_to": "To",
       "send_email_cc": "Cc",
       "send_email_bcc": "Bcc",
-      "no_member_emails": "This group has no members with an email address."
+      "no_member_emails": "该群组中没有包含电子邮件地址的成员。"
     },
     "import": {
       "title": "导入联系人",
@@ -3354,8 +3386,8 @@
     "duplicate_error": "复制失败",
     "share": "Share",
     "shared": "Shared",
-    "shared_with_me": "Shared with me",
-    "shared_by": "Shared by {name}",
+    "shared_with_me": "与我共享",
+    "shared_by": "由 {name} 共享",
     "create_file_success": "文件已创建",
     "create_file_error": "创建文件失败",
     "favorites": "收藏夹",

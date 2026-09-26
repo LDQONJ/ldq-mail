@@ -934,7 +934,9 @@
       "downloads": "Downloads",
       "content_senders": "Indhold & afsendere",
       "about_data": "Om & data",
-      "debug": "Debug"
+      "debug": "Debug",
+      "themes": "Themes",
+      "plugins": "Plugins"
     },
     "tab_groups": {
       "general": "Generelt",

@@ -931,7 +931,9 @@
       "downloads": "ダウンロード",
       "content_senders": "コンテンツと送信者",
       "about_data": "情報とデータ",
-      "debug": "デバッグ"
+      "debug": "デバッグ",
+      "themes": "Themes",
+      "plugins": "Plugins"
     },
     "tab_groups": {
       "general": "一般",

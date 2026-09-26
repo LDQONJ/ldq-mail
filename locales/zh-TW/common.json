@@ -143,7 +143,7 @@
     "unified_all_starred": "全部已加星號",
     "unified_all_mail": "全部郵件",
     "remove_account": "移除帳號",
-    "remove_account_confirm": "要從這部裝置移除 {account} 嗎？您稍後仍可重新新增。"
+    "remove_account_confirm": "從此裝置移除 {account}？稍後您可以重新新增它。"
   },
   "protocol_handlers": {
     "title": "預設應用程式",
@@ -296,7 +296,7 @@
     "forward": "轉寄",
     "delete": "刪除",
     "archive": "封存",
-    "archive_mailbox_not_found": "Archive mailbox not found - cannot archive email",
+    "archive_mailbox_not_found": "找不到封存資料夾 - 無法封存郵件",
     "star": "加上星號",
     "unstar": "移除星號",
     "mark_unread": "標示為未讀",
@@ -606,7 +606,7 @@
     "send": "傳送",
     "cancel": "取消",
     "attach": "附加",
-    "attach_photos": "照片與影片",
+    "attach_photos": "相片與影片",
     "attach_files": "檔案",
     "discard": "捨棄",
     "discard_draft_title": "要捨棄草稿嗎？",
@@ -934,7 +934,9 @@
       "downloads": "下載",
       "content_senders": "內容與寄件者",
       "about_data": "關於與資料",
-      "debug": "除錯"
+      "debug": "除錯",
+      "themes": "主題",
+      "plugins": "外掛程式"
     },
     "tab_groups": {
       "general": "一般",
@@ -1052,8 +1054,8 @@
         "label": "整合信箱",
         "description": "顯示使用中帳號及其共用信件匣的整合信件匣（收件匣、寄件備份等）。",
         "cross_account": {
-          "label": "跨所有帳號",
-          "description": "將整合信箱合併到所有已連線的帳號，而不只限於使用中的帳號。"
+          "label": "跨所有帳戶",
+          "description": "在所有已連線的帳戶間合併統一信箱，而非僅限於目前使用中的帳戶。"
         },
         "include_group": {
           "label": "包含群組收件匣",
@@ -1063,8 +1065,8 @@
       "all_mail": {
         "folders_label": "整合清單中的信件匣",
         "folders_description": "選擇要將此帳號的哪些信件匣合併到「所有郵件／未讀／已加星號」清單。",
-        "account_hint": "套用至 {account}。",
-        "no_folders": "沒有可用的信件匣。"
+        "account_hint": "套用於 {account}。",
+        "no_folders": "暫無可用資料夾。"
       },
       "colorful_sidebar_icons": {
         "label": "彩色側邊欄圖示",
@@ -1165,7 +1167,7 @@
         "status_active": "已在此裝置上啟用",
         "status_inactive": "在此裝置上未啟用",
         "status_unsupported": "此瀏覽器不支援 Web Push",
-        "status_lite": "Web Push is not available in Bulwark Lite; it needs the Bulwark server.",
+        "status_lite": "Bulwark Lite 模式下無法使用 Web 推送；此功能需要 Bulwark 完整伺服器。",
         "status_busy": "工作中…",
         "enable": "啟用",
         "reenable": "重新註冊",
@@ -1204,8 +1206,8 @@
         "enabled_desc": "新郵件到達時顯示通知",
         "sound": "通知聲音",
         "sound_desc": "新郵件到達時播放音訊提醒",
-        "inbox_only": "Inbox only",
-        "inbox_only_desc": "Only notify for mail that lands in the Inbox; skip mail a filter files into another folder"
+        "inbox_only": "僅限收件匣",
+        "inbox_only_desc": "僅對進入收件匣的郵件傳送通知；略過被篩選器分流至其他資料夾的郵件"
       },
       "calendar": {
         "title": "行事曆通知",
@@ -1240,7 +1242,7 @@
       "date_locale": {
         "label": "日期格式地區",
         "description": "數字日期的排列順序（日、月、年）",
-        "auto": "自動（與語言相符）",
+        "auto": "自動（跟隨語言）",
         "iso": "ISO 8601（YYYY-MM-DD）",
         "dmy": "日／月／年",
         "mdy": "月／日／年"
@@ -1259,7 +1261,7 @@
       },
       "time_zone": {
         "label": "時區",
-        "description": "使用此時區顯示郵件與行事曆時間，而非瀏覽器回報的時區",
+        "description": "在此時區中顯示郵件與行事曆時間，而非使用瀏覽器報告的時區",
         "auto": "自動（{zone}）",
         "preview_now": "現在："
       }
@@ -1881,7 +1883,7 @@
       },
       "refresh_cache": {
         "label": "重新整理快取資料",
-        "description": "從伺服器重新載入聯絡人、行事曆與信件匣。保留帳號與工作階段，不需登出即可修正過時或錯誤的畫面。",
+        "description": "從伺服器重新載入聯絡人、行事曆和資料夾。保留您的帳戶與登入狀態——無需登出即可修復過時或異常的檢視。",
         "button": "重新整理"
       },
       "reset_settings": {
@@ -2201,6 +2203,36 @@
       "preview": {
         "label": "預覽"
       }
+    },
+    "themes": {
+      "title": "主題",
+      "description": "選擇由管理員部署的主題或內建預設。",
+      "locked_by_admin": "主題選擇已被管理員鎖定。",
+      "admin_enforced": "管理員強制套用",
+      "default_theme": "預設",
+      "author_bulwark": "Bulwark",
+      "activated": "主題已啟用",
+      "default_restored": "已恢復預設主題",
+      "forced_notice": "管理員已強制套用主題「{name}」，無法變更",
+      "admin_theme": "管理員主題"
+    },
+    "plugins": {
+      "title": "外掛程式",
+      "description": "由管理員部署的外掛程式。切換開關以為您的帳戶啟用或停用。",
+      "no_plugins": "暫無可用外掛程式",
+      "no_plugins_desc": "管理員尚未部署任何外掛程式",
+      "syncing": "正在同步外掛程式策略和管理狀態…",
+      "forced_by_admin": "外掛程式「{name}」由管理員強制啟用，無法停用",
+      "requires_approval": "外掛程式「{name}」需要管理員核准後才能啟用",
+      "enabled_toast": "外掛程式「{name}」已啟用",
+      "disabled_toast": "外掛程式「{name}」已停用",
+      "forced_badge": "強制套用",
+      "managed_badge": "代管",
+      "awaiting_approval": "等待核准",
+      "forced_desc": "此外掛程式由管理員強制啟用，無法停用。",
+      "awaiting_approval_desc": "此外掛程式正在等待管理員核准，獲得核准前無法啟用。",
+      "permissions": "權限：",
+      "settings_label": "設定："
     }
   },
   "errors": {
@@ -2564,11 +2596,11 @@
     "activity": {
       "recent_emails": "最近的郵件",
       "upcoming_events": "即將開始的活動",
-      "no_emails": "最近沒有郵件",
-      "no_events": "沒有即將開始的活動",
+      "no_emails": "無最近郵件",
+      "no_events": "無即將到來的活動",
       "no_subject": "（無主題）",
       "no_title": "（無標題）",
-      "load_failed": "無法載入",
+      "load_failed": "載入失敗",
       "unknown_sender": "未知寄件者",
       "all_day": "全天"
     },
@@ -2695,7 +2727,7 @@
       "send_email_to": "收件者",
       "send_email_cc": "副本",
       "send_email_bcc": "密件副本",
-      "no_member_emails": "此群組沒有具有電子郵件地址的成員。"
+      "no_member_emails": "該群組中沒有包含電子郵件地址的成員。"
     },
     "import": {
       "title": "匯入聯絡人",
@@ -3397,7 +3429,7 @@
     "share": "分享",
     "shared": "已分享",
     "shared_with_me": "與我共用",
-    "shared_by": "由 {name} 分享",
+    "shared_by": "由 {name} 共用",
     "create_file_success": "檔案已建立",
     "create_file_error": "建立檔案失敗",
     "favorites": "我的最愛",

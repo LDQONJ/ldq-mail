@@ -931,7 +931,9 @@
       "downloads": "Stažené",
       "content_senders": "Obsah a odesílatelé",
       "about_data": "Info a data",
-      "debug": "Ladění"
+      "debug": "Ladění",
+      "themes": "Themes",
+      "plugins": "Plugins"
     },
     "tab_groups": {
       "general": "Obecné",

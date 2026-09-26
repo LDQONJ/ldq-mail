@@ -931,7 +931,9 @@
       "downloads": "Downloads",
       "content_senders": "Inhoud en afzenders",
       "about_data": "Over en gegevens",
-      "debug": "Debuggen"
+      "debug": "Debuggen",
+      "themes": "Themes",
+      "plugins": "Plugins"
     },
     "tab_groups": {
       "general": "Algemeen",

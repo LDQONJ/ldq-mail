@@ -934,7 +934,9 @@
       "downloads": "Baixades",
       "content_senders": "Contingut i remitents",
       "about_data": "Quant a i dades",
-      "debug": "Depuració"
+      "debug": "Depuració",
+      "themes": "Themes",
+      "plugins": "Plugins"
     },
     "tab_groups": {
       "general": "General",

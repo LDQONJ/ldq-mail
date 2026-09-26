@@ -931,7 +931,9 @@
       "downloads": "Загрузки",
       "content_senders": "Содержимое и отправители",
       "about_data": "О программе и данные",
-      "debug": "Отладка"
+      "debug": "Отладка",
+      "themes": "Themes",
+      "plugins": "Plugins"
     },
     "tab_groups": {
       "general": "Общие",

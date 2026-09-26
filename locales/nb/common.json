@@ -934,7 +934,9 @@
       "downloads": "Nedlastinger",
       "content_senders": "Innhold og avsendere",
       "about_data": "Om programmet og data",
-      "debug": "Feilsøking"
+      "debug": "Feilsøking",
+      "themes": "Themes",
+      "plugins": "Plugins"
     },
     "tab_groups": {
       "general": "Generelt",

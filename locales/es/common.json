@@ -931,7 +931,9 @@
       "downloads": "Descargas",
       "content_senders": "Contenido y remitentes",
       "about_data": "Acerca de y datos",
-      "debug": "Depuración"
+      "debug": "Depuración",
+      "themes": "Themes",
+      "plugins": "Plugins"
     },
     "tab_groups": {
       "general": "General",

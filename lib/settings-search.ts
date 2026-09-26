@@ -128,8 +128,8 @@ export const tabSearchPaths: Record<Tab, string[]> = {
   protocol_handlers: ['protocol_handlers'],
   sidebar_apps: ['settings.sidebar_apps', 'sidebar_apps'],
   about_data: ['settings.advanced'],
-  themes: [],
-  plugins: [],
+  themes: ['settings.themes'],
+  plugins: ['settings.plugins'],
   debug: ['settings.advanced'],
 };
 

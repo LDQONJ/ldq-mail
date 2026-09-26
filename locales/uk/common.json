@@ -931,7 +931,9 @@
       "downloads": "Завантаження",
       "content_senders": "Вміст і відправники",
       "about_data": "Про програму та дані",
-      "debug": "Налагодження"
+      "debug": "Налагодження",
+      "themes": "Themes",
+      "plugins": "Plugins"
     },
     "tab_groups": {
       "general": "Загальний",

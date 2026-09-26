@@ -936,7 +936,9 @@
       "downloads": "Downloads",
       "content_senders": "Content & Senders",
       "about_data": "About & Data",
-      "debug": "Debug"
+      "debug": "Debug",
+      "themes": "Themes",
+      "plugins": "Plugins"
     },
     "tab_groups": {
       "general": "General",
@@ -2203,6 +2205,36 @@
       "preview": {
         "label": "Preview"
       }
+    },
+    "themes": {
+      "title": "Themes",
+      "description": "Choose from themes deployed by your administrator and built-in presets.",
+      "locked_by_admin": "Theme selection is locked by an administrator.",
+      "admin_enforced": "Admin enforced",
+      "default_theme": "Default",
+      "author_bulwark": "Bulwark",
+      "activated": "Theme activated",
+      "default_restored": "Default theme restored",
+      "forced_notice": "Theme \"{name}\" is forced by admin and cannot be changed",
+      "admin_theme": "Admin theme"
+    },
+    "plugins": {
+      "title": "Plugins",
+      "description": "Plugins deployed by your administrator. Toggle to enable or disable for your account.",
+      "no_plugins": "No plugins available",
+      "no_plugins_desc": "Your administrator has not deployed any plugins",
+      "syncing": "Syncing plugin policy and managed state...",
+      "forced_by_admin": "Plugin \"{name}\" is forced by admin and cannot be disabled",
+      "requires_approval": "Plugin \"{name}\" requires admin approval before it can be enabled",
+      "enabled_toast": "Plugin \"{name}\" enabled",
+      "disabled_toast": "Plugin \"{name}\" disabled",
+      "forced_badge": "Forced",
+      "managed_badge": "Managed",
+      "awaiting_approval": "Awaiting approval",
+      "forced_desc": "This plugin is forced by an administrator and cannot be disabled.",
+      "awaiting_approval_desc": "This plugin is awaiting admin approval and cannot be enabled until an administrator approves it.",
+      "permissions": "Permissions:",
+      "settings_label": "Settings:"
     }
   },
   "errors": {

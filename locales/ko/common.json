@@ -931,7 +931,9 @@
       "downloads": "다운로드",
       "content_senders": "콘텐츠 및 발신자",
       "about_data": "정보 및 데이터",
-      "debug": "디버그"
+      "debug": "디버그",
+      "themes": "Themes",
+      "plugins": "Plugins"
     },
     "tab_groups": {
       "general": "일반",

@@ -896,7 +896,9 @@
       "downloads": "הורדות",
       "content_senders": "תוכן ושולחים",
       "about_data": "בערך וגדול",
-      "debug": "ניפוי שגיאות"
+      "debug": "ניפוי שגיאות",
+      "themes": "Themes",
+      "plugins": "Plugins"
     },
     "tab_groups": {
       "general": "כללי",

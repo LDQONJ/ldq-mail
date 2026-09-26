@@ -934,7 +934,9 @@
       "downloads": "Descărcări",
       "content_senders": "Conținut și expeditori",
       "about_data": "Despre & Date",
-      "debug": "Depanare"
+      "debug": "Depanare",
+      "themes": "Themes",
+      "plugins": "Plugins"
     },
     "tab_groups": {
       "general": "Generalități",

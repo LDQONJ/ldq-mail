@@ -934,7 +934,9 @@
       "downloads": "Татаж авах",
       "content_senders": "Агуулга ба Илгээгчид",
       "about_data": "Тухай & Өгөгдөл",
-      "debug": "Дабаглах"
+      "debug": "Дабаглах",
+      "themes": "Themes",
+      "plugins": "Plugins"
     },
     "tab_groups": {
       "general": "Ерөнхий",

@@ -931,7 +931,9 @@
       "downloads": "Lejupielādes",
       "content_senders": "Saturs un sūtītāji",
       "about_data": "Par un dati",
-      "debug": "Atkļūdošana"
+      "debug": "Atkļūdošana",
+      "themes": "Themes",
+      "plugins": "Plugins"
     },
     "tab_groups": {
       "general": "Vispārīgi",

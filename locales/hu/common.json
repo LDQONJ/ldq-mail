@@ -934,7 +934,9 @@
       "downloads": "Letöltések",
       "content_senders": "Tartalom és feladók",
       "about_data": "Névjegy és adatok",
-      "debug": "Hibakeresés"
+      "debug": "Hibakeresés",
+      "themes": "Themes",
+      "plugins": "Plugins"
     },
     "tab_groups": {
       "general": "Általános",

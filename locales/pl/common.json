@@ -931,7 +931,9 @@
       "downloads": "Pobrane",
       "content_senders": "Treść i nadawcy",
       "about_data": "O programie i dane",
-      "debug": "Debugowanie"
+      "debug": "Debugowanie",
+      "themes": "Themes",
+      "plugins": "Plugins"
     },
     "tab_groups": {
       "general": "Ogólne",

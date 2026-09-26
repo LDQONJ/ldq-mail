@@ -934,7 +934,9 @@
       "downloads": "دانلودها",
       "content_senders": "محتوا و فرستندگان",
       "about_data": "درباره و داده‌ها",
-      "debug": "اشکال‌زدایی"
+      "debug": "اشکال‌زدایی",
+      "themes": "Themes",
+      "plugins": "Plugins"
     },
     "tab_groups": {
       "general": "عمومی",

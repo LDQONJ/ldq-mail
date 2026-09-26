@@ -934,7 +934,9 @@
       "downloads": "التنزيلات",
       "content_senders": "المحتوى والمرسلون",
       "about_data": "حول والبيانات",
-      "debug": "التصحيح"
+      "debug": "التصحيح",
+      "themes": "Themes",
+      "plugins": "Plugins"
     },
     "tab_groups": {
       "general": "عام",

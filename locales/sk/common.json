@@ -934,7 +934,9 @@
       "downloads": "Stiahnuté",
       "content_senders": "Obsah a odosielatelia",
       "about_data": "Info a dáta",
-      "debug": "Ladenie"
+      "debug": "Ladenie",
+      "themes": "Themes",
+      "plugins": "Plugins"
     },
     "tab_groups": {
       "general": "Všeobecné",

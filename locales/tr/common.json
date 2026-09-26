@@ -931,7 +931,9 @@
       "downloads": "İndirilenler",
       "content_senders": "İçerik ve Göndericiler",
       "about_data": "Hakkında ve Veriler",
-      "debug": "Hata Ayıklama"
+      "debug": "Hata Ayıklama",
+      "themes": "Themes",
+      "plugins": "Plugins"
     },
     "tab_groups": {
       "general": "Genel",

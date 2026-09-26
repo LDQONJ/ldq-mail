@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useTranslations } from 'next-intl';
 import { usePluginStore } from '@/stores/plugin-store';
 import { usePolicyStore } from '@/stores/policy-store';
 import { SettingsSection, ToggleSwitch } from './settings-section';
@@ -18,6 +19,7 @@ const STATUS_COLORS: Record<PluginStatus, string> = {
 };
 
 export function PluginsSettings() {
+  const t = useTranslations('settings.plugins');
   const { plugins, enablePlugin, disablePlugin, updatePluginSettings, initializePlugins, initialized } = usePluginStore();
   const { isFeatureEnabled, isPluginForceEnabled, isPluginApproved, fetchPolicy, loaded } = usePolicyStore();
   const [expandedPlugin, setExpandedPlugin] = useState<string | null>(null);
@@ -50,34 +52,34 @@ export function PluginsSettings() {
 
     const isForceEnabled = plugin.forceEnabled || isPluginForceEnabled(plugin.id);
     if (isForceEnabled) {
-      toast.info(`Plugin "${plugin.name}" is forced by admin and cannot be disabled`);
+      toast.info(t('forced_by_admin', { name: plugin.name }));
       return;
     }
 
     const requireApproval = isFeatureEnabled('requirePluginApproval');
     const isApproved = plugin.adminApproved || plugin.managed || isPluginApproved(plugin.id);
     if (!plugin.enabled && requireApproval && !isApproved) {
-      toast.info(`Plugin "${plugin.name}" requires admin approval before it can be enabled`);
+      toast.info(t('requires_approval', { name: plugin.name }));
       return;
     }
 
     if (plugin.enabled) {
       disablePlugin(plugin.id);
-      toast.info(`Plugin "${plugin.name}" disabled`);
+      toast.info(t('disabled_toast', { name: plugin.name }));
     } else {
       await enablePlugin(plugin.id);
-      toast.success(`Plugin "${plugin.name}" enabled`);
+      toast.success(t('enabled_toast', { name: plugin.name }));
     }
   };
 
   return (
-    <SettingsSection title="Plugins" description="Plugins deployed by your administrator. Toggle to enable or disable for your account.">
+    <SettingsSection title={t('title')} description={t('description')}>
       {/* Plugin List */}
       {plugins.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-12 text-center">
           <Puzzle className="w-12 h-12 text-muted-foreground/30 mb-3" />
-          <p className="text-sm text-muted-foreground mb-1">No plugins available</p>
-          <p className="text-xs text-muted-foreground/70">Your administrator has not deployed any plugins</p>
+          <p className="text-sm text-muted-foreground mb-1">{t('no_plugins')}</p>
+          <p className="text-xs text-muted-foreground/70">{t('no_plugins_desc')}</p>
         </div>
       ) : (
         <div className="space-y-2">
@@ -104,7 +106,7 @@ export function PluginsSettings() {
       )}
 
       {!initialized && plugins.length > 0 && (
-        <p className="text-xs text-muted-foreground">Syncing plugin policy and managed state...</p>
+        <p className="text-xs text-muted-foreground">{t('syncing')}</p>
       )}
     </SettingsSection>
   );
@@ -125,6 +127,7 @@ interface PluginCardProps {
 }
 
 function PluginCard({ plugin, isExpanded, isForceEnabled, isManaged, needsApproval, controlsDisabled, onToggleExpand, onToggle, onUpdateSettings }: PluginCardProps) {
+  const t = useTranslations('settings.plugins');
   return (
     <div
       data-search-label={plugin.name}
@@ -143,17 +146,17 @@ function PluginCard({ plugin, isExpanded, isForceEnabled, isManaged, needsApprov
             </span>
             {isForceEnabled && (
               <span className="text-[10px] px-1.5 py-0.5 rounded-full font-medium bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400 flex items-center gap-0.5">
-                <Lock className="w-2.5 h-2.5" /> Forced
+                <Lock className="w-2.5 h-2.5" /> {t('forced_badge')}
               </span>
             )}
             {isManaged && (
               <span className="text-[10px] px-1.5 py-0.5 rounded-full font-medium bg-cyan-100 text-cyan-700 dark:bg-cyan-900/30 dark:text-cyan-400 flex items-center gap-0.5">
-                <Server className="w-2.5 h-2.5" /> Managed
+                <Server className="w-2.5 h-2.5" /> {t('managed_badge')}
               </span>
             )}
             {needsApproval && (
               <span className="text-[10px] px-1.5 py-0.5 rounded-full font-medium bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400">
-                Awaiting approval
+                {t('awaiting_approval')}
               </span>
             )}
           </div>
@@ -173,11 +176,11 @@ function PluginCard({ plugin, isExpanded, isForceEnabled, isManaged, needsApprov
       {isExpanded && (
         <div className="border-t border-border p-3 space-y-3">
           {isForceEnabled && (
-            <p className="text-xs text-amber-600 dark:text-amber-400">This plugin is forced by an administrator and cannot be disabled.</p>
+            <p className="text-xs text-amber-600 dark:text-amber-400">{t('forced_desc')}</p>
           )}
 
           {needsApproval && (
-            <p className="text-xs text-orange-600 dark:text-orange-400">This plugin is awaiting admin approval and cannot be enabled until an administrator approves it.</p>
+            <p className="text-xs text-orange-600 dark:text-orange-400">{t('awaiting_approval_desc')}</p>
           )}
 
           {/* Description */}
@@ -196,7 +199,7 @@ function PluginCard({ plugin, isExpanded, isForceEnabled, isManaged, needsApprov
           {/* Permissions */}
           {plugin.permissions.length > 0 && (
             <div>
-              <span className="text-xs font-medium text-foreground">Permissions:</span>
+              <span className="text-xs font-medium text-foreground">{t('permissions')}</span>
               <div className="flex flex-wrap gap-1 mt-1">
                 {plugin.permissions.map(perm => (
                   <span key={perm} className="text-[10px] px-1.5 py-0.5 rounded bg-muted text-muted-foreground">
@@ -210,7 +213,7 @@ function PluginCard({ plugin, isExpanded, isForceEnabled, isManaged, needsApprov
           {/* Settings (auto-generated from schema) */}
           {plugin.settingsSchema && Object.keys(plugin.settingsSchema).length > 0 && (
             <div className="space-y-2">
-              <span className="text-xs font-medium text-foreground">Settings:</span>
+              <span className="text-xs font-medium text-foreground">{t('settings_label')}</span>
               {Object.entries(plugin.settingsSchema).map(([key, schema]) => (
                 <PluginSettingField
                   key={key}
