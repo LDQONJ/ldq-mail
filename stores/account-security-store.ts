@@ -5,6 +5,7 @@ import { useAccountStore, type AccountEntry } from '@/stores/account-store';
 import { useIdentityStore } from '@/stores/identity-store';
 import { stalwartJmap, requireResult, type JmapMethodResponse } from '@/lib/stalwart/jmap-passthrough';
 import { isStalwartJmapPassthroughEnabled } from '@/lib/stalwart/principal';
+import { currentStoreEpoch } from '@/lib/store-epoch';
 
 export type EncryptionType = 'Disabled' | 'Aes128' | 'Aes256';
 
@@ -277,6 +278,23 @@ function requireAccountPasswordUpdate(responses: JmapMethodResponse[], fallbackE
   }
 }
 
+type SecurityStateUpdate =
+  | Partial<AccountSecurityState>
+  | ((state: AccountSecurityState) => Partial<AccountSecurityState>);
+
+/**
+ * A setter for one fetch that ignores its writes once the account-scoped
+ * stores were cleared for another account (lib/store-epoch). Without it an
+ * answer for the previous account landed on the next account's page, whose
+ * "Remove" buttons then sent that account's credential ids to this one.
+ */
+function setWhileCurrent(): (update: SecurityStateUpdate) => void {
+  const epoch = currentStoreEpoch();
+  return (update) => {
+    if (currentStoreEpoch() === epoch) useAccountSecurityStore.setState(update);
+  };
+}
+
 export const useAccountSecurityStore = create<AccountSecurityState>()((set, get) => ({
   isStalwart: null,
   isProbing: false,
@@ -302,6 +320,7 @@ export const useAccountSecurityStore = create<AccountSecurityState>()((set, get)
   error: null,
 
   probe: async () => {
+    const set = setWhileCurrent();
     set({ isProbing: true });
     try {
       const client = useAuthStore.getState().client;
@@ -328,6 +347,7 @@ export const useAccountSecurityStore = create<AccountSecurityState>()((set, get)
   },
 
   fetchAuthInfo: async () => {
+    const set = setWhileCurrent();
     set({ isLoadingAuth: true, error: null });
     try {
       const accountId = getPrimaryAccountId();
@@ -380,6 +400,7 @@ export const useAccountSecurityStore = create<AccountSecurityState>()((set, get)
   },
 
   fetchCryptoInfo: async () => {
+    const set = setWhileCurrent();
     set({ isLoadingCrypto: true, error: null });
     try {
       const accountId = getPrimaryAccountId();
@@ -486,6 +507,7 @@ export const useAccountSecurityStore = create<AccountSecurityState>()((set, get)
   },
 
   fetchPrincipal: async () => {
+    const set = setWhileCurrent();
     set({ isLoadingPrincipal: true, error: null });
     try {
       // Without the passthrough (operator switched it off, or the static Lite
@@ -744,6 +766,7 @@ export const useAccountSecurityStore = create<AccountSecurityState>()((set, get)
   },
 
   fetchPublicKeys: async () => {
+    const set = setWhileCurrent();
     set({ isLoadingPublicKeys: true, error: null });
     try {
       const accountId = getPrimaryAccountId();

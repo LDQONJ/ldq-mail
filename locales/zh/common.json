@@ -580,7 +580,9 @@
       "copied": "已复制！",
       "copy_failed": "复制失败"
     },
-    "send_now": "立即发送"
+    "send_now": "立即发送",
+    "view_in_dark_mode": "深色模式查看",
+    "view_in_light_mode": "浅色模式查看"
   },
   "email_composer": {
     "read_receipt_on": "已请求已读回执（点击以关闭）",
@@ -2216,7 +2218,11 @@
       "activated": "主题已启用",
       "default_restored": "已恢复默认主题",
       "forced_notice": "管理员已强制应用主题“{name}”，无法更改",
-      "admin_theme": "管理员主题"
+      "admin_theme": "管理员主题",
+      "locked": "主题选择已被管理员锁定。",
+      "forced": "主题“{name}”由管理员强制指定，无法更改",
+      "default_name": "默认",
+      "default_badge": "默认"
     },
     "plugins": {
       "title": "插件",
@@ -3010,7 +3016,7 @@
       "enable_tasks": "启用任务",
       "enable_tasks_desc": "在日历中显示任务视图以管理待办事项",
       "show_tasks_on_calendar": "在日历上显示任务",
-      "show_tasks_on_calendar_desc": "在日历的日/周视图中显示任务标签",
+      "show_tasks_on_calendar_desc": "在日历的月/周/日视图中显示任务",
       "hover_preview": "事件悬停预览",
       "hover_preview_desc": "将鼠标悬停在日历事件上时显示详细信息弹出窗口",
       "hover_preview_instant": "立即",

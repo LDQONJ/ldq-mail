@@ -31,7 +31,7 @@ import { usePolicyStore } from "@/stores/policy-store";
 import type { UnifiedAccountClient } from "@/lib/unified-mailbox";
 import { connectedAccountsGrew } from "@/lib/unified-mailbox";
 import { KeyboardShortcutsModal } from "@/components/keyboard-shortcuts-modal";
-import { useEmailStore, buildUnifiedAccountClients, ArchiveMailboxNotFoundError, findArchiveMailbox, resolveUnstampedEmailAccountId } from "@/stores/email-store";
+import { useEmailStore, buildUnifiedAccountClients, captureViewToken, ArchiveMailboxNotFoundError, findArchiveMailbox, resolveUnstampedEmailAccountId } from "@/stores/email-store";
 import { groupSearchScopeFolders } from "@/lib/search-scope-folders";
 import { toast } from "@/stores/toast-store";
 import { runBatchEmailAction } from "@/lib/email-action-toast";
@@ -72,7 +72,7 @@ import { isFilterEmpty, activeFilterCount } from "@/lib/jmap/search-utils";
 import { SearchBox, type ContactSearchField } from "@/components/search/search-box";
 import type { ContactSuggestion } from "@/lib/search-suggestions";
 import type { Attachment } from "@/lib/jmap/types";
-import { requestListAttachments, type ListAttachmentSource, type LoadListAttachments } from "@/lib/list-attachments";
+import { peekListAttachments, requestListAttachments, type ListAttachmentSource, type LoadListAttachments } from "@/lib/list-attachments";
 import { useSearchHistoryStore } from "@/stores/search-history-store";
 import { WelcomeBanner } from "@/components/ui/welcome-banner";
 import { NavigationRail } from "@/components/layout/navigation-rail";
@@ -357,7 +357,7 @@ export function MailApp({ linkSegments: routeSegments }: MailAppProps = {}) {
     deleteEmail,
     markAsRead,
     toggleStar,
-    setEmailKeywords,
+    patchEmailKeywords,
     moveToMailbox,
     moveToMailboxCrossAware,
     moveThreadToMailbox,
@@ -970,6 +970,9 @@ export function MailApp({ linkSegments: routeSegments }: MailAppProps = {}) {
       subject: selectedEmail.subject,
       ...getQuoteBodies(selectedEmail),
       receivedAt: selectedEmail.receivedAt,
+      // The login that holds the message, so the reply defaults to that
+      // account's identity (#1104). Same resolution as the invitation banner.
+      accountId: selectedEmail.sourceClientAccountId ?? viewingAccountId ?? undefined,
       attachments: selectedEmail.attachments,
       messageId: selectedEmail.messageId,
       inReplyTo: selectedEmail.inReplyTo,
@@ -1343,12 +1346,15 @@ export function MailApp({ linkSegments: routeSegments }: MailAppProps = {}) {
     // replace the user's results with the folder contents.
     if (state.searchQuery || !isFilterEmpty(state.searchFilters)) return;
 
+    const isSameView = captureViewToken();
     void buildPopulatedUnifiedAccounts()
-      .then((populated) => (
-        unifiedRole
+      .then((populated) => {
+        // The user left the view while the accounts loaded (#1102).
+        if (!isSameView()) return;
+        return unifiedRole
           ? fetchUnifiedEmailsAction(populated, unifiedRole)
-          : fetchCrossViewAction(populated, crossView!)
-      ))
+          : fetchCrossViewAction(populated, crossView!);
+      })
       .catch(() => { /* per-account failures surface through unifiedErrors */ });
   }, [connectedAccountsSignature, isAuthenticated, client, buildPopulatedUnifiedAccounts, fetchUnifiedEmailsAction, fetchCrossViewAction]);
 
@@ -1360,16 +1366,20 @@ export function MailApp({ linkSegments: routeSegments }: MailAppProps = {}) {
   const applyMailDeepLink = async (link: MailDeepLink) => {
     // A permalink can name the account it belongs to. Ids are only meaningful
     // within their account, so switch first - but only to a login that is
-    // actually connected; we can't authenticate on someone's behalf.
-    if (link.accountId && link.accountId !== useAuthStore.getState().activeAccountId) {
+    // actually connected; we can't authenticate on someone's behalf. A push
+    // notification names the login by its cookie slot.
+    const linkAccountId = link.accountId ?? (link.slot !== undefined
+      ? useAccountStore.getState().accounts.find((a) => a.cookieSlot === link.slot)?.id ?? `slot:${link.slot}`
+      : undefined);
+    if (linkAccountId && linkAccountId !== useAuthStore.getState().activeAccountId) {
       const target = useAccountStore.getState().accounts.find(
-        (a) => a.id === link.accountId && a.isConnected,
+        (a) => a.id === linkAccountId && a.isConnected,
       );
       if (!target) {
         toast.error(t('deep_link.account_unavailable'));
         return;
       }
-      await switchAccount(link.accountId);
+      await switchAccount(linkAccountId);
     }
 
     const activeClient = useAuthStore.getState().client;
@@ -1679,7 +1689,7 @@ export function MailApp({ linkSegments: routeSegments }: MailAppProps = {}) {
     fromName?: string;
     identityId?: string;
     /** Local account owning the selected identity, when it came from the
-     *  cross-account From dropdown (Pro / embedded multi-account). */
+     *  cross-account From dropdown (more than one connected account). */
     localAccountId?: string;
     envelopeMailFrom?: string;
     attachments?: Array<{ blobId: string; name: string; type: string; size: number; disposition?: 'attachment' | 'inline'; cid?: string }>;
@@ -1954,6 +1964,10 @@ export function MailApp({ linkSegments: routeSegments }: MailAppProps = {}) {
       subAddressTag: '',
       mode: 'compose',
       draftId: draft.id,
+      // A reply draft re-opens in compose mode; its threading headers must
+      // come along or the reply leaves its thread.
+      inReplyTo: draft.inReplyTo ?? undefined,
+      references: draft.references ?? undefined,
       // Existing server-side attachments must ride along, or the composer
       // starts empty and the next save/send silently rebuilds the draft
       // without them (#849).
@@ -2389,14 +2403,6 @@ export function MailApp({ linkSegments: routeSegments }: MailAppProps = {}) {
     try {
       const email = emails.find(e => e.id === emailToPin.id) ?? emailToPin;
       const isPinned = email.keywords?.['$pinned'] === true;
-      // JMAP keywords are a set of present keys - drop the key to unpin
-      // rather than writing a false value.
-      const keywords = { ...email.keywords };
-      if (isPinned) {
-        delete keywords['$pinned'];
-      } else {
-        keywords['$pinned'] = true;
-      }
 
       // Same routing as tags: the write goes to the email's own account, and
       // the local patch flips the icon immediately. Then refetch the first page
@@ -2404,7 +2410,8 @@ export function MailApp({ linkSegments: routeSegments }: MailAppProps = {}) {
       // refetch where that sort does not apply (unified views) or where it
       // would replace a tag-filtered list (refreshCurrentMailbox fetches by
       // folder only). (#281)
-      await setEmailKeywords(client, email.id, keywords);
+      // Only $pinned changes; the row's other keywords may be stale.
+      await patchEmailKeywords(client, email.id, { $pinned: !isPinned });
       if (!isUnifiedView && !useEmailStore.getState().selectedKeyword) {
         void refreshCurrentMailbox(client);
       }
@@ -2422,13 +2429,16 @@ export function MailApp({ linkSegments: routeSegments }: MailAppProps = {}) {
       const email = emails.find(e => e.id === emailId);
       if (!email) return;
 
-      const keywords = { ...email.keywords };
+      // Only the tag keywords change: writing the whole set from this row
+      // would undo keywords another client set since ($seen, $answered).
+      const keywords = email.keywords ?? {};
+      const changes: Record<string, boolean> = {};
 
       if (tagId === null) {
         // Remove all tag keywords
         Object.keys(keywords).forEach(key => {
-          if (key.startsWith(KEYWORD_PREFIX) || key.startsWith(KEYWORD_PREFIX_LEGACY)) {
-            keywords[key] = false;
+          if (keywords[key] && (key.startsWith(KEYWORD_PREFIX) || key.startsWith(KEYWORD_PREFIX_LEGACY))) {
+            changes[key] = false;
           }
         });
       } else {
@@ -2438,11 +2448,11 @@ export function MailApp({ linkSegments: routeSegments }: MailAppProps = {}) {
           .filter(key => keywords[key]);
         if (activeKeys.length > 0) {
           activeKeys.forEach(key => {
-            keywords[key] = false;
+            changes[key] = false;
           });
         } else {
           // Add the tag without disturbing others
-          keywords[KEYWORD_PREFIX + tagId] = true;
+          changes[KEYWORD_PREFIX + tagId] = true;
         }
       }
 
@@ -2452,7 +2462,7 @@ export function MailApp({ linkSegments: routeSegments }: MailAppProps = {}) {
       // call site covered only the unified view, so a tag set on a directly
       // selected shared folder was written to the reaching account and silently
       // dropped by the server. (#281)
-      await setEmailKeywords(client, emailId, keywords);
+      await patchEmailKeywords(client, emailId, changes);
 
       // Refresh tag counts
       fetchTagCounts(client);
@@ -2555,7 +2565,11 @@ export function MailApp({ linkSegments: routeSegments }: MailAppProps = {}) {
         setTabletListVisible(true);
       }
 
+      const isSameView = captureViewToken();
       const populated = await buildPopulatedUnifiedAccounts();
+      // Another folder was picked while the accounts loaded; entering this
+      // view now would put it over that folder (#1102).
+      if (!isSameView()) return;
       const searchCleared = clearSearchIfFolderChangeResets();
       // Keep an active search across the switch and re-run it in this view
       // (mirrors normal mailboxes), preserving advanced filters; otherwise browse.
@@ -2589,7 +2603,9 @@ export function MailApp({ linkSegments: routeSegments }: MailAppProps = {}) {
         setTabletListVisible(true);
       }
 
+      const isSameView = captureViewToken();
       const populated = await buildPopulatedUnifiedAccounts();
+      if (!isSameView()) return;
       const searchCleared = clearSearchIfFolderChangeResets();
       // Keep an active search across the switch and re-run it in this view
       // (mirrors normal mailboxes), preserving advanced filters; otherwise browse.
@@ -2989,7 +3005,9 @@ export function MailApp({ linkSegments: routeSegments }: MailAppProps = {}) {
     // In unified view the active "mailbox" is a virtual role or cross view, so
     // refresh via the unified fan-out instead of fetchEmails.
     if (isUnifiedView) {
+      const isSameView = captureViewToken();
       const populated = await buildPopulatedUnifiedAccounts();
+      if (!isSameView()) return;
       const role = useEmailStore.getState().unifiedRole;
       const cross = useEmailStore.getState().crossView;
       if (role) {
@@ -3110,10 +3128,17 @@ export function MailApp({ linkSegments: routeSegments }: MailAppProps = {}) {
     };
   }, [client, viewingAccountId, viewMailboxes, selectedMailbox, searchQuery, searchFilters, searchMailboxId]);
 
-  const loadListAttachments = useCallback<LoadListAttachments>((email, onLoad) => {
-    const target = listRowSourceRef.current(email);
-    if (!target) return () => {};
-    return requestListAttachments(target.source, target.accountId, email.id, onLoad);
+  const loadListAttachments = useMemo<LoadListAttachments>(() => {
+    const load: LoadListAttachments = (email, onLoad) => {
+      const target = listRowSourceRef.current(email);
+      if (!target) return () => {};
+      return requestListAttachments(target.source, target.accountId, email.id, onLoad);
+    };
+    load.peek = (email) => {
+      const target = listRowSourceRef.current(email);
+      return target ? peekListAttachments(target.source, target.accountId, email.id) : undefined;
+    };
+    return load;
   }, []);
 
   const handleDownloadAttachment = async (blobId: string, name: string, type?: string, forceDownload?: boolean) => {
@@ -4273,6 +4298,9 @@ export function MailApp({ linkSegments: routeSegments }: MailAppProps = {}) {
                     subject: selectedEmail.subject,
                     ...getQuoteBodies(selectedEmail),
                     receivedAt: selectedEmail.receivedAt,
+                    // The login that holds the message, so the reply
+                    // defaults to that account's identity (#1104).
+                    accountId: selectedEmail.sourceClientAccountId ?? viewingAccountId ?? undefined,
                     attachments: selectedEmail.attachments,
                     messageId: selectedEmail.messageId,
                     inReplyTo: selectedEmail.inReplyTo,

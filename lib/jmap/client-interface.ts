@@ -287,6 +287,8 @@ export interface IJMAPClient {
     attachments?: Array<{ blobId: string; name: string; type: string; size: number; disposition?: 'attachment' | 'inline'; cid?: string }>,
     fromName?: string,
     htmlBody?: string,
+    inReplyTo?: string[],
+    references?: string[],
   ): Promise<string>;
 
   sendEmail(
@@ -343,7 +345,7 @@ export interface IJMAPClient {
   cancelEmailSubmission(submissionId: string, accountId?: string): Promise<void>;
   rescheduleEmailSubmission(submissionId: string, emailId: string, identityId: string, delayedUntil: string, accountId?: string): Promise<SendEmailResult>;
   /** `sentMailboxId` is accepted for backwards compatibility but ignored: the message is placed in Drafts only. */
-  restoreEmailToDraft(emailId: string, draftMailboxId: string, sentMailboxId?: string): Promise<void>;
+  restoreEmailToDraft(emailId: string, draftMailboxId: string, sentMailboxId?: string, accountId?: string): Promise<void>;
 
   sendImipReply(opts: {
     organizerEmail: string;

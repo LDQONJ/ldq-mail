@@ -30,14 +30,33 @@ function jsonResponse(body: unknown, status = 200): Response {
  * config/policy files, and fails on anything else - in particular on any
  * /api/ route of our own origin. `calls` lists the mail-server requests.
  */
-function stalwartFetch(options: { loginAnswer?: unknown; refreshAnswer?: () => Response; loginStatus?: number } = {}) {
+function stalwartFetch(options: {
+  loginAnswer?: unknown;
+  refreshAnswer?: () => Response;
+  loginStatus?: number;
+  /** Advertise an RFC 7009 revocation endpoint in the metadata document. */
+  revocation?: boolean;
+} = {}) {
   const calls: string[] = [];
+  const revoked: string[] = [];
   const mock = vi.fn(async (input: FetchInput, init?: FetchInit) => {
     const url = String(input);
     if (url === '/config.json') return jsonResponse({ jmapServerUrl: SERVER });
     if (url === '/policy.json') return jsonResponse({});
     if (url.startsWith('/')) throw new Error(`Lite must not call its own origin: ${url}`);
+    // Sign-out looks the revocation endpoint up; not counted in `calls`, as
+    // a sign-out in one test's cleanup may still be looking when the next
+    // test starts.
+    if (url.startsWith(`${SERVER}/.well-known/`)) {
+      return options.revocation
+        ? jsonResponse({ issuer: SERVER, revocation_endpoint: `${SERVER}/auth/revoke` })
+        : new Response('not found', { status: 404 });
+    }
     calls.push(`${init?.method ?? 'GET'} ${url}`);
+    if (url === `${SERVER}/auth/revoke`) {
+      revoked.push(new URLSearchParams(String(init?.body)).get('token') ?? '');
+      return new Response(null, { status: 200 });
+    }
     if (url === `${SERVER}/api/auth`) {
       if (options.loginStatus) return new Response('nope', { status: options.loginStatus });
       return jsonResponse(options.loginAnswer ?? { type: 'authenticated', client_code: 'CODE' });
@@ -52,7 +71,7 @@ function stalwartFetch(options: { loginAnswer?: unknown; refreshAnswer?: () => R
     throw new Error(`unexpected fetch ${url}`);
   });
   vi.stubGlobal('fetch', mock);
-  return { mock, calls };
+  return { mock, calls, revoked };
 }
 
 function liteStorageKeys(): string[] {
@@ -109,11 +128,13 @@ describe('auth-store in the static Lite build', () => {
     vi.spyOn(browserNavigation, 'replaceWindowLocation').mockImplementation(() => {});
   });
 
-  afterEach(() => {
+  afterEach(async () => {
+    // Signing out revokes refresh tokens. Finish that here against a fetch
+    // that answers nothing: left running, it reaches the real network and
+    // then posts a revocation into a later test's fetch mock.
+    vi.stubGlobal('fetch', vi.fn(async () => new Response(null, { status: 404 })));
+    await useAuthStore.getState().logoutAll();
     vi.unstubAllGlobals();
-    for (const [id] of useAuthStore.getState().getAllConnectedClients()) {
-      useAuthStore.getState().removeAccount(id);
-    }
   });
 
   it('"remember me" logs in through Stalwart token login and keeps only a refresh token in localStorage', async () => {
@@ -164,6 +185,30 @@ describe('auth-store in the static Lite build', () => {
     expect(readLiteBasicSession(0)).toBeNull();
   });
 
+  it('signs in with an address on an IDN domain as typed, using its ASCII form (#1100)', async () => {
+    const { mock } = stalwartFetch();
+
+    const ok = await useAuthStore.getState().login(SERVER, 'alice@ノード.com', 'pw');
+
+    expect(ok).toBe(true);
+    const loginCall = mock.mock.calls.find(([input]) => String(input) === `${SERVER}/api/auth`);
+    expect(JSON.parse(String(loginCall?.[1]?.body)).accountName).toBe('alice@xn--gdkj2l.com');
+    expect(useAuthStore.getState().username).toBe('alice@xn--gdkj2l.com');
+    expect(useAuthStore.getState().client?.getAuthHeader()).toBe('Bearer AT-1');
+  });
+
+  it('sends Basic credentials as UTF-8 when the server has no token login', async () => {
+    stalwartFetch({ loginStatus: 404 });
+
+    const ok = await useAuthStore.getState().login(SERVER, 'jörg@ノード.com', 'pässwörd€');
+
+    expect(ok).toBe(true);
+    const header = useAuthStore.getState().client?.getAuthHeader() ?? '';
+    expect(header.startsWith('Basic ')).toBe(true);
+    const bytes = Uint8Array.from(atob(header.slice(6)), (c) => c.charCodeAt(0));
+    expect(new TextDecoder().decode(bytes)).toBe('jörg@xn--gdkj2l.com:pässwörd€');
+  });
+
   it('without token login and without "remember me" the Basic session is still kept for the tab', async () => {
     const { calls } = stalwartFetch({ loginStatus: 404 });
 
@@ -199,6 +244,17 @@ describe('auth-store in the static Lite build', () => {
     expect(ok).toBe(false);
     expect(useAuthStore.getState().error).toBe('totp_required');
     expect(connectSpy).not.toHaveBeenCalled();
+  });
+
+  it('keeps no password in web storage when token login exists but failed', async () => {
+    stalwartFetch({ loginStatus: 500 });
+
+    const ok = await useAuthStore.getState().login(SERVER, 'alice', 'pw', undefined, true);
+
+    expect(ok).toBe(true);
+    expect(useAuthStore.getState().authMode).toBe('basic');
+    expect(readLiteBasicSession(0)).toBeNull();
+    expect(liteStorageKeys()).toEqual([]);
   });
 
   it('falls back to Basic auth with a tab-scoped session when the server has no token login', async () => {
@@ -278,6 +334,29 @@ describe('auth-store in the static Lite build', () => {
     expect(calls).toEqual([]);
     expect(readLiteRefreshToken(0)).toBeNull();
     expect(useAuthStore.getState().isAuthenticated).toBe(false);
+  });
+
+  it('logout revokes the refresh token where the mail server advertises revocation', async () => {
+    const { calls, revoked } = stalwartFetch({ revocation: true });
+    await useAuthStore.getState().login(SERVER, 'alice', 'pw', undefined, true);
+    calls.length = 0;
+
+    await useAuthStore.getState().logout();
+
+    expect(calls).toEqual([`POST ${SERVER}/auth/revoke`]);
+    expect(revoked).toEqual(['RT-1']);
+    expect(readLiteRefreshToken(0)).toBeNull();
+  });
+
+  it('logoutAll revokes every slot\'s refresh token', async () => {
+    saveLiteRefreshToken(0, { serverUrl: SERVER, username: 'a', refreshToken: 'r0' }, true);
+    saveLiteRefreshToken(1, { serverUrl: SERVER, username: 'b', refreshToken: 'r1' }, false);
+    const { revoked } = stalwartFetch({ revocation: true });
+
+    await useAuthStore.getState().logoutAll();
+
+    expect(revoked.sort()).toEqual(['r0', 'r1']);
+    expect(liteStorageKeys()).toEqual([]);
   });
 
   it('logoutAll clears every Lite slot', async () => {

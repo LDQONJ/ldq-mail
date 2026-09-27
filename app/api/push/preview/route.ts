@@ -20,6 +20,12 @@ interface ResolvedTarget {
   accountId: string;
   /** See StalwartCredentials.trusted - false routes through the guarded fetch. */
   trusted: boolean;
+  /**
+   * Cookie slot of the login that owns the account. Handed back so a click
+   * on the notification opens the message in that login: the worker knows
+   * only the JMAP account id, which can repeat across servers.
+   */
+  slot?: number;
 }
 
 interface ResolveTargetOptions {
@@ -182,7 +188,7 @@ async function resolveTargetForAccount(
           }
 
           logger.info('push-preview: probe success', { slot, ctxServerUrl, hasTargetEmail, trusted });
-          return { authHeader: ctx.authHeader, apiUrl: absoluteApiUrl, accountId: targetAccountId, trusted, hasTargetEmail };
+          return { authHeader: ctx.authHeader, apiUrl: absoluteApiUrl, accountId: targetAccountId, trusted, slot, hasTargetEmail };
         } catch (err) {
           logger.warn('push-preview: probe exception', { slot, ctxServerUrl, err: String(err) });
           return null;
@@ -413,6 +419,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({
       email,
       unreadTotal,
+      ...(target.slot !== undefined ? { slot: target.slot } : {}),
     }, {
       headers: {
         // SW already gates on its own logic - don't let push events get

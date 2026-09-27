@@ -6,7 +6,7 @@ import { useIdentityStore } from './identity-store';
 import { setClientLookup } from './client-registry';
 import { useContactStore } from './contact-store';
 import { useVacationStore } from './vacation-store';
-import { useCalendarStore } from './calendar-store';
+import { subscriptionOwner, useCalendarStore } from './calendar-store';
 import { useFilterStore } from './filter-store';
 import { useSettingsStore } from './settings-store';
 import { useAccountStore, type AccountEntry } from './account-store';
@@ -18,20 +18,26 @@ import { generateAccountId, MAX_ACCOUNT_SLOTS } from '@/lib/account-utils';
 import { replaceWindowLocation, getPathPrefix, getLocaleFromPath, apiFetch } from '@/lib/browser-navigation';
 import { isEmbedded, notifyParent } from '@/lib/iframe-bridge';
 import { snapshotAccount, restoreAccount, clearAllStores, evictAccount, evictAll } from '@/lib/account-state-manager';
+import { clearAllPluginStorage, clearPluginStorageForAccount } from '@/lib/plugin-sandbox/storage-scope';
+import { broadcastSignOut, onSignedOutElsewhere, purgeSignedOutData } from '@/lib/sign-out-cleanup';
+import { useSearchHistoryStore } from './search-history-store';
+import { useCalendarNotificationStore } from './calendar-notification-store';
+import { usePolicyStore } from './policy-store';
 import type { Identity } from '@/lib/jmap/types';
 import { authHooks } from '@/lib/plugin-hooks';
 import { IS_LITE, IS_LITE_STALWART } from '@/lib/lite';
+import { toAsciiEmail } from '@/lib/idn';
 import {
   LiteLoginError,
-  clearAllLiteSessions,
   clearLiteRefreshToken,
-  clearLiteSlot,
   getLiteClientId,
   liteExchangeAuthorizationCode,
   liteRefreshTokens,
   liteTokenLogin,
   nameLiteRefreshToken,
   readLiteBasicSession,
+  revokeAllLiteSessions,
+  revokeLiteSlot,
   saveLiteBasicSession,
   saveLiteRefreshToken,
 } from '@/lib/auth/lite-tokens';
@@ -440,6 +446,7 @@ async function exchangeOAuthCode(params: {
         refreshToken: tokens.refreshToken,
         clientId: flow.clientId,
         tokenEndpoint: flow.tokenEndpoint,
+        revocationEndpoint: flow.revocationEndpoint,
       }, flow.persistent);
     } else {
       clearLiteRefreshToken(slot);
@@ -560,7 +567,7 @@ function clearSlotCredentials(slot: number, includeToken: boolean, endSession = 
   closingSlots.add(slot);
   return clearClosingSlots(new Set([slot]), async () => {
     if (IS_LITE) {
-      clearLiteSlot(slot);
+      await revokeLiteSlot(slot);
       return null;
     }
     const [, token] = await Promise.all([
@@ -580,7 +587,7 @@ function clearAllCredentials(endSessionSlot: number | null): Promise<string | nu
   for (const slot of slots) closingSlots.add(slot);
   return clearClosingSlots(slots, async () => {
     if (IS_LITE) {
-      clearAllLiteSessions();
+      await revokeAllLiteSessions();
       return null;
     }
     const endSession = endSessionSlot === null ? '' : `&end_session_slot=${endSessionSlot}`;
@@ -714,6 +721,21 @@ function loadIdentities(rawIdentities: Identity[], username: string): { identiti
  *
  * @param accountId The account to apply for; defaults to the active account.
  */
+/**
+ * Load the account's synced settings and turn syncing back on for it. Every
+ * path that makes an account active after sync was switched off for the
+ * previous one must run this, or later edits are never saved to the server.
+ */
+function resumeSettingsSync(account: Pick<AccountEntry, 'id' | 'username' | 'serverUrl'>): void {
+  fetchConfig().then(config => {
+    if (!config.settingsSyncEnabled) return;
+    useSettingsStore.getState().loadFromServer(account.username, account.serverUrl).finally(() => {
+      useSettingsStore.getState().enableSync(account.username, account.serverUrl);
+      applyPreferredIdentity(account.id);
+    });
+  }).catch(() => {});
+}
+
 export function applyPreferredIdentity(accountId?: string | null): void {
   const targetId = accountId ?? useAccountStore.getState().activeAccountId;
   if (!targetId) return;
@@ -897,6 +919,34 @@ let refreshPromise: Promise<string | null> | null = null;
 
 // Multi-account state: per-account JMAP clients and refresh timers
 const clients = new Map<string, JMAPClient>();
+
+/**
+ * Account switches can overlap (click B, then C before B lands). Each switch
+ * takes a generation and gives up at its next await once a newer one has
+ * started, so only the last click is applied.
+ */
+let switchGeneration = 0;
+/**
+ * True while a switch has cleared the stores and not yet filled them with
+ * the target account. A switch starting then must not snapshot the empty
+ * stores over the outgoing account's cached state.
+ */
+let storesClearedForSwitch = false;
+
+/**
+ * Snapshot the account whose data is on screen right now and clear the
+ * stores. Reads the active account when it runs, not when the switch began:
+ * an overlapping switch may have changed it in between, and a snapshot under
+ * the wrong key would later restore one account's identities (and so its
+ * From address) into another.
+ */
+function snapshotAndClearForSwitch(activeAccountId: string | null): void {
+  if (!storesClearedForSwitch && activeAccountId) {
+    snapshotAccount(activeAccountId);
+  }
+  clearAllStores();
+  storesClearedForSwitch = true;
+}
 const refreshTimers = new Map<string, ReturnType<typeof setTimeout>>();
 const refreshPromises = new Map<string, Promise<string | null>>();
 
@@ -1086,6 +1136,18 @@ function clearAllRefreshTimers(): void {
  * Synchronously clears all auth and feature store state.
  * Called during full logout (no remaining accounts).
  */
+/**
+ * Drop the calendar subscriptions of a login being signed out: they persist
+ * across account switches, and their feed URLs are often secret.
+ */
+function forgetCalendarSubscriptions(client: IJMAPClient): void {
+  try {
+    useCalendarStore.getState().forgetICalSubscriptions(subscriptionOwner(client));
+  } catch {
+    // A client that cannot name its server and login owns no subscription.
+  }
+}
+
 function performFullLogout(set: (state: Partial<AuthState>) => void): void {
   useSettingsStore.getState().disableSync();
 
@@ -1110,11 +1172,20 @@ function performFullLogout(set: (state: Partial<AuthState>) => void): void {
   });
 
   clearAllStores();
+  // Calendar subscriptions outlive account switches, but their feed URLs are
+  // often secret: nobody is signed in any more, so none may stay behind.
+  useCalendarStore.getState().clearICalSubscriptions();
+  useSearchHistoryStore.getState().clearRecentSearches();
+  useCalendarNotificationStore.getState().clearAll();
+  clearAllPluginStorage();
 
   // Remove persisted state AFTER the final set() so the persist middleware
   // doesn't re-write stale values.
   try { localStorage.removeItem('auth-storage'); } catch { /* noop */ }
-  try { localStorage.removeItem('account-storage'); } catch { /* noop */ }
+  try { localStorage.removeItem('account-registry'); } catch { /* noop */ }
+  purgeSignedOutData();
+  // Other tabs still hold the accounts' mail in memory.
+  broadcastSignOut();
 }
 
 export const useAuthStore = create<AuthState>()(
@@ -1139,8 +1210,13 @@ export const useAuthStore = create<AuthState>()(
       isDemoMode: false,
       connectedAccountsRevision: 0,
 
-      login: async (serverUrl, username, password, totp, rememberMe) => {
+      login: async (serverUrl, typedUsername, password, totp, rememberMe) => {
         set({ isLoading: true, error: null, isRateLimited: false, rateLimitUntil: null });
+
+        // Sign in with the ASCII (punycode) form of an IDN domain, the form
+        // Stalwart stores and reports back in the session and identities, so
+        // `user@bücher.de` and `user@xn--bcher-kva.de` are one account (#1100).
+        const username = toAsciiEmail(typedUsername);
 
         try {
           // Resolve account/slot info up front so the TOTP exchange can target
@@ -1153,6 +1229,10 @@ export const useAuthStore = create<AuthState>()(
 
           let client: JMAPClient;
           let upgradedToOAuth = false;
+          // Lite keeps a Basic password for the tab only when the server has
+          // no token login to use instead; a token login that failed for
+          // another reason must not leave the password in web storage.
+          let tokenLoginUnavailable = false;
           let oauthAccessToken: string | null = null;
           let oauthExpiresIn = 0;
 
@@ -1188,6 +1268,7 @@ export const useAuthStore = create<AuthState>()(
                 oauthExpiresIn = expires_in;
                 debug.log('auth', 'TOTP login exchanged for token-based auth (has_refresh_token=' + has_refresh_token + ')');
               } else {
+                if (tokenRes.status === 404) tokenLoginUnavailable = true;
                 const errorBody = await tokenRes.json().catch(() => ({ error: 'unknown' }));
                 // A correct password with a missing/invalid MFA token surfaces as
                 // a TOTP prompt rather than a generic failure.
@@ -1198,6 +1279,8 @@ export const useAuthStore = create<AuthState>()(
               }
             } catch (err) {
               if (err instanceof Error && err.message === 'TOTP_REQUIRED') throw err;
+              // Unreachable (a server without /api/auth rarely answers CORS).
+              tokenLoginUnavailable = true;
               debug.warn('auth', 'TOTP login exchange error, trying legacy basic auth:', err);
             }
 
@@ -1249,10 +1332,11 @@ export const useAuthStore = create<AuthState>()(
           // write and stalwart-context write are best-effort persistence; the
           // outer login still succeeds even if they log a warning. Errors are
           // caught locally so Promise.all doesn't reject on either.
-          // In Lite a Basic session is always kept for the tab (sessionStorage),
-          // so a reload does not sign the user out; the regular build only
-          // writes the cookie when the user asked to be remembered.
-          const sessionWrite: Promise<unknown> = ((rememberMe || IS_LITE) && !upgradedToOAuth)
+          // In Lite a Basic session is kept for the tab (sessionStorage) on a
+          // server without token login, so a reload does not sign the user
+          // out; the regular build only writes the cookie when the user asked
+          // to be remembered.
+          const sessionWrite: Promise<unknown> = ((IS_LITE ? tokenLoginUnavailable : rememberMe) && !upgradedToOAuth)
             ? persistBasicSession(cookieSlot, serverUrl, username, password)
             : Promise.resolve();
 
@@ -1835,12 +1919,14 @@ export const useAuthStore = create<AuthState>()(
         const oldClient = state.client;
         set({ client: null });
         oldClient?.disconnect();
+        if (oldClient && !wasDemoMode) forgetCalendarSubscriptions(oldClient);
 
         // Remove client from multi-account map
         if (accountId) {
           clients.delete(accountId);
           evictAccount(accountId);
           accountStore.removeAccount(accountId);
+          if (!wasDemoMode) clearPluginStorageForAccount(accountId);
         }
 
         await useSettingsStore.getState().flushSync();
@@ -1853,6 +1939,7 @@ export const useAuthStore = create<AuthState>()(
         // Check if there are remaining accounts to switch to. Read the store
         // afresh: `accountStore` is the state from before removeAccount().
         const nextAccount = wasDemoMode ? undefined : useAccountStore.getState().accounts[0];
+        const droppedAccounts: AccountEntry[] = [];
 
         if (nextAccount) {
           // Switch to the next account - this is the one path that stays in-app
@@ -1889,6 +1976,10 @@ export const useAuthStore = create<AuthState>()(
               }).catch((err) => debug.error('Failed to load identities after switch:', err));
             }
 
+            // Sync was switched off for the signed-out account above; the
+            // account staying signed in needs it back.
+            resumeSettingsSync(nextAccount);
+
             // The provider session is left alone: visiting its logout page
             // would take the user away from the accounts still signed in
             // here, which may share that session. Revoking the token ends
@@ -1899,9 +1990,18 @@ export const useAuthStore = create<AuthState>()(
 
           // Client not in memory - sign out fully instead.
           // Trying to async-restore during logout caused the original bug.
+          // A full logout leaves no account behind: drop every remaining one
+          // and clear its slot too. Left in place, its remembered session
+          // would sign the next visitor of this browser straight back in.
           debug.error(`Cannot restore next account ${nextAccount.id}, performing full logout`);
-          evictAccount(nextAccount.id);
-          accountStore.removeAccount(nextAccount.id);
+          for (const remaining of useAccountStore.getState().accounts) {
+            droppedAccounts.push(remaining);
+            clearRefreshTimer(remaining.id);
+            clients.get(remaining.id)?.disconnect();
+            clients.delete(remaining.id);
+            evictAccount(remaining.id);
+            accountStore.removeAccount(remaining.id);
+          }
         }
 
         // Full logout. The credentials are cleared before the page state:
@@ -1909,7 +2009,10 @@ export const useAuthStore = create<AuthState>()(
         // would cut the cleanup short. Awaiting it also means the provider's
         // logout URL is known before navigating, and nothing is left to
         // resume the session when the browser comes back.
-        const endSessionUrl = wasDemoMode ? null : await clearSlotCredentials(slot, wasOAuth, endProviderSession);
+        const [endSessionUrl] = wasDemoMode ? [null] : await Promise.all([
+          clearSlotCredentials(slot, wasOAuth, endProviderSession),
+          ...droppedAccounts.map((dropped) => clearSlotCredentials(dropped.cookieSlot ?? 0, dropped.authMode === 'oauth')),
+        ]);
 
         performFullLogout(set);
 
@@ -1935,10 +2038,14 @@ export const useAuthStore = create<AuthState>()(
         void clearSlotCredentials(slot, wasOAuth);
         clearRefreshTimer(accountId);
         const client = clients.get(accountId);
-        if (client) { try { client.disconnect(); } catch { /* noop */ } }
+        if (client) {
+          forgetCalendarSubscriptions(client);
+          try { client.disconnect(); } catch { /* noop */ }
+        }
         clients.delete(accountId);
         evictAccount(accountId);
         accountStore.removeAccount(accountId);
+        clearPluginStorageForAccount(accountId);
       },
 
       logoutAll: async () => {
@@ -1989,6 +2096,8 @@ export const useAuthStore = create<AuthState>()(
       switchAccount: async (accountId: string) => {
         const state = get();
         if (state.activeAccountId === accountId) return;
+        const generation = ++switchGeneration;
+        const superseded = () => generation !== switchGeneration;
 
         const accountStore = useAccountStore.getState();
         const targetAccount = accountStore.getAccountById(accountId);
@@ -2012,10 +2121,7 @@ export const useAuthStore = create<AuthState>()(
 
           // Snapshot current account, then clear - there's nothing to keep on
           // screen during the network round-trip.
-          if (state.activeAccountId) {
-            snapshotAccount(state.activeAccountId);
-          }
-          clearAllStores();
+          snapshotAndClearForSwitch(get().activeAccountId);
           await useSettingsStore.getState().flushSync();
           useSettingsStore.getState().disableSync();
 
@@ -2057,6 +2163,10 @@ export const useAuthStore = create<AuthState>()(
           }
         }
 
+        // A newer switch owns the screen now. A client restored here stays in
+        // the pool for when the account is picked again.
+        if (superseded()) return;
+
         if (!targetClient) {
           if (targetRestoreRateLimited) {
             if (state.activeAccountId && state.activeAccountId !== accountId) {
@@ -2064,6 +2174,7 @@ export const useAuthStore = create<AuthState>()(
               const prevAccount = accountStore.getAccountById(state.activeAccountId);
               if (prevClient && prevAccount) {
                 restoreAccount(state.activeAccountId);
+                storesClearedForSwitch = false;
                 accountStore.setActiveAccount(state.activeAccountId);
                 set({
                   isLoading: false,
@@ -2096,6 +2207,7 @@ export const useAuthStore = create<AuthState>()(
             const prevAccount = accountStore.getAccountById(state.activeAccountId);
             if (prevClient && prevAccount) {
               restoreAccount(state.activeAccountId);
+              storesClearedForSwitch = false;
               accountStore.setActiveAccount(state.activeAccountId);
               set({
                 isLoading: false,
@@ -2130,6 +2242,7 @@ export const useAuthStore = create<AuthState>()(
         // this slot and force a clean re-auth instead of surfacing someone
         // else's mail.
         const connectedCandidates = await connectedAccountCandidates(targetClient, targetAccount.serverUrl);
+        if (superseded()) return;
         const verdict = classifySessionMatch(connectedCandidates, accountId, targetAccount.serverIdentifiers);
         if (verdict === 'reject') {
           debug.error(`switchAccount: slot ${targetAccount.cookieSlot} for ${accountId} resolved to [${connectedCandidates.join(", ")}] — forcing re-auth`);
@@ -2152,16 +2265,15 @@ export const useAuthStore = create<AuthState>()(
         // the restore and client swap below - so the UI never blanks between the
         // two accounts. The network path already snapshotted and cleared above.
         if (wasConnected) {
-          if (state.activeAccountId) {
-            snapshotAccount(state.activeAccountId);
-          }
-          clearAllStores();
+          snapshotAndClearForSwitch(get().activeAccountId);
           await useSettingsStore.getState().flushSync();
           useSettingsStore.getState().disableSync();
+          if (superseded()) return;
         }
 
         // Restore cached state or fetch fresh
         const restored = restoreAccount(accountId);
+        storesClearedForSwitch = false;
         accountStore.setActiveAccount(accountId);
         accountStore.updateAccount(accountId, { isConnected: true, hasError: false, errorMessage: undefined });
 
@@ -2189,6 +2301,9 @@ export const useAuthStore = create<AuthState>()(
           // Fetch fresh data
           try {
             const { identities, primaryIdentity } = loadIdentities(await targetClient.getIdentities(), targetAccount.username);
+            // Switched on again while these loaded: they belong to this
+            // account, not the one now active.
+            if (superseded()) return;
             set({ identities, primaryIdentity });
             initializeFeatureStores(targetClient);
           } catch (err) {
@@ -2198,13 +2313,7 @@ export const useAuthStore = create<AuthState>()(
         void syncAccountDisplayName(accountId, targetClient, get().primaryIdentity?.name);
 
         // Sync settings
-        fetchConfig().then(config => {
-          if (!config.settingsSyncEnabled) return;
-          useSettingsStore.getState().loadFromServer(targetAccount.username, targetAccount.serverUrl).finally(() => {
-            useSettingsStore.getState().enableSync(targetAccount.username, targetAccount.serverUrl);
-            applyPreferredIdentity(targetAccount.id);
-          });
-        }).catch(() => {});
+        resumeSettingsSync(targetAccount);
       },
 
       checkAuth: async () => {
@@ -2715,3 +2824,17 @@ export const useAuthStore = create<AuthState>()(
 // Expose getClientForAccount to the calendar/contact stores via a small
 // shared registry - see [[stores/client-registry]] for rationale.
 setClientLookup((accountId) => useAuthStore.getState().getClientForAccount(accountId));
+
+// Before signing in, the server only hands out the public part of the admin
+// policy; fetch the rest once a session exists.
+useAuthStore.subscribe((state, prev) => {
+  if (state.isAuthenticated && !prev.isAuthenticated) void usePolicyStore.getState().refreshIfPartial();
+});
+
+// Another tab signed everyone out: this one's cookies and account list are
+// gone too, so leave for the login page instead of showing stale mail.
+if (typeof window !== 'undefined') {
+  onSignedOutElsewhere(() => {
+    if (useAuthStore.getState().isAuthenticated) navigateToLogin();
+  });
+}

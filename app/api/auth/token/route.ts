@@ -52,11 +52,14 @@ async function revokeRefreshToken(token: string, serverId: string | null, metada
   }, serverId, { fallbackClientId: DEFAULT_CLIENT_ID });
 
   try {
+    // Never follow a redirect with the refresh token and client secret in
+    // the body: the endpoint was validated, its redirect target was not.
     const revocationResponse = await fetch(metadata.revocation_endpoint, {
       method: 'POST',
       headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
       body: params.toString(),
       signal: AbortSignal.timeout(REVOCATION_TIMEOUT_MS),
+      redirect: 'error',
     });
     if (!revocationResponse.ok) {
       logger.warn('Token revocation returned error', { status: revocationResponse.status });
@@ -90,21 +93,23 @@ type CookieStore = Awaited<ReturnType<typeof cookies>>;
  *
  * Scoped to the token's own lifetime - once it expires the cookie is worthless
  * and should not linger. A token too large to store is simply not cached.
+ * Returns the cookie value written, or null.
  */
 function cacheAccessToken(
   cookieStore: CookieStore,
   slot: number,
   accessToken: string,
   expiresIn: number,
-): void {
+): string | null {
   const name = accessTokenCookieName(slot);
   const value = encodeCachedAccessToken(accessToken, expiresIn);
   if (!value) {
     // Oversized token: drop any stale entry rather than leaving a mismatch.
     cookieStore.delete(name);
-    return;
+    return null;
   }
   cookieStore.set(name, value, { ...getCookieOptions(), maxAge: expiresIn });
+  return value;
 }
 
 export async function POST(request: NextRequest) {
@@ -134,8 +139,8 @@ export async function POST(request: NextRequest) {
       const cookieName = refreshTokenCookieName(slot);
       cookieStore.set(cookieName, tokens.refresh_token, getCookieOptions());
     }
-    cacheAccessToken(cookieStore, slot, tokens.access_token, tokens.expires_in || 3600);
-    storeIdToken(cookieStore, slot, tokens.id_token, request.nextUrl.basePath);
+    const cachedAccessToken = cacheAccessToken(cookieStore, slot, tokens.access_token, tokens.expires_in || 3600);
+    storeIdToken(cookieStore, slot, tokens.id_token, request.nextUrl.basePath, [tokens.refresh_token, cachedAccessToken, serverId]);
     // Persist which server entry minted this refresh token so the PUT/DELETE
     // handlers can route the refresh/revocation calls to the right token
     // endpoint without the client having to track it across page loads.
@@ -203,6 +208,8 @@ export async function PUT(request: NextRequest) {
       method: 'POST',
       headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
       body: params.toString(),
+      // See revokeRefreshToken: the body holds the refresh token.
+      redirect: 'error',
     });
 
     if (!tokenResponse.ok) {
@@ -234,11 +241,11 @@ export async function PUT(request: NextRequest) {
     }
 
     const expiresIn = tokens.expires_in || 3600;
-    cacheAccessToken(cookieStore, slot, tokens.access_token, expiresIn);
+    const cachedAccessToken = cacheAccessToken(cookieStore, slot, tokens.access_token, expiresIn);
     // Providers may reissue the id token on refresh. Only a slot signed in
     // through the provider keeps one; a password login's slot gains none here.
     if (typeof tokens.id_token === 'string' && cookieStore.get(idTokenCookieName(slot))) {
-      storeIdToken(cookieStore, slot, tokens.id_token, request.nextUrl.basePath);
+      storeIdToken(cookieStore, slot, tokens.id_token, request.nextUrl.basePath, [tokens.refresh_token, cachedAccessToken]);
     }
 
     return NextResponse.json({

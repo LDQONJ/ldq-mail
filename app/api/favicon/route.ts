@@ -436,6 +436,30 @@ function evictOldest() {
   if (oldestKey) cache.delete(oldestKey);
 }
 
+const RASTER_FAVICON_TYPES = new Set([
+  'image/x-icon',
+  'image/vnd.microsoft.icon',
+  'image/png',
+  'image/gif',
+  'image/jpeg',
+  'image/webp',
+  'image/bmp',
+]);
+
+/** The upstream type when it is a raster image, else null. */
+function rasterFaviconType(header: string | null): string | null {
+  const type = (header ?? 'image/x-icon').split(';')[0].trim().toLowerCase();
+  return RASTER_FAVICON_TYPES.has(type) ? type : null;
+}
+
+function faviconHeaders(contentType: string, cacheHeader?: string): Record<string, string> {
+  return {
+    'Content-Type': contentType,
+    'Cache-Control': cacheHeader || 'public, max-age=1209600', // 2 weeks
+    'X-Content-Type-Options': 'nosniff',
+    'Content-Security-Policy': "default-src 'none'; sandbox",
+  };
+}
 function evictNegativeOldest() {
   if (negativeCache.size < NEGATIVE_CACHE_MAX_SIZE) return;
   let oldestKey: string | null = null;
@@ -451,7 +475,7 @@ function evictNegativeOldest() {
 
 // 1. Direct fetch from target server (preserves 32-bit RGBA transparent background!)
 async function fetchDirectFavicon(targetDomain: string): Promise<{ data: ArrayBuffer; contentType: string } | null> {
-  const paths = ['/favicon.ico', '/favicon.png', '/favicon.svg'];
+  const paths = ['/favicon.ico', '/favicon.png'];
 
   for (const pathStr of paths) {
     try {
@@ -460,21 +484,19 @@ async function fetchDirectFavicon(targetDomain: string): Promise<{ data: ArrayBu
         method: 'GET',
         headers: {
           'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-          'Accept': 'image/avif,image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8',
+          'Accept': 'image/avif,image/webp,image/apng,image/*,*/*;q=0.8',
         },
         signal: AbortSignal.timeout(3000), // 3s timeout
       });
 
       if (res.ok) {
-        const contentType = res.headers.get('content-type') || '';
+        const rawType = res.headers.get('content-type') || (pathStr.endsWith('.png') ? 'image/png' : 'image/x-icon');
+        const contentType = rasterFaviconType(rawType);
+        if (!contentType) continue;
+
         const data = await res.arrayBuffer();
-
-        if (data.byteLength >= 10 && (contentType.startsWith('image/') || contentType.includes('icon') || contentType.includes('octet-stream'))) {
-          let finalContentType = contentType.startsWith('image/') ? contentType : 'image/x-icon';
-          if (pathStr.endsWith('.svg')) finalContentType = 'image/svg+xml';
-          else if (pathStr.endsWith('.png')) finalContentType = 'image/png';
-
-          return { data, contentType: finalContentType };
+        if (data.byteLength >= 10) {
+          return { data, contentType };
         }
       }
     } catch {
@@ -494,9 +516,10 @@ async function fetchDuckDuckGoFavicon(targetDomain: string): Promise<{ data: Arr
 
     if (!upstream.ok) return null;
 
-    const contentType = upstream.headers.get('content-type') || 'image/x-icon';
-    const data = await upstream.arrayBuffer();
+    const contentType = rasterFaviconType(upstream.headers.get('content-type'));
+    if (!contentType) return null;
 
+    const data = await upstream.arrayBuffer();
     if (data.byteLength < 10) return null;
 
     return { data, contentType };
@@ -533,10 +556,7 @@ export async function GET(request: NextRequest) {
       const cached = cache.get(cand);
       if (cached && Date.now() - cached.fetchedAt < CACHE_TTL_MS) {
         return new NextResponse(cached.data, {
-          headers: {
-            'Content-Type': cached.contentType,
-            'Cache-Control': 'public, max-age=1209600', // 2 weeks
-          },
+          headers: faviconHeaders(cached.contentType),
         });
       }
     }
@@ -568,10 +588,7 @@ export async function GET(request: NextRequest) {
         cache.set(rootDomain, { data: directResult.data, contentType: directResult.contentType, fetchedAt: Date.now() });
 
         return new NextResponse(directResult.data, {
-          headers: {
-            'Content-Type': directResult.contentType,
-            'Cache-Control': cacheHeader,
-          },
+          headers: faviconHeaders(directResult.contentType, cacheHeader),
         });
       }
     }
@@ -586,10 +603,7 @@ export async function GET(request: NextRequest) {
         cache.set(rootDomain, { data: ddgResult.data, contentType: ddgResult.contentType, fetchedAt: Date.now() });
 
         return new NextResponse(ddgResult.data, {
-          headers: {
-            'Content-Type': ddgResult.contentType,
-            'Cache-Control': cacheHeader,
-          },
+          headers: faviconHeaders(ddgResult.contentType, cacheHeader),
         });
       }
     }
@@ -603,10 +617,7 @@ export async function GET(request: NextRequest) {
       cache.set(rootDomain, { data: ddgResult.data, contentType: ddgResult.contentType, fetchedAt: Date.now() });
 
       return new NextResponse(ddgResult.data, {
-        headers: {
-          'Content-Type': ddgResult.contentType,
-          'Cache-Control': cacheHeader,
-        },
+        headers: faviconHeaders(ddgResult.contentType, cacheHeader),
       });
     }
   }

@@ -578,7 +578,9 @@
       "copied": "已複製！",
       "copy_failed": "複製失敗"
     },
-    "send_now": "立即傳送"
+    "send_now": "立即傳送",
+    "view_in_dark_mode": "深色模式檢視",
+    "view_in_light_mode": "淺色模式檢視"
   },
   "email_composer": {
     "read_receipt_on": "已要求傳送已讀回執（點擊以停用）",
@@ -2214,7 +2216,11 @@
       "activated": "主題已啟用",
       "default_restored": "已恢復預設主題",
       "forced_notice": "管理員已強制套用主題「{name}」，無法變更",
-      "admin_theme": "管理員主題"
+      "admin_theme": "管理員主題",
+      "locked": "主題選擇已被管理員鎖定。",
+      "forced": "主題「{name}」由管理員強制指定，無法變更",
+      "default_name": "預設",
+      "default_badge": "預設"
     },
     "plugins": {
       "title": "外掛程式",
@@ -3008,7 +3014,7 @@
       "enable_tasks": "啟用任務",
       "enable_tasks_desc": "在行事曆中顯示任務檢視以管理待辦事項",
       "show_tasks_on_calendar": "在行事曆上顯示任務",
-      "show_tasks_on_calendar_desc": "在行事曆的日／週檢視中顯示任務標籤",
+      "show_tasks_on_calendar_desc": "在行事曆的月／週／日檢視中顯示任務",
       "hover_preview": "活動游標暫留預覽",
       "hover_preview_desc": "游標移至行事曆活動上方時顯示詳細資料浮動視窗",
       "hover_preview_instant": "立即",

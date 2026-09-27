@@ -55,7 +55,7 @@ export function ThemesSettings() {
 
     if (forcedThemeId && id !== forcedThemeId) {
       const forcedTheme = installedThemes.find((theme) => theme.id === forcedThemeId);
-      toast.info(t('forced_notice', { name: forcedTheme?.name ?? t('admin_theme') }));
+      toast.info(t('forced', { name: forcedTheme?.name ?? t('admin_theme') }));
       return;
     }
 
@@ -68,7 +68,7 @@ export function ThemesSettings() {
 
       {forcedThemeId && (
         <div className="mb-4 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-800 dark:border-amber-900/40 dark:bg-amber-950/20 dark:text-amber-300">
-          {t('locked_by_admin')}
+          {t('locked')}
         </div>
       )}
 
@@ -76,8 +76,8 @@ export function ThemesSettings() {
       <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
         {/* Default theme card */}
         <ThemeCard
-          name={t('default_theme')}
-          author={t('author_bulwark')}
+          name={t('default_name')}
+          author="Bulwark"
           isDefaultTheme
           variants={['light', 'dark']}
           isDark={isDark}
@@ -134,6 +134,7 @@ interface ThemeCardProps {
 
 function ThemeCard({ name, author, preview, css, isDark, isDefaultTheme, isActive, isDefault, isForceEnabled, disabled, variants, onActivate }: ThemeCardProps) {
   const t = useTranslations('settings.themes');
+  const tVariant = useTranslations('settings.appearance.theme');
   const colors = resolveThemeColors({ css, variants, isDark: !!isDark, isDefaultTheme: !!isDefaultTheme });
   return (
     <div data-search-label={name} className="relative">
@@ -170,7 +171,7 @@ function ThemeCard({ name, author, preview, css, isDark, isDefaultTheme, isActiv
                 </span>
               )}
               {isDefault && (
-                <span className="text-[10px] px-1.5 py-0.5 rounded bg-primary/10 text-primary font-medium">{t('default_theme')}</span>
+                <span className="text-[10px] px-1.5 py-0.5 rounded bg-primary/10 text-primary font-medium">{t('default_badge')}</span>
               )}
               {isActive && <Check className="w-4 h-4 text-primary" />}
             </div>
@@ -180,7 +181,7 @@ function ThemeCard({ name, author, preview, css, isDark, isDefaultTheme, isActiv
             <div className="flex gap-1 mt-1">
               {variants.map(v => (
                 <span key={v} className="text-[10px] px-1.5 py-0.5 rounded bg-muted text-muted-foreground">
-                  {v}
+                  {tVariant(v)}
                 </span>
               ))}
             </div>

@@ -170,6 +170,9 @@ async function handlePush(event) {
   const unreadTotal = preview && typeof preview.unreadTotal === "number"
     ? preview.unreadTotal
     : 0;
+  // The login (cookie slot) that owns this account, so the click opens the
+  // message there and not in whichever account happens to be active.
+  const slot = preview && Number.isInteger(preview.slot) ? preview.slot : undefined;
 
   // Push subscription is scoped to EmailDelivery, but stragglers from the
   // older broader-types subscription, marking-as-read races and verification
@@ -198,7 +201,7 @@ async function handlePush(event) {
   const groupTag = "bulwark-mail:" + (accountLabel || accountId || "default");
   let title;
   let body;
-  let data = { kind: "mail-list", accountId, accountLabel, serverUrl };
+  let data = { kind: "mail-list", accountId, accountLabel, serverUrl, slot };
 
   if (email) {
     const sender = email.from && email.from[0];
@@ -212,7 +215,7 @@ async function handlePush(event) {
       body += "\n" + `+${more} 封新邮件`;
     } else {
       // Exactly one unread: deep-link straight to that message on click.
-      data = { kind: "email", emailId: email.id, threadId: email.threadId, accountLabel, serverUrl };
+      data = { kind: "email", emailId: email.id, threadId: email.threadId, accountLabel, serverUrl, slot };
     }
   } else {
     title = accountLabel ? `新邮件 (${accountLabel})` : "新邮件";
@@ -463,18 +466,33 @@ function getReusableClientScore(state) {
 }
 
 function buildClickUrl(data) {
-  const base = !data ? `${BASE_PATH}/` : 
-               (data.kind === "email" && data.emailId) ? `${BASE_PATH}/mail/message/${encodeURIComponent(data.emailId)}` :
-               `${BASE_PATH}/?openLatestUnread=1`;
-  
-  if (!data || (!data.accountLabel && !data.serverUrl)) {
+  if (!data) return `${BASE_PATH}/`;
+
+  // `?slot=` names the login the message belongs to (see the preview API).
+  const slotQuery = Number.isInteger(data.slot) ? `?slot=${data.slot}` : "";
+  let base;
+  if (data.kind === "email" && data.emailId) {
+    // Permalink (#733). Under NEXT_PUBLIC_LOCALE_PREFIX=always the proxy
+    // redirects this to the localised path; the worker has no locale to add.
+    base = `${BASE_PATH}/mail/message/${encodeURIComponent(data.emailId)}${slotQuery}`;
+  } else if (data.kind === "mail-list" && slotQuery) {
+    // A group of new mail in a known login: that login's Inbox.
+    base = `${BASE_PATH}/mail/folder/inbox${slotQuery}`;
+  } else {
+    // Generic "New mail" toast (preview API failed or returned no email): land
+    // the user on the latest unread message in their Inbox rather than just the
+    // app shell, so the click still feels purposeful.
+    base = `${BASE_PATH}/?openLatestUnread=1`;
+  }
+
+  if (!data.accountLabel && !data.serverUrl) {
     return new URL(base, self.location.origin).href;
   }
-  
+
   const url = new URL(`${BASE_PATH}/push-redirect`, self.location.origin);
   if (data.accountLabel) url.searchParams.set("accountLabel", data.accountLabel);
   if (data.serverUrl) url.searchParams.set("serverUrl", data.serverUrl);
   url.searchParams.set("to", base);
-  
+
   return url.href;
 }
