@@ -14,11 +14,8 @@ import { Button } from '@/components/ui/button';
 import { useRouter } from '@/i18n/navigation';
 import { getMaxAccounts } from '@/lib/account-utils';
 import { formatFileSize, cn } from '@/lib/utils';
-import { toUnicodeDomain, toUnicodeEmail } from '@/lib/idn';
+import { toUnicodeEmail } from '@/lib/idn';
 
-function hostnameOf(serverUrl: string): string {
-  try { return toUnicodeDomain(new URL(serverUrl).hostname); } catch { return serverUrl; }
-}
 // First scoped settings tab to land on for a shared account, by capability.
 // Mirrors the scoped-tab gating in the settings page. null = nothing editable.
 function firstScopedTab(caps: SharedAccount['capabilities']): string | null {
