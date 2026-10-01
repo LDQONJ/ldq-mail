@@ -254,6 +254,7 @@
       "button": "Mappa ürítése",
       "confirm_title": "Mappa ürítése",
       "confirm_message": "A mappa összes e-mailje véglegesen törlődik. Ez a művelet nem vonható vissza.",
+      "confirm_message_trash": "A mappában lévő összes e-mail a Kukába kerül.",
       "confirm_button": "Mappa ürítése",
       "junk_hint": "A Spam mappa ürítésével véglegesen eltávolíthatod az összes üzenetet.",
       "trash_hint": "A Kuka mappa ürítésével véglegesen eltávolíthatod az összes üzenetet."
@@ -580,7 +581,12 @@
       "copied": "Másolva!",
       "copy_failed": "A másolás nem sikerült"
     },
-    "send_now": "Küldés most"
+    "send_now": "Küldés most",
+    "verification_code": {
+      "copy": "{code} kód másolása",
+      "copied": "Kód másolva",
+      "copy_failed": "Nem sikerült másolni a kódot"
+    }
   },
   "email_composer": {
     "read_receipt_on": "Olvasási visszaigazolás kérve (kattints a letiltáshoz)",
@@ -669,6 +675,8 @@
     "show_less": "Kevesebb mutatása",
     "send_failed": "Nem sikerült elküldeni az e-mailt",
     "send_timeout": "A kiszolgáló nem válaszol többé. Újraküldés előtt ellenőrizze az Elküldött mappát – az üzenet lehet, hogy már kiment.",
+    "send_recipients_rejected": "Nem lett elküldve – a szerver minden címzettet elutasított.",
+    "send_some_recipients_rejected": "Elküldve, de ezeknek a címzetteknek nem – a szerver elutasította őket.",
     "continue_draft": "Piszkozat folytatása",
     "close_draft_title": "Piszkozat mentése vagy elvetése?",
     "close_draft_message": "Nem mentett változtatások vannak. Szeretnéd piszkozatként menteni vagy elvetni?",
@@ -828,7 +836,19 @@
     "templates_import_empty": "Nem található sablon a fájlban",
     "export_email_error": "Nem sikerült exportálni az e-mailt",
     "import_email_success": "E-mail sikeresen importálva",
-    "import_email_error": "Nem sikerült importálni az e-mailt"
+    "import_email_error": "Nem sikerült importálni az e-mailt",
+    "rule_created": "Szabály létrehozva",
+    "rule_merged": "Hozzáadva a(z) „{name}” szabályhoz",
+    "rule_already_covered": "Ezt már lefedi a(z) „{name}” szabály",
+    "rule_apply_existing": "{count, plural, one {Alkalmazás # meglévő üzenetre} other {Alkalmazás # meglévő üzenetre}}",
+    "rule_applied": "{count, plural, =0 {Egyik üzenetet sem kellett módosítani} one {A szabály # üzenetre alkalmazva} other {A szabály # üzenetre alkalmazva}}",
+    "rule_apply_failed": "Nem sikerült a szabályt a meglévő üzenetekre alkalmazni",
+    "rule_edit": "Szabály szerkesztése",
+    "rule_undo": "Visszavonás",
+    "rule_undone": "A szabálymódosítás visszavonva",
+    "rule_undo_failed": "Nem sikerült visszavonni a szabálymódosítást",
+    "rule_undo_conflict": "A szűrőid azóta megváltoztak. A módosítást a szűrőbeállításokban vond vissza.",
+    "rule_folder_failed": "Nem sikerült létrehozni a mappát"
   },
   "date": {
     "today": "Ma",
@@ -1089,6 +1109,10 @@
       "tint_list_rows": {
         "label": "Tint List Rows by Tag Color",
         "description": "Shade each message row with its first tag color. Disable to keep rows plain; tag dots and chips still show the color."
+      },
+      "tint_list_rows_by_account": {
+        "label": "Tint List Rows by Account Color",
+        "description": "In the unified view, shade each row with its account color instead of showing the account dot. Takes precedence over the tag tint; tags keep their color on their chips."
       },
       "show_folder_total_count": {
         "label": "Összes üzenet számának megjelenítése",
@@ -1355,6 +1379,10 @@
         "label": "Előnézeti szöveg mutatása",
         "description": "E-mail előnézet megjelenítése a listában",
         "focus_description": "Beágyazott előnézeti szöveg megjelenítése a fókuszált egysoros üzenetlistában"
+      },
+      "show_verification_codes": {
+        "label": "Ellenőrző kódok megjelenítése",
+        "description": "A bejelentkezési és megerősítő e-mailek kódjának felajánlása egy kattintásos másolásra, a listában egy napig és az üzenetben"
       },
       "disable_threading": {
         "label": "Beszélgetéscsoportosítás letiltása",
@@ -1722,14 +1750,37 @@
       },
       "link_device": {
         "title": "Mobilalkalmazás összekapcsolása",
-        "description": "Jelentkezz be a Bulwark Mail mobilalkalmazásba gépelés nélkül. Generálj itt egy QR-kódot, és olvasd be az alkalmazás bejelentkezési képernyőjén.",
+        "description": "Jelentkezz be a telefonodon a Bulwark Mail alkalmazásba anélkül, hogy ott beírnád a jelszavad. A telefonod saját bejelentkezést kap, így ha itt kijelentkezel, a telefon bejelentkezve marad.",
         "generate": "QR-kód megjelenítése",
         "regenerate": "Új kód megjelenítése",
-        "instructions": "Nyisd meg a Bulwark Mail alkalmazást, koppints a \"QR-kód beolvasása\" lehetőségre a bejelentkezési képernyőn, és irányítsd ide a kamerát.",
+        "instructions": "Nyisd meg a Bulwark Mail alkalmazást, és a bejelentkezési képernyőn koppints a \"Scan a sign-in code\" lehetőségre (vagy az \"Add account\" → \"Scan a sign-in code\" lehetőségre, ha már be vagy jelentkezve), majd irányítsd ide a kamerát.",
         "expires_in": "Ez a kód {seconds} másodperc múlva lejár. Csak egyszer használható.",
         "expired": "Ez a kód lejárt.",
-        "generating": "Generálás…",
-        "error": "Nem sikerült párosítási kódot létrehozni. Próbáld újra."
+        "error": "Nem sikerült párosítási kódot létrehozni. Próbáld újra.",
+        "password_prompt": "Add meg a jelszavad, hogy megerősítsd, te vagy az. A telefonod saját bejelentkezést kap; a jelszavad nem kerül át a telefonra.",
+        "show_password": "Jelszó megjelenítése",
+        "hide_password": "Jelszó elrejtése",
+        "continue": "Tovább",
+        "error_wrong_password": "Hibás jelszó. Próbáld újra.",
+        "totp_prompt": "Add meg a hitelesítő alkalmazásodban látható kódot.",
+        "error_password_or_code": "A jelszó vagy a kód hibás.",
+        "error_not_signed_in": "A munkameneted lejárt. Jelentkezz be újra az eszköz összekapcsolásához.",
+        "error_impersonation": "Nem kapcsolhatsz össze eszközt, amíg egy másik felhasználó postafiókját nézed.",
+        "error_too_many_attempts": "Túl sok próbálkozás. Várj egy kicsit, és próbáld újra.",
+        "error_session_secret": "Az eszközök összekapcsolása nincs beállítva ezen a szerveren (hiányzik a SESSION_SECRET). Fordulj a rendszergazdához.",
+        "error_server_unreachable": "Nem sikerült elérni a levelezőszerveredet. Próbáld újra.",
+        "error_pairing_unavailable": "A levelezőszervered nem teszi lehetővé az eszközök ilyen módon történő összekapcsolását. Fordulj a rendszergazdához.",
+        "qr_alt": "Bejelentkezési QR-kód",
+        "link_label": "Bejelentkezési hivatkozás",
+        "copy_link": "Bejelentkezési hivatkozás másolása",
+        "copied": "Másolva",
+        "copy_hint": "Nincs kamerád? Másold ki a hivatkozást, és illeszd be az alkalmazásban a \"Paste sign-in link\" lehetőséggel.",
+        "success_title": "Bejelentkezve a telefonodon",
+        "success_body": "Bezárhatod ezt az oldalt. Másik eszköz összekapcsolásához jeleníts meg egy új kódot.",
+        "link_another": "Másik eszköz összekapcsolása",
+        "use_sso": "Egyszeri bejelentkezés használata helyette",
+        "error_insecure_server": "A mobilalkalmazás csak https-en keresztül csatlakozik levelezőszerverekhez, ez pedig http-t használ.",
+        "generating": "Generálás…"
       },
       "public_keys": {
         "name_label": "Nyilvános kulcs neve",
@@ -2046,7 +2097,9 @@
         "ends_with": "végződik",
         "matches": "illeszkedik a mintára",
         "greater_than": "nagyobb, mint",
-        "less_than": "kisebb, mint"
+        "less_than": "kisebb, mint",
+        "address_is": "címe pontosan",
+        "domain_is": "tartománya"
       },
       "action_types": {
         "move": "Áthelyezés mappába",
@@ -2121,7 +2174,26 @@
         "actions_count": "{count, plural, one {# művelet} other {# művelet}}"
       },
       "origin_external": "Külső",
-      "managed_by_tooltip": "Kezeli: {source}. Szerkeszd az alkalmazásban, vagy használd a nyers Sieve szerkesztőt."
+      "managed_by_tooltip": "Kezeli: {source}. Szerkeszd az alkalmazásban, vagy használd a nyers Sieve szerkesztőt.",
+      "quick_rule_names": {
+        "move_sender": "Áthelyezés: {sender} → {folder}",
+        "move_domain": "Áthelyezés: @{domain} → {folder}",
+        "move_list": "Áthelyezés: {list} lista → {folder}",
+        "mark_read": "{sender} olvasottnak jelölése",
+        "tag": "{sender} címkézése: {tag}",
+        "block": "{sender} letiltása",
+        "custom": "{sender} üzenetei",
+        "custom_plain": "Új szabály",
+        "senders": "{count, plural, one {# feladó} other {# feladó}}"
+      },
+      "suggestions": "Javaslatok",
+      "suggest_subject": "Tárgy: „{subject}”",
+      "suggest_to": "Címzett: {address}",
+      "suggest_cc": "Másolat: {address}",
+      "suggest_list": "List-Id",
+      "suggest_domain": "@{domain}",
+      "apply_existing": "Alkalmazás a mappában már meglévő üzenetekre is",
+      "apply_existing_unsupported": "Meglévő üzenetekre csak olyan szabály alkalmazható, amely a feladót, a címzetteket, a tárgyat vagy a fejléceket vizsgálja, és áthelyez, másol, olvasottnak jelöl, csillagoz vagy címkéz."
     },
     "templates": {
       "title": "E-mail sablonok",
@@ -2257,7 +2329,22 @@
     "cancel_scheduled_send": "Küldés megszakítása",
     "reschedule_send": "Átütemezés",
     "cancel_and_edit": "Mégse és szerkesztés",
-    "cancel_and_compose_again": "Mégse és újraírás"
+    "cancel_and_compose_again": "Mégse és újraírás",
+    "rules": {
+      "title": "Szabályok",
+      "move_from": "{sender} üzeneteinek automatikus áthelyezése",
+      "move_from_domain": "@{domain} üzeneteinek automatikus áthelyezése",
+      "move_from_list": "E lista üzeneteinek automatikus áthelyezése",
+      "mark_read_from": "{sender} üzeneteinek automatikus olvasottnak jelölése",
+      "tag_with": "Automatikus címkézés ezzel",
+      "block": "{count, plural, one {Feladó letiltása} other {# feladó letiltása}}",
+      "no_junk": "Ebben a fiókban nincs Levélszemét mappa",
+      "create": "Szabály létrehozása…",
+      "manage": "Szabályok kezelése",
+      "senders_count": "{count, plural, one {# feladó} other {# feladó}}",
+      "cross_account": "Egyetlen fiók üzeneteit válaszd ki",
+      "opaque_hint": "A szűrőidet kézzel szerkesztették. Nyisd meg a szűrőbeállításokat"
+    }
   },
   "mailbox_context_menu": {
     "mark_folder_read": "Mappa olvasottnak jelölése",
@@ -2820,6 +2907,8 @@
       "no_events": "Nincs esemény",
       "all_day": "Egész napos",
       "more": "+{count} további",
+      "show_more": "Több mutatása",
+      "show_less": "Kevesebb mutatása",
       "no_title": "(Nincs cím)",
       "resize": "Esemény átméretezése",
       "duplicate": "Duplikálás",
@@ -2842,6 +2931,7 @@
       "save_note": "Mentés",
       "note_saved": "Megjegyzés hozzáadva",
       "open_link": "Link megnyitása",
+      "copy_location": "Helyszín másolása",
       "meeting_link": "Találkozó link",
       "tentative": "Előzetes",
       "cancelled": "Lemondva",
@@ -3293,6 +3383,7 @@
     "body_placeholder": "Törzs tartalma...",
     "folder": "Mappa",
     "all_folders": "Minden mappa",
+    "all_folders_except_spam_trash": "Minden mappa, kivéve a Spam és a Kuka",
     "has_attachment": "Csatolmányok",
     "date_after": "Ettől",
     "date_before": "Eddig",

@@ -219,6 +219,7 @@
       "button": "רוקן תיקייה",
       "confirm_title": "רוקן תיקייה",
       "confirm_message": "כל הודעות האימייל בתיקייה זו יימחקו לצמיתות. לא ניתן לבטל פעולה זו.",
+      "confirm_message_trash": "כל הודעות הדוא״ל בתיקייה זו יועברו לאשפה.",
       "confirm_button": "רוקן תיקייה",
       "junk_hint": "אתה יכול לרוקן את תיקיית הזבל כדי להסיר לצמיתות את כל ההודעות.",
       "trash_hint": "אתה יכול לרוקן את תיקיית האשפה כדי להסיר לצמיתות את כל ההודעות."
@@ -545,7 +546,12 @@
       "copied": "הועתק!",
       "copy_failed": "העתקה נכשלה"
     },
-    "send_now": "שלח עכשיו"
+    "send_now": "שלח עכשיו",
+    "verification_code": {
+      "copy": "העתקת הקוד {code}",
+      "copied": "הקוד הועתק",
+      "copy_failed": "לא ניתן להעתיק את הקוד"
+    }
   },
   "email_composer": {
     "new_message": "הודעה חדשה",
@@ -611,6 +617,8 @@
     "show_less": "הצג פחות",
     "send_failed": "שליחת האימייל נכשלה",
     "send_timeout": "השרת הפסיק להגיב. בדקו את תיקיית הנשלחים לפני שליחה חוזרת — ייתכן שההודעה כבר נשלחה.",
+    "send_recipients_rejected": "לא נשלח - השרת דחה את כל הנמענים.",
+    "send_some_recipients_rejected": "נשלח, אך לא לנמענים האלה - השרת דחה אותם.",
     "continue_draft": "המשך טיוטה",
     "close_draft_title": "לשמור או למחוק טיוטה?",
     "close_draft_message": "יש לך שינויים שלא נשמרו. האם תרצה לשמור את זה כטיוטה או למחוק אותו?",
@@ -793,7 +801,19 @@
     "templates_import_empty": "לא נמצאו תבניות בקובץ",
     "export_email_error": "ייצוא האימייל נכשל",
     "import_email_success": "אימייל יובא בהצלחה",
-    "import_email_error": "ייבוא האימייל נכשל"
+    "import_email_error": "ייבוא האימייל נכשל",
+    "rule_created": "הכלל נוצר",
+    "rule_merged": "נוסף לכלל „{name}”",
+    "rule_already_covered": "כבר מכוסה על ידי הכלל „{name}”",
+    "rule_apply_existing": "{count, plural, one {החל על הודעה קיימת אחת} other {החל על # הודעות קיימות}}",
+    "rule_applied": "{count, plural, =0 {אף הודעה לא דרשה שינוי} one {הכלל הוחל על הודעה אחת} other {הכלל הוחל על # הודעות}}",
+    "rule_apply_failed": "לא ניתן היה להחיל את הכלל על הודעות קיימות",
+    "rule_edit": "ערוך כלל",
+    "rule_undo": "בטל",
+    "rule_undone": "שינוי הכלל בוטל",
+    "rule_undo_failed": "לא ניתן היה לבטל את שינוי הכלל",
+    "rule_undo_conflict": "המסננים שלך השתנו מאז. בטל את השינוי בהגדרות המסננים.",
+    "rule_folder_failed": "לא ניתן היה ליצור את התיקייה"
   },
   "date": {
     "today": "היום",
@@ -1052,6 +1072,10 @@
         "label": "צביעת שורות הרשימה לפי צבע התגית",
         "description": "צובע כל שורת הודעה בצבע התגית הראשונה שלה. כבו כדי להשאיר את השורות ללא צבע; נקודות ותוויות התגיות עדיין יציגו את הצבע."
       },
+      "tint_list_rows_by_account": {
+        "label": "Tint List Rows by Account Color",
+        "description": "In the unified view, shade each row with its account color instead of showing the account dot. Takes precedence over the tag tint; tags keep their color on their chips."
+      },
       "show_folder_total_count": {
         "label": "הצגת מספר ההודעות הכולל",
         "description": "מציג את מספר ההודעות הכולל לצד תיקיות ותגיות, לצד מספר ההודעות שלא נקראו. כבו כדי להציג רק את מספר ההודעות שלא נקראו."
@@ -1306,6 +1330,10 @@
         "label": "הצג טקסט תצוגה מקדימה",
         "description": "הצג תצוגה מקדימה של דואר אלקטרוני ברשימה",
         "focus_description": "הצג טקסט תצוגה מקדימה מוטבע בתוך רשימת ההודעות הממוקדת בשורה אחת"
+      },
+      "show_verification_codes": {
+        "label": "הצגת קודי אימות",
+        "description": "הצעת הקוד מהודעות כניסה ואישור להעתקה בלחיצה אחת, ברשימה למשך יום ובהודעה"
       },
       "disable_threading": {
         "label": "השבת את קיבוץ השיחות",
@@ -1684,14 +1712,37 @@
       },
       "link_device": {
         "title": "הקשר יישום נייד",
-        "description": "היכנס ליישום הנייד Bulwark Mail ללא הקלדת דבר. צור קוד QR כאן וסרוק אותו מהמסך ההתחברות של היישום.",
+        "description": "התחבר לאפליקציית Bulwark Mail בטלפון בלי להקליד שם את הסיסמה. הטלפון מקבל התחברות משלו, כך שהתנתקות כאן לא מנתקת אותו.",
         "generate": "הצג קוד QR",
         "regenerate": "הצג קוד חדש",
-        "instructions": "פתח את אפליקציית Bulwark Mail, לחץ ״סרוק קוד QR״ במסך ההתחברות, וכיוון את המצלמה שלך לכאן.",
+        "instructions": "פתח את אפליקציית Bulwark Mail והקש על \"Scan a sign-in code\" במסך ההתחברות (או \"Add account\" → \"Scan a sign-in code\" אם כבר התחברת), ואז כוון את המצלמה לכאן.",
         "expires_in": "קוד זה פוקע בעוד {seconds} שניות. ניתן להשתמש בו רק פעם אחת.",
         "expired": "קוד זה פקע.",
-        "generating": "יצירה…",
-        "error": "לא היה ניתן ליצור קוד זיווג. אנא נסה שוב."
+        "error": "לא היה ניתן ליצור קוד זיווג. אנא נסה שוב.",
+        "password_prompt": "הזן את הסיסמה כדי לאשר שזה אתה. הטלפון מקבל התחברות משלו; הסיסמה שלך לא נשלחת לטלפון.",
+        "show_password": "הצג סיסמה",
+        "hide_password": "הסתר סיסמה",
+        "continue": "המשך",
+        "error_wrong_password": "סיסמה שגויה. נסה שוב.",
+        "totp_prompt": "הזן את הקוד מאפליקציית האימות.",
+        "error_password_or_code": "הסיסמה או הקוד שגויים.",
+        "error_not_signed_in": "פג תוקף ההפעלה שלך. התחבר מחדש כדי לקשר מכשיר.",
+        "error_impersonation": "לא ניתן לקשר מכשירים בזמן צפייה בתיבת הדואר של משתמש אחר.",
+        "error_too_many_attempts": "יותר מדי ניסיונות. המתן רגע ונסה שוב.",
+        "error_session_secret": "קישור מכשירים לא הוגדר בשרת זה (SESSION_SECRET חסר). פנה למנהל המערכת.",
+        "error_server_unreachable": "לא ניתן להתחבר לשרת הדואר שלך. נסה שוב.",
+        "error_pairing_unavailable": "שרת הדואר שלך לא מאפשר לקשר מכשיר בדרך זו. פנה למנהל המערכת.",
+        "qr_alt": "קוד QR להתחברות",
+        "link_label": "קישור התחברות",
+        "copy_link": "העתק קישור התחברות",
+        "copied": "הועתק",
+        "copy_hint": "אין מצלמה? העתק את הקישור והדבק אותו באפליקציה באמצעות \"Paste sign-in link\".",
+        "success_title": "ההתחברות בטלפון הושלמה",
+        "success_body": "אפשר לסגור את הדף הזה. כדי לקשר מכשיר נוסף, הצג קוד חדש.",
+        "link_another": "קשר מכשיר נוסף",
+        "use_sso": "השתמש בכניסה יחידה במקום",
+        "error_insecure_server": "האפליקציה מתחברת לשרתי דואר רק ב-https, והשרת הזה משתמש ב-http.",
+        "generating": "יצירה…"
       },
       "public_keys": {
         "name_label": "שם המפתח הציבורי",
@@ -1963,7 +2014,9 @@
         "greater_than": "גדול מ",
         "less_than": "הוא פחות מ",
         "has_any": "קיים",
-        "has_type": "מסוג"
+        "has_type": "מסוג",
+        "address_is": "הוא הכתובת",
+        "domain_is": "שייך לדומיין"
       },
       "action_types": {
         "move": "העבר לתיקיה",
@@ -2040,7 +2093,26 @@
       "attachment_type_placeholder": "למשל pdf, doc, jpg",
       "value_placeholder_multi": "ערך (מרובים מופרדים בפסיקים)",
       "origin_external": "חיצוני",
-      "managed_by_tooltip": "מנוהל על ידי {source}. ערוך אותו ביישום זה, או השתמש בעורך Sieve הגולמי."
+      "managed_by_tooltip": "מנוהל על ידי {source}. ערוך אותו ביישום זה, או השתמש בעורך Sieve הגולמי.",
+      "quick_rule_names": {
+        "move_sender": "העבר מ-{sender} אל {folder}",
+        "move_domain": "העבר מ-@{domain} אל {folder}",
+        "move_list": "העבר את הרשימה {list} אל {folder}",
+        "mark_read": "סמן כנקראו מ-{sender}",
+        "tag": "הוסף תווית {tag} להודעות מ-{sender}",
+        "block": "חסום את {sender}",
+        "custom": "הודעות מ-{sender}",
+        "custom_plain": "כלל חדש",
+        "senders": "{count, plural, one {שולח אחד} other {# שולחים}}"
+      },
+      "suggestions": "הצעות",
+      "suggest_subject": "נושא „{subject}”",
+      "suggest_to": "אל {address}",
+      "suggest_cc": "עותק {address}",
+      "suggest_list": "List-Id",
+      "suggest_domain": "@{domain}",
+      "apply_existing": "החל גם על הודעות שכבר נמצאות בתיקייה זו",
+      "apply_existing_unsupported": "אפשר להחיל על הודעות קיימות רק כללים שבודקים שולח, נמענים, נושא או כותרות, ושמעבירים, מעתיקים, מסמנים כנקרא, בכוכב או בתווית."
     },
     "templates": {
       "title": "תבניות דואר אלקטרוני",
@@ -2223,7 +2295,22 @@
     "cancel_scheduled_send": "ביטול שליחה",
     "reschedule_send": "תזמן מחדש",
     "cancel_and_edit": "בטל וערוך",
-    "cancel_and_compose_again": "בטל והרכיב שוב"
+    "cancel_and_compose_again": "בטל והרכיב שוב",
+    "rules": {
+      "title": "כללים",
+      "move_from": "תמיד להעביר הודעות מ-{sender}",
+      "move_from_domain": "תמיד להעביר הודעות מ-@{domain}",
+      "move_from_list": "תמיד להעביר הודעות מרשימה זו",
+      "mark_read_from": "תמיד לסמן הודעות מ-{sender} כנקראו",
+      "tag_with": "תמיד להוסיף תווית",
+      "block": "{count, plural, one {חסום שולח} other {חסום # שולחים}}",
+      "no_junk": "לחשבון זה אין תיקיית דואר זבל",
+      "create": "צור כלל…",
+      "manage": "ניהול כללים",
+      "senders_count": "{count, plural, one {שולח אחד} other {# שולחים}}",
+      "cross_account": "בחר הודעות מחשבון אחד",
+      "opaque_hint": "המסננים שלך נערכו ידנית. פתח את הגדרות המסננים"
+    }
   },
   "shortcuts": {
     "title": "קיצורי מקלדת",
@@ -2744,6 +2831,8 @@
       "no_events": "אין אירועים",
       "all_day": "כל היום",
       "more": "+{count}נוספים",
+      "show_more": "הצג עוד",
+      "show_less": "הצג פחות",
       "no_title": "(ללא כותרת)",
       "resize": "שנה את גודל האירוע",
       "duplicate": "שכפול",
@@ -2766,6 +2855,7 @@
       "save_note": "שמור",
       "note_saved": "הערה נוספה",
       "open_link": "פתח קישור",
+      "copy_location": "העתק מיקום",
       "meeting_link": "קישור לפגישה",
       "tentative": "טנטטיבי",
       "cancelled": "בוטל",
@@ -3175,6 +3265,7 @@
     "body_placeholder": "הגוף מכיל...",
     "folder": "תיקיה",
     "all_folders": "כל התיקיות",
+    "all_folders_except_spam_trash": "כל התיקיות מלבד ספאם ואשפה",
     "has_attachment": "קבצים מצורפים",
     "date_after": "אחרי",
     "date_before": "לפני",

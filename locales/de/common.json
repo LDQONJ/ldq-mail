@@ -254,6 +254,7 @@
       "button": "Ordner leeren",
       "confirm_title": "Ordner leeren",
       "confirm_message": "Alle E-Mails in diesem Ordner werden dauerhaft gelöscht. Diese Aktion kann nicht rückgängig gemacht werden.",
+      "confirm_message_trash": "Alle E-Mails in diesem Ordner werden in den Papierkorb verschoben.",
       "confirm_button": "Ordner leeren",
       "junk_hint": "Sie können den Spam-Ordner leeren, um alle Nachrichten dauerhaft zu entfernen.",
       "trash_hint": "Sie können den Papierkorb leeren, um alle Nachrichten dauerhaft zu entfernen."
@@ -580,7 +581,12 @@
       "copied": "Kopiert!",
       "copy_failed": "Kopieren fehlgeschlagen"
     },
-    "send_now": "Jetzt senden"
+    "send_now": "Jetzt senden",
+    "verification_code": {
+      "copy": "Code {code} kopieren",
+      "copied": "Code kopiert",
+      "copy_failed": "Code konnte nicht kopiert werden"
+    }
   },
   "email_composer": {
     "read_receipt_on": "Lesebestätigung angefordert (klicken zum Deaktivieren)",
@@ -673,6 +679,8 @@
     "smime_unlock_button": "Entsperren",
     "smime_passphrase_placeholder": "S/MIME-Passphrase",
     "send_timeout": "Der Server antwortet nicht mehr. Prüfen Sie den Ordner „Gesendet“, bevor Sie erneut senden – die Nachricht wurde möglicherweise bereits verschickt.",
+    "send_recipients_rejected": "Nicht gesendet – der Server hat alle Empfänger abgelehnt.",
+    "send_some_recipients_rejected": "Gesendet, aber nicht an diese Empfänger – der Server hat sie abgelehnt.",
     "continue_draft": "Entwurf fortsetzen",
     "close_draft_title": "Entwurf speichern oder verwerfen?",
     "close_draft_message": "Sie haben ungespeicherte Änderungen. Möchten Sie diese als Entwurf speichern oder verwerfen?",
@@ -828,7 +836,19 @@
     "templates_import_empty": "Keine Vorlagen in der Datei gefunden",
     "export_email_error": "Fehler beim Exportieren der E-Mail",
     "import_email_success": "E-Mail erfolgreich importiert",
-    "import_email_error": "Fehler beim Importieren der E-Mail"
+    "import_email_error": "Fehler beim Importieren der E-Mail",
+    "rule_created": "Regel erstellt",
+    "rule_merged": "Zur Regel „{name}“ hinzugefügt",
+    "rule_already_covered": "Bereits durch die Regel „{name}“ abgedeckt",
+    "rule_apply_existing": "{count, plural, one {Auf # vorhandene Nachricht anwenden} other {Auf # vorhandene Nachrichten anwenden}}",
+    "rule_applied": "{count, plural, =0 {Keine Nachricht musste geändert werden} one {Regel auf # Nachricht angewendet} other {Regel auf # Nachrichten angewendet}}",
+    "rule_apply_failed": "Die Regel konnte nicht auf vorhandene Nachrichten angewendet werden",
+    "rule_edit": "Regel bearbeiten",
+    "rule_undo": "Rückgängig",
+    "rule_undone": "Regeländerung rückgängig gemacht",
+    "rule_undo_failed": "Die Regeländerung konnte nicht rückgängig gemacht werden",
+    "rule_undo_conflict": "Ihre Filter wurden inzwischen geändert. Machen Sie die Änderung in den Filter-Einstellungen rückgängig.",
+    "rule_folder_failed": "Der Ordner konnte nicht erstellt werden"
   },
   "date": {
     "today": "Heute",
@@ -1086,6 +1106,10 @@
       "tint_list_rows": {
         "label": "Nachrichtenzeilen mit Tag-Farbe einfärben",
         "description": "Die einzelnen Nachrichtenzeilen mit der Farbe ihres ersten Tags einfärben. Deaktivieren Sie diese Option, um die Zeilen neutral zu halten; Tag-Punkte und -Markierungen zeigen die Farbe weiterhin an."
+      },
+      "tint_list_rows_by_account": {
+        "label": "Tint List Rows by Account Color",
+        "description": "In the unified view, shade each row with its account color instead of showing the account dot. Takes precedence over the tag tint; tags keep their color on their chips."
       },
       "show_folder_total_count": {
         "label": "Gesamtzahl der Nachrichten anzeigen",
@@ -1352,6 +1376,10 @@
         "label": "Vorschautext anzeigen",
         "description": "E-Mail-Vorschau in der Liste anzeigen",
         "focus_description": "Inline-Vorschautext in der fokussierten einzeiligen Nachrichtenliste anzeigen"
+      },
+      "show_verification_codes": {
+        "label": "Bestätigungscodes anzeigen",
+        "description": "Code aus Anmelde- und Bestätigungs-E-Mails zum Kopieren mit einem Klick anbieten, in der Liste einen Tag lang und in der Nachricht"
       },
       "disable_threading": {
         "label": "Konversationsgruppierung deaktivieren",
@@ -1719,14 +1747,37 @@
       },
       "link_device": {
         "title": "Mobile App verknüpfen",
-        "description": "Melden Sie sich in der Bulwark Mail App an, ohne etwas einzutippen. Erzeugen Sie hier einen QR-Code und scannen Sie ihn auf dem Anmeldebildschirm der App.",
+        "description": "Melden Sie sich in der Bulwark Mail App auf Ihrem Smartphone an, ohne dort Ihr Passwort einzugeben. Ihr Smartphone erhält eine eigene Anmeldung – wenn Sie sich hier abmelden, bleibt es angemeldet.",
         "generate": "QR-Code anzeigen",
         "regenerate": "Neuen Code anzeigen",
-        "instructions": "Öffnen Sie die Bulwark Mail App, tippen Sie auf dem Anmeldebildschirm auf \"QR-Code scannen\" und richten Sie die Kamera hierauf.",
+        "instructions": "Öffnen Sie die Bulwark Mail App und tippen Sie auf dem Anmeldebildschirm auf \"Scan a sign-in code\" (oder auf \"Add account\" → \"Scan a sign-in code\", wenn Sie bereits angemeldet sind). Richten Sie dann die Kamera hierauf.",
         "expires_in": "Dieser Code läuft in {seconds} Sekunden ab. Er kann nur einmal verwendet werden.",
         "expired": "Dieser Code ist abgelaufen.",
-        "generating": "Wird erstellt…",
-        "error": "Kopplungscode konnte nicht erstellt werden. Bitte versuchen Sie es erneut."
+        "error": "Kopplungscode konnte nicht erstellt werden. Bitte versuchen Sie es erneut.",
+        "password_prompt": "Geben Sie zur Bestätigung Ihr Passwort ein. Ihr Smartphone erhält eine eigene Anmeldung; Ihr Passwort wird nicht an das Smartphone übertragen.",
+        "show_password": "Passwort anzeigen",
+        "hide_password": "Passwort verbergen",
+        "continue": "Weiter",
+        "error_wrong_password": "Falsches Passwort. Bitte versuchen Sie es erneut.",
+        "totp_prompt": "Geben Sie den Code aus Ihrer Authenticator-App ein.",
+        "error_password_or_code": "Das Passwort oder der Code ist falsch.",
+        "error_not_signed_in": "Ihre Sitzung ist abgelaufen. Melden Sie sich erneut an, um ein Gerät zu verknüpfen.",
+        "error_impersonation": "Geräte können nicht verknüpft werden, während Sie das Postfach eines anderen Benutzers ansehen.",
+        "error_too_many_attempts": "Zu viele Versuche. Warten Sie einen Moment und versuchen Sie es erneut.",
+        "error_session_secret": "Das Verknüpfen von Geräten ist auf diesem Server nicht eingerichtet (SESSION_SECRET fehlt). Wenden Sie sich an Ihren Administrator.",
+        "error_server_unreachable": "Ihr Mailserver ist nicht erreichbar. Bitte versuchen Sie es erneut.",
+        "error_pairing_unavailable": "Ihr Mailserver erlaubt das Verknüpfen von Geräten auf diese Weise nicht. Wenden Sie sich an Ihren Administrator.",
+        "qr_alt": "QR-Code zur Anmeldung",
+        "link_label": "Anmeldelink",
+        "copy_link": "Anmeldelink kopieren",
+        "copied": "Kopiert",
+        "copy_hint": "Keine Kamera? Kopieren Sie den Link und fügen Sie ihn in der App über \"Paste sign-in link\" ein.",
+        "success_title": "Auf Ihrem Smartphone angemeldet",
+        "success_body": "Sie können diese Seite schließen. Um ein weiteres Gerät zu verknüpfen, lassen Sie einen neuen Code anzeigen.",
+        "link_another": "Weiteres Gerät verknüpfen",
+        "use_sso": "Stattdessen Single Sign-On verwenden",
+        "error_insecure_server": "Die App verbindet sich nur über https mit Mailservern, und dieser verwendet http.",
+        "generating": "Wird erstellt…"
       },
       "public_keys": {
         "name_label": "Name des öffentlichen Schlüssels",
@@ -2043,7 +2094,9 @@
         "ends_with": "endet mit",
         "matches": "entspricht dem Muster",
         "greater_than": "ist größer als",
-        "less_than": "ist kleiner als"
+        "less_than": "ist kleiner als",
+        "address_is": "ist die Adresse",
+        "domain_is": "hat die Domain"
       },
       "action_types": {
         "move": "In Ordner verschieben",
@@ -2118,7 +2171,26 @@
         "actions_count": "{count, plural, one {# Aktion} other {# Aktionen}}"
       },
       "origin_external": "Extern",
-      "managed_by_tooltip": "Verwaltet von {source}. Bearbeiten Sie sie in dieser App oder verwenden Sie den rohen Sieve-Editor."
+      "managed_by_tooltip": "Verwaltet von {source}. Bearbeiten Sie sie in dieser App oder verwenden Sie den rohen Sieve-Editor.",
+      "quick_rule_names": {
+        "move_sender": "Von {sender} nach {folder} verschieben",
+        "move_domain": "Von @{domain} nach {folder} verschieben",
+        "move_list": "Liste {list} nach {folder} verschieben",
+        "mark_read": "Von {sender} als gelesen markieren",
+        "tag": "Von {sender} mit Label {tag} versehen",
+        "block": "{sender} blockieren",
+        "custom": "Nachrichten von {sender}",
+        "custom_plain": "Neue Regel",
+        "senders": "{count, plural, one {# Absender} other {# Absendern}}"
+      },
+      "suggestions": "Vorschläge",
+      "suggest_subject": "Betreff „{subject}“",
+      "suggest_to": "An {address}",
+      "suggest_cc": "Cc {address}",
+      "suggest_list": "List-Id",
+      "suggest_domain": "@{domain}",
+      "apply_existing": "Auch auf vorhandene Nachrichten in diesem Ordner anwenden",
+      "apply_existing_unsupported": "Nur Regeln, die Absender, Empfänger, Betreff oder Kopfzeilen prüfen und verschieben, kopieren, als gelesen markieren, mit Stern markieren oder mit Label versehen, lassen sich auf vorhandene Nachrichten anwenden."
     },
     "templates": {
       "title": "E-Mail-Vorlagen",
@@ -2257,7 +2329,22 @@
     "cancel_scheduled_send": "Senden abbrechen",
     "reschedule_send": "Neu planen",
     "cancel_and_edit": "Abbrechen und bearbeiten",
-    "cancel_and_compose_again": "Abbrechen und neu verfassen"
+    "cancel_and_compose_again": "Abbrechen und neu verfassen",
+    "rules": {
+      "title": "Regeln",
+      "move_from": "Nachrichten von {sender} immer verschieben",
+      "move_from_domain": "Nachrichten von @{domain} immer verschieben",
+      "move_from_list": "Nachrichten dieser Liste immer verschieben",
+      "mark_read_from": "Nachrichten von {sender} immer als gelesen markieren",
+      "tag_with": "Immer mit Label versehen",
+      "block": "{count, plural, one {Absender blockieren} other {# Absender blockieren}}",
+      "no_junk": "Dieses Konto hat keinen Spam-Ordner",
+      "create": "Regel erstellen…",
+      "manage": "Regeln verwalten",
+      "senders_count": "{count, plural, one {# Absender} other {# Absendern}}",
+      "cross_account": "Nachrichten aus nur einem Konto auswählen",
+      "opaque_hint": "Ihre Filter wurden von Hand bearbeitet. Öffnen Sie die Filter-Einstellungen"
+    }
   },
   "mailbox_context_menu": {
     "mark_folder_read": "Ordner als gelesen markieren",
@@ -2820,6 +2907,8 @@
       "no_events": "Keine Termine",
       "all_day": "Ganztägig",
       "more": "+{count} weitere",
+      "show_more": "Mehr anzeigen",
+      "show_less": "Weniger anzeigen",
       "no_title": "(Kein Titel)",
       "resize": "Termingröße ändern",
       "duplicate": "Duplizieren",
@@ -2842,6 +2931,7 @@
       "save_note": "Speichern",
       "note_saved": "Notiz hinzugefügt",
       "open_link": "Link öffnen",
+      "copy_location": "Ort kopieren",
       "meeting_link": "Besprechungslink",
       "tentative": "Vorläufig",
       "cancelled": "Abgesagt",
@@ -3251,6 +3341,7 @@
     "body_placeholder": "Inhalt enthält...",
     "folder": "Ordner",
     "all_folders": "Alle Ordner",
+    "all_folders_except_spam_trash": "Alle Ordner außer Spam und Papierkorb",
     "has_attachment": "Anhänge",
     "date_after": "Nach dem",
     "date_before": "Vor dem",

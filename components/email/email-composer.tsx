@@ -46,7 +46,7 @@ import { appendPlainTextSignature, getPlainTextSignature, plainTextBodyHasSignat
 import { findComposeIdentityId, findDraftIdentityId, findReplyIdentityId, resolveReplyFrom } from "@/lib/reply-identity";
 import { buildReplyRecipients, isSelfSent } from "@/lib/reply-recipients";
 import { computeReplyThreadingHeaders, type ReplyThreadingHeaders } from "@/lib/email-threading";
-import { RequestTimeoutError, ScheduleTooLateError } from "@/lib/jmap/client";
+import { RecipientsRejectedError, RequestTimeoutError, ScheduleTooLateError, formatRejectedRecipients } from "@/lib/jmap/client";
 import {
   rewriteCidImagesForEditor,
   replaceInlineImagePlaceholders,
@@ -276,6 +276,11 @@ function getDefaultScheduleValue(): string {
   tomorrowAtEight.setHours(8, 0, 0, 0);
   return formatLocalDateTimeInput(tomorrowAtEight);
 }
+
+// Height the body area (formatting toolbar included) must keep below the
+// pinned From/To/Cc/Bcc/Subject fields. Below it the fields scroll away with
+// the body instead (#1114).
+const PINNED_FIELDS_MIN_BODY_HEIGHT = 200;
 
 export function EmailComposer({
   onSend,
@@ -1200,6 +1205,8 @@ export function EmailComposer({
   const subjectInputRef = useRef<HTMLInputElement>(null);
   const bodyRef = useRef<HTMLTextAreaElement>(null);
   const editorContainerRef = useRef<HTMLDivElement>(null);
+  const composerMainRef = useRef<HTMLDivElement>(null);
+  const composerFieldsRef = useRef<HTMLDivElement>(null);
   const toDropdownRef = useRef<HTMLDivElement>(null);
   const ccDropdownRef = useRef<HTMLDivElement>(null);
   const bccDropdownRef = useRef<HTMLDivElement>(null);
@@ -1216,6 +1223,29 @@ export function EmailComposer({
       proseMirror?.focus();
     }
   }, [plainTextMode]);
+
+  // The fields sit pinned above the body's own scroll container only while
+  // the pane leaves the body enough height under them. In a short pane
+  // (reading pane at the bottom on a laptop, a phone in landscape) the body
+  // scroller shrank to the height of its sticky formatting toolbar, which
+  // then covered the text completely (#1114). Without the room, fields and
+  // body scroll together and the toolbar pins to the top of that instead.
+  const [pinFields, setPinFields] = useState(true);
+  useEffect(() => {
+    const main = composerMainRef.current;
+    const fields = composerFieldsRef.current;
+    if (!main || !fields || typeof ResizeObserver === 'undefined') return;
+    const update = () => {
+      // Hidden or not laid out yet: keep the current layout.
+      if (main.clientHeight === 0) return;
+      setPinFields(main.clientHeight - fields.offsetHeight >= PINNED_FIELDS_MIN_BODY_HEIGHT);
+    };
+    const observer = new ResizeObserver(update);
+    observer.observe(main);
+    observer.observe(fields);
+    update();
+    return () => observer.disconnect();
+  }, []);
 
   // Switch this one message between rich text and plain text (#1022). The
   // body is converted in place and the embedded signature survives in the
@@ -2481,6 +2511,12 @@ export function EmailComposer({
       stateRef.current = { to: '', cc: '', bcc: '', subject: '', body: '', showCc: false, showBcc: false, selectedIdentityId: null, subAddressTag: '', draftId: null, fromOverrideEnabled: false, fromOverrideEmail: '', fromOverrideName: '', attachments: [], plainTextMode };
     } catch (err) {
       debug.error('Failed to send email:', err);
+      if (err instanceof RecipientsRejectedError) {
+        // Nothing went out; the message stays open here so the addresses
+        // can be fixed. The SMTP replies say why each one was refused (#1123).
+        toast.error(t('send_recipients_rejected'), { message: formatRejectedRecipients(err.recipients) });
+        return;
+      }
       // A timeout is not a clean failure: the submission may have reached the
       // server and gone out, with only the answer lost. Saying "send failed"
       // would invite a re-send and a duplicate, so point at Sent instead (#702).
@@ -2782,10 +2818,16 @@ export function EmailComposer({
         )}
       </div>
 
-      {/* Fields section - outside the scroll container so From/To/Cc/Bcc/
-          Subject stay reachable while scrolling long bodies, matching the
-          pinned formatting toolbar (see rich-text-editor.tsx). */}
-      <div className="shrink-0 space-y-0 border-b">
+      {/* Fields + body. While pinFields holds, the fields sit outside the
+          body's scroll container so From/To/Cc/Bcc/Subject stay reachable
+          while scrolling long bodies, matching the pinned formatting toolbar
+          (see rich-text-editor.tsx). Otherwise this wrapper is the scroll
+          container and the fields scroll away with the body. */}
+      <div
+        ref={composerMainRef}
+        className={cn("flex-1 min-h-0 flex flex-col", !pinFields && "overflow-y-auto")}
+      >
+      <div ref={composerFieldsRef} className="shrink-0 space-y-0 border-b">
           {/* From field */}
           <div className="flex items-center gap-2 px-4 py-2.5 border-b border-border/50">
             <span className="text-sm text-muted-foreground w-12 md:w-16 shrink-0">{t('from')}:</span>
@@ -3071,7 +3113,7 @@ export function EmailComposer({
           </div>
       </div>
 
-      <div className="flex-1 min-h-0 overflow-auto">
+      <div className={cn("flex-1", pinFields && "min-h-0 overflow-auto")}>
         {/* Body */}
         {plainTextMode ? (
           <textarea
@@ -3121,6 +3163,7 @@ export function EmailComposer({
             dangerouslySetInnerHTML={{ __html: `${signatureSeparatorEnabled ? '<div>-- </div>' : ''}${composerSignatureHtml}` }}
           />
         ) : null}
+      </div>
       </div>
 
         {/* Attachments */}

@@ -35,13 +35,18 @@ import {
   liteRefreshTokens,
   liteTokenLogin,
   nameLiteRefreshToken,
+  readLiteAccessToken,
   readLiteBasicSession,
   revokeAllLiteSessions,
   revokeLiteSlot,
+  saveLiteAccessToken,
   saveLiteBasicSession,
   saveLiteRefreshToken,
 } from '@/lib/auth/lite-tokens';
 import { clearLiteOAuthFlow, readLiteOAuthFlow } from '@/lib/auth/lite-oauth';
+
+/** Logins restored at once after the one on screen: enough to overlap round trips, few enough not to crowd the server. */
+const RESTORE_CONCURRENCY = 4;
 
 interface AuthState {
   isAuthenticated: boolean;
@@ -393,6 +398,7 @@ async function exchangePasswordForTokens(params: {
     } else {
       clearLiteRefreshToken(slot);
     }
+    saveLiteAccessToken(slot, tokens.accessToken, tokens.expiresIn, rememberMe);
     return jsonResponse({ access_token: tokens.accessToken, expires_in: tokens.expiresIn, has_refresh_token: !!tokens.refreshToken });
   } catch (err) {
     if (err instanceof LiteLoginError) return jsonResponse({ error: err.code }, liteErrorStatus(err));
@@ -451,6 +457,7 @@ async function exchangeOAuthCode(params: {
     } else {
       clearLiteRefreshToken(slot);
     }
+    saveLiteAccessToken(slot, tokens.accessToken, tokens.expiresIn, flow.persistent);
     return jsonResponse({ access_token: tokens.accessToken, expires_in: tokens.expiresIn });
   } catch (err) {
     if (err instanceof LiteLoginError) return jsonResponse({ error: err.code }, liteErrorStatus(err));
@@ -484,6 +491,12 @@ async function fetchSlotAccessToken(slot: number, opts: { force?: boolean } = {}
   if (closingSlots.has(slot)) return jsonResponse({ error: 'signed_out' }, 401);
   if (!IS_LITE) {
     return trackSessionWrite(slot, (signal) => apiFetch(`/api/auth/token?slot=${slot}${opts.force ? '&force=true' : ''}`, { method: 'PUT', signal }));
+  }
+  // Like the route's cookie cache: a restore resumes with the token it had,
+  // since a renewal before the refresh token's `nbf` is refused (#552).
+  if (!opts.force) {
+    const cached = readLiteAccessToken(slot);
+    if (cached) return jsonResponse({ access_token: cached.accessToken, expires_in: cached.expiresIn });
   }
   return trackSessionWrite(slot, async () => {
     try {
@@ -1529,7 +1542,7 @@ export const useAuthStore = create<AuthState>()(
             ? sessionStorage.getItem('oauth_cookie_slot')
             : null;
           const pendingSlot = rawSlot !== null ? parseInt(rawSlot, 10) : NaN;
-          const slot = !isNaN(pendingSlot) && pendingSlot >= 0 && pendingSlot <= 4
+          const slot = !isNaN(pendingSlot) && pendingSlot >= 0 && pendingSlot < MAX_ACCOUNT_SLOTS
             ? pendingSlot
             : accountStore.getNextCookieSlot();
 
@@ -2476,10 +2489,21 @@ export const useAuthStore = create<AuthState>()(
           const otherAccounts = accounts.filter((account) => account.id !== targetId);
           if (targetEntry) await restoreAccount(targetEntry);
 
+          // A few at a time rather than one after the other: with many logins
+          // the serial walk left the last of them - and with it a complete
+          // unified inbox - waiting on every other login's round trips. Each
+          // restore handles its own failures, so one slow or broken login
+          // holds up only its own slot.
           const restoreRemaining = async () => {
-            for (const account of otherAccounts) {
-              await restoreAccount(account);
-            }
+            const queue = [...otherAccounts];
+            const worker = async () => {
+              for (let next = queue.shift(); next; next = queue.shift()) {
+                await restoreAccount(next);
+              }
+            };
+            await Promise.allSettled(
+              Array.from({ length: Math.min(RESTORE_CONCURRENCY, queue.length) }, worker),
+            );
           };
 
           if (clients.has(targetId)) {

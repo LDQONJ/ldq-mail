@@ -254,6 +254,7 @@
       "button": "خالی کردن پوشه",
       "confirm_title": "خالی کردن پوشه",
       "confirm_message": "همه ایمیل‌های این پوشه برای همیشه حذف خواهند شد.",
+      "confirm_message_trash": "همه ایمیل‌های این پوشه به زباله‌دان منتقل می‌شوند.",
       "confirm_button": "خالی کردن پوشه",
       "junk_hint": "می‌توانید پوشه هرزنامه را خالی کنید.",
       "trash_hint": "می‌توانید پوشه زباله‌دان را خالی کنید."
@@ -580,7 +581,12 @@
       "copied": "کپی شد!",
       "copy_failed": "کپی ناموفق بود"
     },
-    "send_now": "ارسال فوری"
+    "send_now": "ارسال فوری",
+    "verification_code": {
+      "copy": "کپی کد {code}",
+      "copied": "کد کپی شد",
+      "copy_failed": "کپی کد ممکن نشد"
+    }
   },
   "email_composer": {
     "read_receipt_on": "درخواست تأیید خواندن فعال (کلیک برای غیرفعال کردن)",
@@ -669,6 +675,8 @@
     "show_less": "نمایش کمتر",
     "send_failed": "ارسال ایمیل ناموفق بود",
     "send_timeout": "سرور دیگر پاسخ نمی‌دهد. پیش از ارسال دوباره، پوشهٔ ارسال‌شده‌ها را بررسی کنید — ممکن است پیام ارسال شده باشد.",
+    "send_recipients_rejected": "ارسال نشد - سرور همه گیرندگان را رد کرد.",
+    "send_some_recipients_rejected": "ارسال شد، اما نه برای این گیرندگان - سرور آنها را رد کرد.",
     "continue_draft": "ادامه پیش‌نویس",
     "close_draft_title": "ذخیره یا دور انداختن پیش‌نویس؟",
     "close_draft_message": "تغییرات ذخیره نشده دارید. ذخیره یا دور انداختن؟",
@@ -828,7 +836,19 @@
     "templates_import_empty": "قالبی در فایل یافت نشد",
     "export_email_error": "خروجی ایمیل ناموفق بود",
     "import_email_success": "ایمیل با موفقیت وارد شد",
-    "import_email_error": "وارد کردن ایمیل ناموفق بود"
+    "import_email_error": "وارد کردن ایمیل ناموفق بود",
+    "rule_created": "قانون ایجاد شد",
+    "rule_merged": "به قانون «{name}» افزوده شد",
+    "rule_already_covered": "قانون «{name}» از قبل این را پوشش می‌دهد",
+    "rule_apply_existing": "{count, plural, one {اعمال روی # پیام موجود} other {اعمال روی # پیام موجود}}",
+    "rule_applied": "{count, plural, =0 {هیچ پیامی نیاز به تغییر نداشت} one {قانون روی # پیام اعمال شد} other {قانون روی # پیام اعمال شد}}",
+    "rule_apply_failed": "اعمال قانون روی پیام‌های موجود ممکن نشد",
+    "rule_edit": "ویرایش قانون",
+    "rule_undo": "بازگردانی",
+    "rule_undone": "تغییر قانون بازگردانده شد",
+    "rule_undo_failed": "بازگردانی تغییر قانون ممکن نشد",
+    "rule_undo_conflict": "فیلترهای شما از آن زمان تغییر کرده‌اند. تغییر را در تنظیمات فیلترها بازگردانید.",
+    "rule_folder_failed": "ایجاد پوشه ممکن نشد"
   },
   "date": {
     "today": "امروز",
@@ -1089,6 +1109,10 @@
       "tint_list_rows": {
         "label": "Tint List Rows by Tag Color",
         "description": "Shade each message row with its first tag color. Disable to keep rows plain; tag dots and chips still show the color."
+      },
+      "tint_list_rows_by_account": {
+        "label": "Tint List Rows by Account Color",
+        "description": "In the unified view, shade each row with its account color instead of showing the account dot. Takes precedence over the tag tint; tags keep their color on their chips."
       },
       "show_folder_total_count": {
         "label": "نمایش تعداد کل پیام‌ها",
@@ -1355,6 +1379,10 @@
         "label": "نمایش پیش‌نمایش",
         "description": "پیش‌نمایش در لیست",
         "focus_description": "پیش‌نمایش در نمای متمرکز"
+      },
+      "show_verification_codes": {
+        "label": "نمایش کدهای تأیید",
+        "description": "پیشنهاد کد ایمیل‌های ورود و تأیید برای کپی با یک کلیک، در فهرست به مدت یک روز و در پیام"
       },
       "disable_threading": {
         "label": "غیرفعال کردن گروه‌بندی",
@@ -1726,14 +1754,37 @@
       },
       "link_device": {
         "title": "اتصال موبایل",
-        "description": "ورود با QR code",
+        "description": "بدون وارد کردن رمز عبور در گوشی، به برنامه Bulwark Mail وارد شوید. گوشی شما ورود جداگانه‌ای دریافت می‌کند، بنابراین خروج از اینجا باعث خروج آن نمی‌شود.",
         "generate": "نمایش QR",
         "regenerate": "کد جدید",
-        "instructions": "با برنامه اسکن کنید",
+        "instructions": "برنامه Bulwark Mail را باز کنید و در صفحه ورود روی \"Scan a sign-in code\" بزنید (یا اگر از قبل وارد شده‌اید، \"Add account\" → \"Scan a sign-in code\")، سپس دوربین را به این سمت بگیرید.",
         "expires_in": "منقضی در {seconds} ثانیه",
         "expired": "منقضی شده",
-        "generating": "در حال تولید…",
-        "error": "خطا"
+        "error": "خطا",
+        "password_prompt": "برای تأیید هویت، رمز عبور خود را وارد کنید. گوشی شما ورود جداگانه‌ای دریافت می‌کند؛ رمز عبور شما به گوشی ارسال نمی‌شود.",
+        "show_password": "نمایش رمز عبور",
+        "hide_password": "پنهان کردن رمز عبور",
+        "continue": "ادامه",
+        "error_wrong_password": "رمز عبور نادرست است. دوباره تلاش کنید.",
+        "totp_prompt": "کد برنامه احراز هویت خود را وارد کنید.",
+        "error_password_or_code": "رمز عبور یا کد نادرست است.",
+        "error_not_signed_in": "نشست شما منقضی شده است. برای اتصال دستگاه دوباره وارد شوید.",
+        "error_impersonation": "هنگام مشاهده صندوق پستی کاربر دیگر نمی‌توان دستگاه متصل کرد.",
+        "error_too_many_attempts": "تلاش‌های بیش از حد. کمی صبر کنید و دوباره تلاش کنید.",
+        "error_session_secret": "اتصال دستگاه روی این سرور راه‌اندازی نشده است (SESSION_SECRET وجود ندارد). با مدیر سیستم تماس بگیرید.",
+        "error_server_unreachable": "دسترسی به سرور ایمیل شما ممکن نشد. دوباره تلاش کنید.",
+        "error_pairing_unavailable": "سرور ایمیل شما اجازه اتصال دستگاه به این روش را نمی‌دهد. با مدیر سیستم تماس بگیرید.",
+        "qr_alt": "کد QR ورود",
+        "link_label": "پیوند ورود",
+        "copy_link": "کپی پیوند ورود",
+        "copied": "کپی شد",
+        "copy_hint": "دوربین ندارید؟ پیوند را کپی کنید و در برنامه با \"Paste sign-in link\" جای‌گذاری کنید.",
+        "success_title": "ورود در گوشی شما انجام شد",
+        "success_body": "می‌توانید این صفحه را ببندید. برای اتصال دستگاه دیگر، کد جدیدی نمایش دهید.",
+        "link_another": "اتصال دستگاه دیگر",
+        "use_sso": "به‌جای آن از ورود یکپارچه استفاده کنید",
+        "error_insecure_server": "برنامه موبایل فقط از طریق https به سرورهای ایمیل وصل می‌شود و این سرور از http استفاده می‌کند.",
+        "generating": "در حال تولید…"
       },
       "public_keys": {
         "name_label": "نام کلید عمومی",
@@ -2050,7 +2101,9 @@
         "ends_with": "پایان می‌یابد با",
         "matches": "مطابقت با الگو",
         "greater_than": "بزرگتر از",
-        "less_than": "کوچکتر از"
+        "less_than": "کوچکتر از",
+        "address_is": "نشانی‌اش این است",
+        "domain_is": "دامنه‌اش این است"
       },
       "action_types": {
         "move": "انتقال به پوشه",
@@ -2125,7 +2178,26 @@
         "actions_count": "{count, plural, one {# عملیات} other {# عملیات}}"
       },
       "origin_external": "خارجی",
-      "managed_by_tooltip": "مدیریت شده توسط {source}. در آن برنامه ویرایش کنید یا از ویرایشگر خام Sieve استفاده کنید."
+      "managed_by_tooltip": "مدیریت شده توسط {source}. در آن برنامه ویرایش کنید یا از ویرایشگر خام Sieve استفاده کنید.",
+      "quick_rule_names": {
+        "move_sender": "انتقال از {sender} به {folder}",
+        "move_domain": "انتقال از @{domain} به {folder}",
+        "move_list": "انتقال فهرست {list} به {folder}",
+        "mark_read": "علامت خوانده‌شده برای {sender}",
+        "tag": "برچسب {tag} برای {sender}",
+        "block": "مسدود کردن {sender}",
+        "custom": "پیام‌های {sender}",
+        "custom_plain": "قانون جدید",
+        "senders": "{count, plural, one {# فرستنده} other {# فرستنده}}"
+      },
+      "suggestions": "پیشنهادها",
+      "suggest_subject": "موضوع «{subject}»",
+      "suggest_to": "به {address}",
+      "suggest_cc": "رونوشت {address}",
+      "suggest_list": "List-Id",
+      "suggest_domain": "@{domain}",
+      "apply_existing": "روی پیام‌هایی که از قبل در این پوشه هستند هم اعمال شود",
+      "apply_existing_unsupported": "فقط قانون‌هایی که فرستنده، گیرندگان، موضوع یا سرایندها را بررسی می‌کنند و پیام را منتقل، کپی، خوانده‌شده، ستاره‌دار یا برچسب‌دار می‌کنند، روی پیام‌های موجود اعمال می‌شوند."
     },
     "templates": {
       "title": "قالب‌های ایمیل",
@@ -2257,7 +2329,22 @@
     "cancel_scheduled_send": "لغو ارسال",
     "reschedule_send": "باززمان‌بندی",
     "cancel_and_edit": "لغو و ویرایش",
-    "cancel_and_compose_again": "لغو و نوشتن مجدد"
+    "cancel_and_compose_again": "لغو و نوشتن مجدد",
+    "rules": {
+      "title": "قانون‌ها",
+      "move_from": "همیشه پیام‌های {sender} را منتقل کن",
+      "move_from_domain": "همیشه پیام‌های @{domain} را منتقل کن",
+      "move_from_list": "همیشه پیام‌های این فهرست را منتقل کن",
+      "mark_read_from": "همیشه پیام‌های {sender} را خوانده‌شده علامت بزن",
+      "tag_with": "همیشه این برچسب را بزن",
+      "block": "{count, plural, one {مسدود کردن فرستنده} other {مسدود کردن # فرستنده}}",
+      "no_junk": "این حساب پوشهٔ هرزنامه ندارد",
+      "create": "ایجاد قانون…",
+      "manage": "مدیریت قانون‌ها",
+      "senders_count": "{count, plural, one {# فرستنده} other {# فرستنده}}",
+      "cross_account": "پیام‌هایی از یک حساب انتخاب کنید",
+      "opaque_hint": "فیلترهای شما دستی ویرایش شده‌اند. تنظیمات فیلترها را باز کنید"
+    }
   },
   "mailbox_context_menu": {
     "mark_folder_read": "علامت‌گذاری پوشه خوانده شده",
@@ -2820,6 +2907,8 @@
       "no_events": "رویدادی نیست",
       "all_day": "تمام روز",
       "more": "+{count} بیشتر",
+      "show_more": "نمایش بیشتر",
+      "show_less": "نمایش کمتر",
       "no_title": "(بدون عنوان)",
       "resize": "تغییر اندازه رویداد",
       "duplicate": "کپی",
@@ -2842,6 +2931,7 @@
       "save_note": "ذخیره",
       "note_saved": "یادداشت اضافه شد",
       "open_link": "باز کردن لینک",
+      "copy_location": "کپی مکان",
       "meeting_link": "لینک جلسه",
       "tentative": "احتمالی",
       "cancelled": "لغو شده",
@@ -3293,6 +3383,7 @@
     "body_placeholder": "بدنه شامل...",
     "folder": "پوشه",
     "all_folders": "همه پوشه‌ها",
+    "all_folders_except_spam_trash": "همه پوشه‌ها به‌جز هرزنامه و زباله‌دان",
     "has_attachment": "پیوست",
     "date_after": "بعد از",
     "date_before": "قبل از",

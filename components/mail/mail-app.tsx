@@ -25,15 +25,17 @@ const EmailComposer = dynamic(
 import { ProtocolAccountPicker } from "@/components/protocol/protocol-account-picker";
 import { ThreadConversationView } from "@/components/email/thread-conversation-view";
 import { MobileHeader } from "@/components/layout/mobile-header";
-import { ThreadGroup, Email, Mailbox, isUnifiedMailboxId, UNIFIED_ROLE_BY_ID, CROSS_VIEW_BY_ID, isCrossViewId } from "@/lib/jmap/types";
-import { useAccountStore } from "@/stores/account-store";
+import { ThreadGroup, Email, Mailbox, type StateChange, isUnifiedMailboxId, UNIFIED_ROLE_BY_ID, CROSS_VIEW_BY_ID, isCrossViewId } from "@/lib/jmap/types";
+import { useAccountStore, waitForConnectedAccount } from "@/stores/account-store";
 import { usePolicyStore } from "@/stores/policy-store";
 import type { UnifiedAccountClient } from "@/lib/unified-mailbox";
 import { connectedAccountsGrew } from "@/lib/unified-mailbox";
 import { KeyboardShortcutsModal } from "@/components/keyboard-shortcuts-modal";
-import { useEmailStore, buildUnifiedAccountClients, captureViewToken, ArchiveMailboxNotFoundError, findArchiveMailbox, resolveUnstampedEmailAccountId } from "@/stores/email-store";
-import { groupSearchScopeFolders } from "@/lib/search-scope-folders";
+import { useEmailStore, buildUnifiedAccountClients, invalidateUnifiedMailboxes, captureViewToken, ArchiveMailboxNotFoundError, findArchiveMailbox, resolveUnstampedEmailAccountId, emptyFolderMovesToTrash } from "@/stores/email-store";
+import { groupSearchScopeFolders, SEARCH_SCOPE_ALL_FOLDERS } from "@/lib/search-scope-folders";
 import { toast } from "@/stores/toast-store";
+import { formatRejectedRecipients, type JMAPClient } from "@/lib/jmap/client";
+import { reconcilePushBindings, releasePushBindings, type PushBinding } from "@/lib/push-bindings";
 import { runBatchEmailAction } from "@/lib/email-action-toast";
 import { MailboxShareDialog } from "@/components/layout/mailbox-share-dialog";
 import { ShareNotificationToaster } from "@/components/layout/share-notification-toaster";
@@ -115,6 +117,7 @@ import {
   parseScheduledMailboxId,
   appPath,
   buildMailPath,
+  isFolderLinkOpen,
   parseMailPath,
   resolveFolderRef,
   type MailDeepLink,
@@ -130,6 +133,30 @@ export interface MailAppProps {
    * the JMAP session is up; see the deep-link effect below.
    */
   linkSegments?: string[];
+}
+
+
+/**
+ * The folder list once it has been reloaded after an account switch. Until
+ * then the store holds the previous mailbox's folders, or none, and resolving
+ * a folder link against them reports a folder that is merely not loaded yet
+ * as gone - or, worse, finds the previous mailbox's folder of that name.
+ */
+function freshMailboxes(previous: Mailbox[], timeoutMs = 10_000): Promise<Mailbox[]> {
+  const ready = (mailboxes: Mailbox[]) => mailboxes !== previous && mailboxes.length > 0;
+  const now = useEmailStore.getState().mailboxes;
+  if (ready(now)) return Promise.resolve(now);
+  return new Promise((resolve) => {
+    const finish = (mailboxes: Mailbox[]) => {
+      clearTimeout(timer);
+      unsubscribe();
+      resolve(mailboxes);
+    };
+    const timer = setTimeout(() => finish(useEmailStore.getState().mailboxes), timeoutMs);
+    const unsubscribe = useEmailStore.subscribe((state) => {
+      if (ready(state.mailboxes)) finish(state.mailboxes);
+    });
+  });
 }
 
 export function MailApp({ linkSegments: routeSegments }: MailAppProps = {}) {
@@ -377,6 +404,7 @@ export function MailApp({ linkSegments: routeSegments }: MailAppProps = {}) {
     isAdvancedSearchOpen,
     setSearchFilters,
     setSearchMailboxId,
+    scopeSearchToOpenFolder,
     clearSearchFilters,
     toggleAdvancedSearch,
     advancedSearch,
@@ -1255,59 +1283,73 @@ export function MailApp({ linkSegments: routeSegments }: MailAppProps = {}) {
     return () => clearTimeout(id);
   }, []);
 
-  // Push notifications: set up once per CONNECTED client and tear down when the
-  // clients go away (logout or account switch). Kept separate from the fetch
-  // effect above so it still runs when data was prefetched at login time.
+  // Push notifications: one binding per CONNECTED client, kept for as long as
+  // that client is connected.
   //
   // We bind every connected login, not just the active one: background accounts
-  // must drive the unified-section counters too. The active client keeps the
+  // must drive the unified-section counters too. The active client gets the
   // full handler (current list / scheduled / calendar / filters); background
-  // logins only re-project the unified counts by rebuilding the unified scope
-  // (which refreshes every account's cached mailbox list), since their changes
-  // never touch the active `mailboxes`. (#281 background push)
+  // logins only re-project the unified counts. (#281 background push)
+  //
+  // The bindings are reconciled, not rebuilt. This effect re-runs each time a
+  // login connects - once per account while a browser with many of them
+  // restores - and tearing every binding down to set them all up again made
+  // each run close and reopen the live streams and re-prime every slow poll:
+  // with ten logins, 21 stream openings and ~180 state-poll methods in the
+  // first seconds, quadratic in the number of accounts. Now a run binds only
+  // the clients that are new, unbinds only the ones that are gone, and on an
+  // account switch re-binds just the two whose role changed.
+  const pushBindingsRef = useRef(new Map<JMAPClient, PushBinding>());
+  // Handlers are read at event time, so a binding never holds a stale closure
+  // and never has to be re-created because a callback changed identity.
+  const pushHandlersRef = useRef({ handleStateChange, buildPopulatedUnifiedAccounts, refreshCrossCounts, refreshUnifiedCounts });
+  pushHandlersRef.current = { handleStateChange, buildPopulatedUnifiedAccounts, refreshCrossCounts, refreshUnifiedCounts };
+
   useEffect(() => {
-    if (!isAuthenticated || !client) return;
-
-    const clients = useAuthStore.getState().getAllConnectedClients();
-    const cleanups: Array<() => void> = [];
-
-    // Active login first: the client caps live SSE streams per tab (#702) and
-    // hands out slots in setup order, so the account the user is looking at
-    // must claim one before the background logins do.
-    const ordered = [...clients.entries()].sort(([a], [b]) =>
-      (a === activeAccountId ? 0 : 1) - (b === activeAccountId ? 0 : 1),
-    );
-
-    for (const [accId, c] of ordered) {
-      try {
-        if (accId === activeAccountId) {
-          c.onStateChange((change) => handleStateChange(change, c));
-        } else {
-          c.onStateChange(() => {
-            buildPopulatedUnifiedAccounts()
-              .then((built) => {
-                refreshCrossCounts(built);
-                refreshUnifiedCounts(built);
-              })
-              .catch(() => { /* per-account fetch failures surface elsewhere */ });
+    const bindings = pushBindingsRef.current;
+    if (!isAuthenticated || !client) {
+      releasePushBindings(bindings);
+      return;
+    }
+    reconcilePushBindings({
+      bindings,
+      clients: useAuthStore.getState().getAllConnectedClients(),
+      activeAccountId,
+      listen: (c, role) => {
+        // A login that reports a change has a folder list worth fetching again;
+        // the others keep theirs, which is what spares the unified scope a full
+        // round of Mailbox/get on every push.
+        if (role === 'active') {
+          c.onStateChange((change: StateChange) => {
+            invalidateUnifiedMailboxes(c);
+            pushHandlersRef.current.handleStateChange(change, c);
           });
+          return;
         }
-        c.setupPushNotifications();
-        cleanups.push(() => c.closePushNotifications());
-      } catch (error) {
-        debug.log('push', '[Push] Failed to setup push notifications for account:', accId, error);
-      }
-    }
-
-    if (cleanups.length > 0) {
+        c.onStateChange(() => {
+          invalidateUnifiedMailboxes(c);
+          const h = pushHandlersRef.current;
+          h.buildPopulatedUnifiedAccounts()
+            .then((built) => {
+              h.refreshCrossCounts(built);
+              h.refreshUnifiedCounts(built);
+            })
+            .catch(() => { /* per-account fetch failures surface elsewhere */ });
+        });
+      },
+      onError: (accId, error) => debug.log('push', '[Push] Failed to setup push notifications for account:', accId, error),
+    });
+    if (bindings.size > 0) {
       setPushConnected(true);
-      debug.log('push', `[Push] Push notifications enabled for ${cleanups.length} account(s)`);
+      debug.log('push', `[Push] Push notifications enabled for ${bindings.size} account(s)`);
     }
+  }, [isAuthenticated, client, activeAccountId, connectedAccountsSignature, connectedAccountsRevision, setPushConnected]);
 
-    return () => {
-      cleanups.forEach((fn) => fn());
-    };
-  }, [isAuthenticated, client, activeAccountId, connectedAccountsSignature, connectedAccountsRevision, handleStateChange, setPushConnected, buildPopulatedUnifiedAccounts, refreshCrossCounts, refreshUnifiedCounts]);
+  // Unbind everything when the mail app goes away.
+  useEffect(() => {
+    const bindings = pushBindingsRef.current;
+    return () => releasePushBindings(bindings);
+  }, []);
 
   // Keep unified mailbox counts in sync when the feature is enabled and more
   // than one account is connected. Runs whenever the set of connected accounts
@@ -1363,7 +1405,12 @@ export function MailApp({ linkSegments: routeSegments }: MailAppProps = {}) {
   // session and the mailbox list are up. Runs at most once per mount: after
   // this, the URL is an output of the view (see buildMailUrl), not an input.
   const deepLinkHandledRef = useRef(false);
-  const applyMailDeepLink = async (link: MailDeepLink) => {
+  const mailAppMountedRef = useRef(false);
+  useEffect(() => { mailAppMountedRef.current = true; return () => { mailAppMountedRef.current = false; }; }, []);
+  const applyMailDeepLink = async (link: MailDeepLink, opts?: { onLoad?: boolean }) => {
+    // The folder list before an account switch, if one happened: until the
+    // new mailbox's folders arrive the store still holds these (or nothing).
+    let switchedFrom: Mailbox[] | null = null;
     // A permalink can name the account it belongs to. Ids are only meaningful
     // within their account, so switch first - but only to a login that is
     // actually connected; we can't authenticate on someone's behalf. A push
@@ -1371,24 +1418,52 @@ export function MailApp({ linkSegments: routeSegments }: MailAppProps = {}) {
     const linkAccountId = link.accountId ?? (link.slot !== undefined
       ? useAccountStore.getState().accounts.find((a) => a.cookieSlot === link.slot)?.id ?? `slot:${link.slot}`
       : undefined);
-    if (linkAccountId && linkAccountId !== useAuthStore.getState().activeAccountId) {
-      const target = useAccountStore.getState().accounts.find(
-        (a) => a.id === linkAccountId && a.isConnected,
-      );
-      if (!target) {
+    const switchesAccount = !!linkAccountId && linkAccountId !== useAuthStore.getState().activeAccountId;
+    if (switchesAccount) {
+      const startedOn = useAuthStore.getState().activeAccountId;
+      const startedIn = useEmailStore.getState().selectedMailbox;
+      const startedWith = useEmailStore.getState().selectedEmail?.id ?? null;
+      // The login may still be reconnecting - a tapped notification reopens
+      // the app and the logins come back one at a time - so wait for it
+      // rather than calling a late mailbox unavailable.
+      if (!(await waitForConnectedAccount(linkAccountId))) {
         toast.error(t('deep_link.account_unavailable'));
         return;
       }
+      // The user moved on while the login reconnected: don't pull them away.
+      if (!mailAppMountedRef.current
+        || useAuthStore.getState().activeAccountId !== startedOn
+        || useEmailStore.getState().selectedMailbox !== startedIn
+        || (useEmailStore.getState().selectedEmail?.id ?? null) !== startedWith) return;
+      switchedFrom = useEmailStore.getState().mailboxes;
       await switchAccount(linkAccountId);
+      // Overtaken or failed: the folders on screen are not the link's account's.
+      if (useAuthStore.getState().activeAccountId !== linkAccountId) return;
     }
 
     const activeClient = useAuthStore.getState().client;
     if (!activeClient) return;
 
     if (link.kind === 'folder') {
-      const mailboxId = resolveFolderRef(link.ref, useEmailStore.getState().mailboxes);
+      const mailboxes = switchedFrom
+        ? await freshMailboxes(switchedFrom)
+        : useEmailStore.getState().mailboxes;
+      const state = useEmailStore.getState();
+      const mailboxId = resolveFolderRef(link.ref, mailboxes);
       if (!mailboxId) {
         toast.error(t('deep_link.folder_not_found'));
+        return;
+      }
+      // Reloading the page lands here with the folder the boot fetch has just
+      // loaded; selecting it again re-fetched it under the loading overlay,
+      // so the list flashed right after it appeared.
+      if (opts?.onLoad && !switchesAccount && isFolderLinkOpen(mailboxId, {
+        selectedMailbox: state.selectedMailbox,
+        isUnifiedView: state.isUnifiedView,
+        isScheduledView: state.isScheduledView,
+        selectedKeyword: state.selectedKeyword,
+        hasSearch: !!state.searchQuery || !isFilterEmpty(state.searchFilters),
+      })) {
         return;
       }
       await handleMailboxSelect(mailboxId);
@@ -1548,7 +1623,7 @@ export function MailApp({ linkSegments: routeSegments }: MailAppProps = {}) {
     deepLinkHandledRef.current = true;
 
     if (link) {
-      void applyMailDeepLinkRef.current(link);
+      void applyMailDeepLinkRef.current(link, { onLoad: true });
       return;
     }
 
@@ -1577,6 +1652,16 @@ export function MailApp({ linkSegments: routeSegments }: MailAppProps = {}) {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedEmail?.id]);
+
+  // Opening a message hides the list on tablet, but plenty of paths clear the
+  // reading pane without going through a "back" handler (delete/move/archive,
+  // a failed fetch, history restore, sending the open draft). Bring the list
+  // back once there is nothing left to read, so tablet never ends up on an
+  // empty reading pane with only the bottom bar.
+  const readingPaneEmpty = !showComposer && !conversationThread && !selectedEmail && !isLoadingEmail;
+  useEffect(() => {
+    if (readingPaneEmpty && !tabletListVisible) setTabletListVisible(true);
+  }, [readingPaneEmpty, tabletListVisible, setTabletListVisible]);
 
   // Handle mark-as-read with delay based on settings
   useEffect(() => {
@@ -1741,6 +1826,14 @@ export function MailApp({ linkSegments: routeSegments }: MailAppProps = {}) {
         // and re-sent (#592).
         toast.warning(t('email_composer.send_filing_warning'));
       }
+      if (result.rejectedRecipients?.length) {
+        // The server refused some recipients while accepting the rest; no
+        // bounce will follow for these, so this is the only notice (#1123).
+        toast.warning(t('email_composer.send_some_recipients_rejected'), {
+          message: formatRejectedRecipients(result.rejectedRecipients),
+          duration: 15000,
+        });
+      }
       // Mark the original email with $answered or $forwarded keyword. Route the
       // write to the email's own account so the flag lands on shared/group-mailbox
       // messages instead of being dropped against the reaching account. (#281)
@@ -1762,8 +1855,9 @@ export function MailApp({ linkSegments: routeSegments }: MailAppProps = {}) {
         return;
       }
 
-      // Delayed sends get the undo toast instead; a filing error already warned.
-      if (!result.filingError) toast.success(t('notifications.email_sent'));
+      // Delayed sends get the undo toast instead; a filing error or a refused
+      // recipient already warned.
+      if (!result.filingError && !result.rejectedRecipients?.length) toast.success(t('notifications.email_sent'));
 
       // Refresh the current mailbox to update the UI
       if (!isScheduledView) {
@@ -2680,10 +2774,13 @@ export function MailApp({ linkSegments: routeSegments }: MailAppProps = {}) {
   };
 
   const handleUnreadFilterClick = async (mailboxId: string) => {
-    const isTogglingOff = selectedMailbox === mailboxId && searchFilters.isUnread === true;
+    const isTogglingOff = selectedMailbox === mailboxId && !selectedKeyword && searchFilters.isUnread === true;
 
-    // Select the mailbox if not already selected
-    if (selectedMailbox !== mailboxId) {
+    // Open the mailbox unless it is already the one listed. A tag view keeps
+    // selectedMailbox, so it counts as another view.
+    if (selectedMailbox !== mailboxId || selectedKeyword) {
+      if (isUnifiedView) exitUnifiedView();
+      setScheduledView(false);
       selectMailbox(mailboxId);
       selectEmail(null);
     }
@@ -2706,8 +2803,9 @@ export function MailApp({ linkSegments: routeSegments }: MailAppProps = {}) {
         await fetchEmails(client, mailboxId);
       }
     } else {
-      // Enable unread filter
+      // Enable unread filter, in this folder only
       clearSearchFilters();
+      scopeSearchToOpenFolder();
       setSearchFilters({ isUnread: true });
       if (client) {
         await advancedSearch(client);
@@ -2800,7 +2898,9 @@ export function MailApp({ linkSegments: routeSegments }: MailAppProps = {}) {
 
     const confirmed = await confirmDialog({
       title: tCtxMenu('email_list.empty_folder.confirm_title'),
-      message: tCtxMenu('email_list.empty_folder.confirm_message'),
+      message: emptyFolderMovesToTrash(mailbox)
+        ? tCtxMenu('email_list.empty_folder.confirm_message_trash')
+        : tCtxMenu('email_list.empty_folder.confirm_message'),
       confirmText: tCtxMenu('email_list.empty_folder.confirm_button'),
       variant: "destructive",
     });
@@ -3370,7 +3470,7 @@ export function MailApp({ linkSegments: routeSegments }: MailAppProps = {}) {
   const isFocusedMailLayout = mailLayout === 'focus';
   const isHorizontalMailLayout = mailLayout === 'horizontal' && !isMobile && !isTablet;
   const hasViewerContent = showComposer || Boolean(conversationThread) || Boolean(selectedEmail);
-  const shouldCollapseListPane = (isTablet && !tabletListVisible) || (!isMobile && isFocusedMailLayout && hasViewerContent);
+  const shouldCollapseListPane = (isTablet && !tabletListVisible && !readingPaneEmpty) || (!isMobile && isFocusedMailLayout && hasViewerContent);
   const shouldHideViewerPane = !isMobile && !hasViewerContent && isFocusedMailLayout;
   const shouldHideHorizontalViewerPane = isHorizontalMailLayout && !hasViewerContent;
 
@@ -3511,6 +3611,8 @@ export function MailApp({ linkSegments: routeSegments }: MailAppProps = {}) {
   const handleOpenConversation = async (thread: ThreadGroup) => {
     if (!client) return;
 
+    // The view marks the thread read; keep its row where it was tapped.
+    useEmailStore.getState().holdListRow(thread.threadKey);
     setConversationThread(thread);
     setIsLoadingConversation(true);
     setActiveView("viewer");
@@ -3992,13 +4094,18 @@ export function MailApp({ linkSegments: routeSegments }: MailAppProps = {}) {
                       </div>
 
                       {/* Folder selector. Scopes the search only - it does not
-                          navigate the mail list, so it defaults to "All folders"
-                          regardless of which folder is open and keeps whatever
-                          the user picked. "All folders" spans the own AND the
-                          group/shared accounts' folders (#1082); the shared
-                          ones are listed under their owner. The unified views
-                          already search across every account's folders, so it
-                          is hidden there. */}
+                          navigate the mail list. It defaults to "All folders
+                          except Spam and Trash", or to Spam/Trash itself while
+                          that folder is open (defaultSearchScopeFor), and keeps
+                          whatever the user picked. Both folder-less scopes span
+                          the own AND the group/shared accounts' folders (#1082);
+                          "All folders" also searches Trash and Junk. The shared
+                          folders are listed under their owner, and subfolders
+                          are indented under their parent as in the sidebar
+                          (a native select has no tree, so the indent is
+                          non-breaking spaces, as in the filter rule modal).
+                          The unified views already search across every
+                          account's folders, so it is hidden there. */}
                       {!isUnifiedView && (
                         <div>
                           <label className="text-xs text-muted-foreground mb-1 block">{t("advanced_search.folder")}</label>
@@ -4012,17 +4119,18 @@ export function MailApp({ linkSegments: routeSegments }: MailAppProps = {}) {
                             }}
                             className="w-full h-8 text-sm rounded-md border border-input bg-background px-3 text-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-1"
                           >
-                            <option value="">{t("advanced_search.all_folders")}</option>
+                            <option value="">{t("advanced_search.all_folders_except_spam_trash")}</option>
+                            <option value={SEARCH_SCOPE_ALL_FOLDERS}>{t("advanced_search.all_folders")}</option>
                             {searchScopeFolders.own.map((mb) => (
                               <option key={mb.id} value={mb.id}>
-                                {mb.name}
+                                {"\u00A0".repeat(mb.depth * 3)}{mb.name}
                               </option>
                             ))}
                             {searchScopeFolders.shared.map((group) => (
                               <optgroup key={group.ownerId} label={group.label}>
                                 {group.mailboxes.map((mb) => (
                                   <option key={mb.id} value={mb.id}>
-                                    {mb.name}
+                                    {"\u00A0".repeat(mb.depth * 3)}{mb.name}
                                   </option>
                                 ))}
                               </optgroup>

@@ -254,6 +254,7 @@
       "button": "폴더 비우기",
       "confirm_title": "폴더 비우기",
       "confirm_message": "이 폴더의 모든 메일이 영구적으로 삭제돼요. 이 작업은 되돌릴 수 없어요.",
+      "confirm_message_trash": "이 폴더의 모든 메일이 휴지통으로 이동돼요.",
       "confirm_button": "폴더 비우기",
       "junk_hint": "스팸함을 비워 모든 메시지를 영구적으로 삭제할 수 있어요.",
       "trash_hint": "휴지통을 비워 모든 메시지를 영구적으로 삭제할 수 있어요."
@@ -580,7 +581,12 @@
       "copied": "복사됨!",
       "copy_failed": "복사하지 못했습니다"
     },
-    "send_now": "지금 보내기"
+    "send_now": "지금 보내기",
+    "verification_code": {
+      "copy": "코드 {code} 복사",
+      "copied": "코드를 복사했습니다",
+      "copy_failed": "코드를 복사할 수 없습니다"
+    }
   },
   "email_composer": {
     "read_receipt_on": "읽음 확인 요청됨 (클릭하여 해제)",
@@ -666,6 +672,8 @@
     "show_less": "간략히 보기",
     "send_failed": "메일 전송에 실패했어요",
     "send_timeout": "서버가 응답을 멈췄습니다. 다시 보내기 전에 보낸 편지함을 확인하세요. 메시지가 이미 발송되었을 수 있습니다.",
+    "send_recipients_rejected": "보내지 못했습니다. 서버가 모든 수신자를 거부했습니다.",
+    "send_some_recipients_rejected": "보냈지만 다음 수신자에게는 전달되지 않습니다. 서버가 거부했습니다.",
     "continue_draft": "이어서 작성하기",
     "close_draft_title": "임시보관함에 저장할까요?",
     "close_draft_message": "저장되지 않은 내용이 있어요. 임시보관함에 저장할까요, 아니면 삭제할까요?",
@@ -828,7 +836,19 @@
     "templates_import_empty": "파일에서 템플릿을 찾을 수 없어요",
     "export_email_error": "메일 내보내기에 실패했어요",
     "import_email_success": "메일을 성공적으로 가져왔어요",
-    "import_email_error": "메일 가져오기에 실패했어요"
+    "import_email_error": "메일 가져오기에 실패했어요",
+    "rule_created": "규칙을 만들었어요",
+    "rule_merged": "“{name}” 규칙에 추가했어요",
+    "rule_already_covered": "이미 “{name}” 규칙에 포함되어 있어요",
+    "rule_apply_existing": "{count, plural, other {기존 메일 #개에 적용}}",
+    "rule_applied": "{count, plural, =0 {바꿀 메일이 없었어요} other {메일 #개에 규칙을 적용했어요}}",
+    "rule_apply_failed": "기존 메일에 규칙을 적용하지 못했어요",
+    "rule_edit": "규칙 편집",
+    "rule_undo": "실행 취소",
+    "rule_undone": "규칙 변경을 취소했어요",
+    "rule_undo_failed": "규칙 변경을 취소하지 못했어요",
+    "rule_undo_conflict": "그 사이에 필터가 바뀌었어요. 필터 설정에서 변경을 취소하세요.",
+    "rule_folder_failed": "폴더를 만들지 못했어요"
   },
   "date": {
     "today": "오늘",
@@ -1086,6 +1106,10 @@
       "tint_list_rows": {
         "label": "Tint List Rows by Tag Color",
         "description": "Shade each message row with its first tag color. Disable to keep rows plain; tag dots and chips still show the color."
+      },
+      "tint_list_rows_by_account": {
+        "label": "Tint List Rows by Account Color",
+        "description": "In the unified view, shade each row with its account color instead of showing the account dot. Takes precedence over the tag tint; tags keep their color on their chips."
       },
       "show_folder_total_count": {
         "label": "전체 메시지 수 표시",
@@ -1352,6 +1376,10 @@
         "label": "미리보기 텍스트 표시",
         "description": "목록에 메일 내용의 일부를 미리 보여줘요",
         "focus_description": "집중형 한 줄 목록에서 메일 내용의 일부를 함께 보여줘요"
+      },
+      "show_verification_codes": {
+        "label": "인증 코드 표시",
+        "description": "로그인 및 확인 메일의 코드를 한 번의 클릭으로 복사할 수 있게 합니다(목록에서는 하루 동안, 메시지에서는 항상)"
       },
       "disable_threading": {
         "label": "대화형 보기 끄기",
@@ -1719,14 +1747,37 @@
       },
       "link_device": {
         "title": "모바일 앱 연결",
-        "description": "아무것도 입력하지 않고 Bulwark Mail 모바일 앱에 로그인하세요. 여기에서 QR 코드를 생성하고 앱의 로그인 화면에서 스캔하세요.",
+        "description": "휴대폰의 Bulwark Mail 앱에 비밀번호를 입력하지 않고 로그인하세요. 휴대폰은 별도의 로그인을 받으므로 여기에서 로그아웃해도 휴대폰은 로그아웃되지 않습니다.",
         "generate": "QR 코드 표시",
         "regenerate": "새 코드 표시",
-        "instructions": "Bulwark Mail 앱을 열고 로그인 화면에서 \"QR 코드 스캔\"을 누른 다음 카메라를 여기에 비추세요.",
+        "instructions": "Bulwark Mail 앱을 열고 로그인 화면에서 \"Scan a sign-in code\"를 누른 다음(이미 로그인되어 있다면 \"Add account\" → \"Scan a sign-in code\") 카메라를 여기에 비추세요.",
         "expires_in": "이 코드는 {seconds}초 후에 만료됩니다. 한 번만 사용할 수 있습니다.",
         "expired": "이 코드는 만료되었습니다.",
-        "generating": "생성 중…",
-        "error": "페어링 코드를 만들지 못했습니다. 다시 시도해 주세요."
+        "error": "페어링 코드를 만들지 못했습니다. 다시 시도해 주세요.",
+        "password_prompt": "본인 확인을 위해 비밀번호를 입력하세요. 휴대폰은 별도의 로그인을 받으며, 비밀번호는 휴대폰으로 전송되지 않습니다.",
+        "show_password": "비밀번호 표시",
+        "hide_password": "비밀번호 숨기기",
+        "continue": "계속",
+        "error_wrong_password": "비밀번호가 올바르지 않습니다. 다시 시도하세요.",
+        "totp_prompt": "인증 앱에 표시된 코드를 입력하세요.",
+        "error_password_or_code": "비밀번호 또는 코드가 올바르지 않습니다.",
+        "error_not_signed_in": "세션이 만료되었습니다. 기기를 연결하려면 다시 로그인하세요.",
+        "error_impersonation": "다른 사용자의 사서함을 보는 동안에는 기기를 연결할 수 없습니다.",
+        "error_too_many_attempts": "시도 횟수가 너무 많습니다. 잠시 후 다시 시도하세요.",
+        "error_session_secret": "이 서버에는 기기 연결이 설정되어 있지 않습니다(SESSION_SECRET 없음). 관리자에게 문의하세요.",
+        "error_server_unreachable": "메일 서버에 연결할 수 없습니다. 다시 시도하세요.",
+        "error_pairing_unavailable": "메일 서버에서 이 방법으로 기기를 연결하는 것을 허용하지 않습니다. 관리자에게 문의하세요.",
+        "qr_alt": "로그인 QR 코드",
+        "link_label": "로그인 링크",
+        "copy_link": "로그인 링크 복사",
+        "copied": "복사됨",
+        "copy_hint": "카메라가 없나요? 링크를 복사한 다음 앱에서 \"Paste sign-in link\"로 붙여 넣으세요.",
+        "success_title": "휴대폰에서 로그인되었습니다",
+        "success_body": "이 페이지를 닫아도 됩니다. 다른 기기를 연결하려면 새 코드를 표시하세요.",
+        "link_another": "다른 기기 연결",
+        "use_sso": "대신 SSO(통합 로그인) 사용",
+        "error_insecure_server": "모바일 앱은 https로만 메일 서버에 연결하는데, 이 서버는 http를 사용합니다.",
+        "generating": "생성 중…"
       },
       "public_keys": {
         "name_label": "공개 키 이름",
@@ -2043,7 +2094,9 @@
         "ends_with": "다음으로 끝남",
         "matches": "패턴 일치",
         "greater_than": "다음보다 큼",
-        "less_than": "다음보다 작음"
+        "less_than": "다음보다 작음",
+        "address_is": "주소가 다음과 같음",
+        "domain_is": "도메인이 다음과 같음"
       },
       "action_types": {
         "move": "폴더로 이동",
@@ -2118,7 +2171,26 @@
         "actions_count": "동작 {count}개"
       },
       "origin_external": "외부",
-      "managed_by_tooltip": "{source}에서 관리됩니다. 해당 앱에서 편집하거나 원시 Sieve 편집기를 사용하세요."
+      "managed_by_tooltip": "{source}에서 관리됩니다. 해당 앱에서 편집하거나 원시 Sieve 편집기를 사용하세요.",
+      "quick_rule_names": {
+        "move_sender": "{sender}에서 {folder}(으)로 이동",
+        "move_domain": "@{domain}에서 {folder}(으)로 이동",
+        "move_list": "리스트 {list}를 {folder}(으)로 이동",
+        "mark_read": "{sender}의 메일을 읽음으로 표시",
+        "tag": "{sender}의 메일에 {tag} 태그",
+        "block": "{sender} 차단",
+        "custom": "{sender}의 메일",
+        "custom_plain": "새 규칙",
+        "senders": "{count, plural, other {보낸 사람 #명}}"
+      },
+      "suggestions": "제안",
+      "suggest_subject": "제목 “{subject}”",
+      "suggest_to": "받는 사람 {address}",
+      "suggest_cc": "참조 {address}",
+      "suggest_list": "List-Id",
+      "suggest_domain": "@{domain}",
+      "apply_existing": "이 폴더에 이미 있는 메일에도 적용",
+      "apply_existing_unsupported": "보낸 사람, 받는 사람, 제목 또는 헤더를 확인하고 이동, 복사, 읽음 표시, 별표 또는 태그를 하는 규칙만 기존 메일에 적용할 수 있어요."
     },
     "templates": {
       "title": "이메일 템플릿",
@@ -2257,7 +2329,22 @@
     "cancel_scheduled_send": "보내기 취소",
     "reschedule_send": "다시 예약",
     "cancel_and_edit": "취소하고 편집",
-    "cancel_and_compose_again": "취소하고 다시 작성"
+    "cancel_and_compose_again": "취소하고 다시 작성",
+    "rules": {
+      "title": "규칙",
+      "move_from": "{sender}의 메일을 항상 이동",
+      "move_from_domain": "@{domain}의 메일을 항상 이동",
+      "move_from_list": "이 메일링 리스트의 메일을 항상 이동",
+      "mark_read_from": "{sender}의 메일을 항상 읽음으로 표시",
+      "tag_with": "항상 태그 추가",
+      "block": "{count, plural, =1 {보낸 사람 차단} other {보낸 사람 #명 차단}}",
+      "no_junk": "이 계정에는 스팸 폴더가 없어요",
+      "create": "규칙 만들기…",
+      "manage": "규칙 관리",
+      "senders_count": "{count, plural, other {보낸 사람 #명}}",
+      "cross_account": "한 계정의 메일만 선택하세요",
+      "opaque_hint": "필터가 직접 편집되었어요. 필터 설정을 여세요"
+    }
   },
   "mailbox_context_menu": {
     "mark_folder_read": "폴더를 읽음으로 표시",
@@ -2820,6 +2907,8 @@
       "no_events": "일정이 없어요",
       "all_day": "하루 종일",
       "more": "+{count}개 더보기",
+      "show_more": "더 보기",
+      "show_less": "간략히 보기",
       "no_title": "(제목 없음)",
       "resize": "일정 크기 조절",
       "duplicate": "복제",
@@ -2842,6 +2931,7 @@
       "save_note": "저장",
       "note_saved": "메모가 추가되었어요",
       "open_link": "링크 열기",
+      "copy_location": "위치 복사",
       "meeting_link": "화상 회의 링크",
       "tentative": "미정",
       "cancelled": "취소됨",
@@ -3251,6 +3341,7 @@
     "body_placeholder": "내용에 포함된 단어...",
     "folder": "폴더",
     "all_folders": "모든 폴더",
+    "all_folders_except_spam_trash": "스팸함과 휴지통을 제외한 모든 폴더",
     "has_attachment": "첨부파일 있음",
     "date_after": "이후",
     "date_before": "이전",

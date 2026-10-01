@@ -109,14 +109,14 @@
       "spam": "垃圾邮件",
       "important": "重要"
     },
-    "unified_inbox": "全部收件箱",
-    "unified_sent": "全部已发送",
-    "unified_drafts": "全部草稿",
-    "unified_trash": "全部已删除",
-    "unified_archive": "全部归档",
-    "unified_junk": "全部垃圾邮件",
-    "all_accounts": "全部账号",
-    "unified_mailbox": "全部邮箱",
+    "unified_inbox": "统一收件箱",
+    "unified_sent": "所有已发送",
+    "unified_drafts": "所有草稿",
+    "unified_trash": "所有已删除",
+    "unified_archive": "所有归档",
+    "unified_junk": "所有垃圾邮件",
+    "all_accounts": "所有账户",
+    "unified_mailbox": "统一邮箱",
     "expand": "展开",
     "collapse": "收起",
     "expand_tooltip": "展开",
@@ -144,8 +144,8 @@
     "unified_all_unread": "全部未读",
     "unified_all_starred": "全部加星标",
     "unified_all_mail": "全部邮件",
-    "remove_account": "Remove account",
-    "remove_account_confirm": "从该设备移除 {account}？稍后您可以重新添加它。"
+    "remove_account": "移除账户",
+    "remove_account_confirm": "确定要从此设备移除账户 {account} 吗？您可以稍后重新添加。"
   },
   "protocol_handlers": {
     "title": "默认应用",
@@ -258,7 +258,8 @@
       "confirm_message": "此文件夹中的所有邮件都将被永久删除。此操作无法撤销。",
       "confirm_button": "清空文件夹",
       "junk_hint": "您可以清空垃圾邮件文件夹以永久删除所有邮件。",
-      "trash_hint": "您可以清空已删除文件夹以永久删除所有邮件。"
+      "trash_hint": "您可以清空已删除文件夹以永久删除所有邮件。",
+      "confirm_message_trash": "此文件夹中的所有邮件都将移至已删除文件夹。"
     },
     "no_scheduled_emails": "没有计划发送的邮件",
     "no_scheduled_emails_description": "计划稍后发送的邮件会显示在这里。",
@@ -298,7 +299,7 @@
     "forward": "转发",
     "delete": "删除",
     "archive": "归档",
-    "archive_mailbox_not_found": "未找到归档文件夹 - 无法归档邮件",
+    "archive_mailbox_not_found": "Archive mailbox not found - cannot archive email",
     "star": "加星标",
     "unstar": "取消星标",
     "mark_unread": "标记为未读",
@@ -582,7 +583,12 @@
     },
     "send_now": "立即发送",
     "view_in_dark_mode": "深色模式查看",
-    "view_in_light_mode": "浅色模式查看"
+    "view_in_light_mode": "浅色模式查看",
+    "verification_code": {
+      "copy": "复制验证码 {code}",
+      "copied": "验证码已复制",
+      "copy_failed": "无法复制验证码"
+    }
   },
   "email_composer": {
     "read_receipt_on": "已请求已读回执（点击以关闭）",
@@ -611,7 +617,7 @@
     "cancel": "取消",
     "attach": "附件",
     "attach_photos": "照片与视频",
-    "attach_files": "Files",
+    "attach_files": "文件",
     "discard": "丢弃",
     "discard_draft_title": "丢弃草稿？",
     "discard_draft_confirm": "您有未保存的更改。确定要丢弃这封草稿吗？",
@@ -644,7 +650,7 @@
     "from_override": {
       "toggle_off": "覆盖",
       "toggle_on": "取消覆盖",
-      "toggle_tooltip": "自由编辑发件人姓名和地址。邮件仍通过您的身份发送 - 仅可见的发件人标题发生变化。",
+      "toggle_tooltip": "自由编辑发件人姓名和地址。邮件仍通过您的身份发送。",
       "name_label": "发件人姓名",
       "name_placeholder": "姓名",
       "email_label": "发件人电子邮件地址",
@@ -749,7 +755,9 @@
       "remove_background_color": "移除背景颜色"
     },
     "send_filing_warning": "已发送，但发送后的清理失败，可能会残留旧草稿。",
-    "use_oracle_relay": "通过 Oracle 代发"
+    "use_oracle_relay": "通过 Oracle 代发",
+    "send_recipients_rejected": "未发送：服务器拒绝了所有收件人。",
+    "send_some_recipients_rejected": "已发送，但未发送给以下收件人：服务器拒绝了他们。"
   },
   "confirm_dialog": {
     "confirm": "确认",
@@ -830,7 +838,19 @@
     "templates_import_empty": "文件中未找到模板",
     "export_email_error": "导出邮件失败",
     "import_email_success": "邮件导入成功",
-    "import_email_error": "导入邮件失败"
+    "import_email_error": "导入邮件失败",
+    "rule_created": "规则已创建",
+    "rule_merged": "已添加到规则“{name}”",
+    "rule_already_covered": "规则“{name}”已涵盖此项",
+    "rule_apply_existing": "{count, plural, other {应用于 # 封已有邮件}}",
+    "rule_applied": "{count, plural, =0 {没有需要更改的邮件} other {规则已应用于 # 封邮件}}",
+    "rule_apply_failed": "无法将规则应用于已有邮件",
+    "rule_edit": "编辑规则",
+    "rule_undo": "撤销",
+    "rule_undone": "已撤销规则更改",
+    "rule_undo_failed": "无法撤销规则更改",
+    "rule_undo_conflict": "过滤器在此之后已更改。请在过滤器设置中撤销该更改。",
+    "rule_folder_failed": "无法创建文件夹"
   },
   "date": {
     "today": "今天",
@@ -1052,34 +1072,34 @@
         "description": "在导航栏底部显示账户头像，方便快速切换；下方会保留退出按钮。"
       },
       "unified_mailbox": {
-        "label": "全部邮箱",
-        "description": "显示所有已登录账号的合并文件夹（收件箱、已发送等）",
+        "label": "统一邮箱",
+        "description": "显示所有已连接账户的合并文件夹（收件箱、已发送等）",
         "cross_account": {
           "label": "跨所有账户",
-          "description": "在所有已连接的账户间合并统一邮箱，而不仅限于当前活跃账户。"
+          "description": "在所有已连接的账户之间合并统一收件箱，而不仅限于当前活跃账户。"
         },
         "include_group": {
           "label": "包含群组收件箱",
-          "description": "在全部视图中也合并共享/群组收件箱。"
+          "description": "在统一视图中也合并共享/群组收件箱。"
         }
       },
       "all_mail": {
         "folders_label": "Folders in All Mail",
         "folders_description": "Choose which folders are merged into the All Mail view.",
-        "account_hint": "适用于 {account}。",
-        "no_folders": "暂无可用文件夹。"
+        "account_hint": "Applies to {account}.",
+        "no_folders": "No folders available."
       },
       "colorful_sidebar_icons": {
         "label": "彩色侧边栏图标",
-        "description": "按类型为文件夹和标签图标着色（蓝色收件箱、红色垃圾邮件、绿色已发送等）。禁用以使用单色侧边栏。"
+        "description": "按类型为文件夹和标签图标着色（蓝色收件箱、红色垃圾邮件、绿色已发送等）。禁用以获得单色侧边栏。"
       },
       "tint_list_rows": {
-        "label": "邮件列表着色",
-        "description": "使用邮件的第一个标签色给列表中的邮件加上背景色。禁用使邮件列表中所有邮件恢复默认颜色；标签胶囊和小圆点始终显示颜色。"
+        "label": "按标签颜色为列表行着色",
+        "description": "使用首个标签的颜色为每行邮件着色。禁用后行保持默认底色；标签色点和徽标仍会显示对应颜色。"
       },
       "show_folder_total_count": {
         "label": "显示邮件总数",
-        "description": "在文件夹和标签旁边显示邮件总数，以及未读数量。禁用后仅显示未读数量。"
+        "description": "在文件夹和标签旁边显示邮件总数，以及未读数量。停用后仅显示未读数量。"
       },
       "favicon_unread_badge": {
         "label": "标签页图标显示未读数量",
@@ -1102,6 +1122,10 @@
       "cross_all": {
         "label": "所有账户：全部邮件",
         "description": "在“所有账户”部分显示一个条目，列出所有账户的全部邮件，涵盖除垃圾邮件、已发送、归档、废纸篓和草稿之外的所有文件夹。"
+      },
+      "tint_list_rows_by_account": {
+        "label": "按账户颜色为列表行着色",
+        "description": "在统一视图中，使用对应账户的颜色为整行着色，而不是仅显示账户色点。此效果优先于标签着色；标签仍会在其徽标上保留自身颜色。"
       }
     },
     "keywords": {
@@ -1185,40 +1209,40 @@
         "invitation_parsing_desc": "检测邮件附件中的日历邀请并显示日历操作"
       },
       "push": {
-        "confirm_disable_message": "当网页关闭时，此设备将无法接收后台通知。",
+        "confirm_disable_message": "当网站关闭时，此设备将停止接收提醒。",
         "confirm_disable_title": "禁用后台通知？",
         "description": "在网页关闭时收到新邮件时弹出系统通知。通过 LDQ Mail 推送。",
         "disable": "禁用",
         "enable": "启用",
         "dismiss_aria": "关闭通知提示",
-        "ios_hint": "在 iOS 上，请先将网站安装到主屏幕 – Safari 仅向已安装的 PWA 发送 Web 推送。",
+        "ios_hint": "在 iOS 上，请先将网站安装到主屏幕 – Safari 仅向已安装的 PWA 发送 Web Push。",
         "reenable": "重新注册",
         "relay_desc": "默认使用 LDQ Mail 推送服务器。仅当您自托管时才更改。",
-        "relay_label": "推送服务器",
+        "relay_label": "推送中继",
         "relay_locked": "由管理员设置",
-        "relay_locked_desc": "推送服务器 URL 已由您的管理员设置，无法更改。",
+        "relay_locked_desc": "推送中继 URL 已由您的管理员设置，无法更改。",
         "status_active": "在此设备上活动",
-        "status_busy": "修改中…",
+        "status_busy": "工作中…",
         "status_inactive": "在此设备上未启用",
-        "status_unsupported": "此浏览器不支持 Web 推送",
-        "status_lite": "Bulwark Lite 模式下不可使用 Web 推送；该功能需要 Bulwark 完整服务器。",
+        "status_unsupported": "此浏览器不支持 Web Push",
+        "status_lite": "Web Push is not available in Bulwark Lite; it needs the Bulwark server.",
         "title": "后台通知",
         "devices_title": "已注册的设备",
-        "devices_desc": "已注册接收此账户后台通知的所有设备。撤销后，该设备会立即停止接收后台通知。",
+        "devices_desc": "已注册接收此账户后台通知的所有设备。撤销后，该设备会立即停止接收。",
         "devices_loading": "正在加载已注册的设备…",
         "devices_empty": "没有设备注册接收后台通知。",
         "devices_error": "无法加载已注册的设备。",
         "devices_refresh": "刷新",
         "device_this": "此设备",
         "device_other": "其他设备",
-        "device_status_active": "已启用通知",
-        "device_status_inactive": "已禁用通知",
-        "device_status_unknown": "未知",
+        "device_status_active": "正在投递通知",
+        "device_status_inactive": "从未投递过通知",
+        "device_status_unknown": "此中继不识别",
         "device_expires": "{date} 过期",
         "revoke": "撤销",
         "confirm_revoke_title": "要撤销此设备吗？",
-        "confirm_revoke_message": "撤销后无法接收后台通知。在该设备上重新启用推送会重新注册。",
-        "confirm_revoke_message_this": "撤销后无法接收后台通知。"
+        "confirm_revoke_message": "它将立即停止接收后台通知。在该设备上重新启用推送会重新注册。",
+        "confirm_revoke_message_this": "此设备将立即停止接收后台通知。"
       }
     },
     "language_region": {
@@ -1509,6 +1533,10 @@
       "rtl_editing": {
         "label": "从右到左编辑支持",
         "description": "在编辑器工具栏中添加方向按钮，可将段落设置为从左到右或从右到左"
+      },
+      "show_verification_codes": {
+        "label": "显示验证码",
+        "description": "提供登录和确认邮件中的验证码，一键复制（在列表中显示一天，在邮件中始终显示）"
       }
     },
     "composer": {
@@ -1559,7 +1587,7 @@
     "account": {
       "title": "账户",
       "description": "查看您的账户信息",
-      "name_label": "姓名",
+      "name_label": "显示名称",
       "username_label": "用户名",
       "account_type_label": "账户类型",
       "auth_method_label": "认证方式",
@@ -1567,7 +1595,7 @@
       "auth_method_basic": "密码",
       "demo_account": "演示账户",
       "email": {
-        "label": "邮箱",
+        "label": "邮件",
         "value": "{email}"
       },
       "server": {
@@ -1619,21 +1647,21 @@
         "error_generic": "更改密码失败"
       },
       "display_name": {
-        "label": "姓名",
+        "label": "显示名称",
         "description": "显示在服务器上的名称",
-        "placeholder": "输入您的姓名",
+        "placeholder": "输入您的显示名称",
         "save": "保存",
-        "success": "姓名已更新",
-        "error": "无法更新姓名"
+        "success": "显示名称已更新",
+        "error": "无法更新显示名称"
       },
       "totp": {
-        "section_title": "2FA 身份验证",
-        "label": "2FA 身份验证",
-        "description": "使用基于时间的一次性密码添加额外的安全保障",
+        "section_title": "双因素身份验证",
+        "label": "TOTP 身份验证",
+        "description": "使用基于时间的一次性密码添加额外的安全层",
         "active": "启用",
         "inactive": "未启用",
-        "enabled": "启用 2FA 身份验证",
-        "disabled": "禁用 2FA 身份验证",
+        "enabled": "启用双因素身份验证",
+        "disabled": "禁用双因素身份验证",
         "enable_error": "无法启用 2FA",
         "disable_error": "无法禁用 2FA",
         "setup_instructions": "请将此 URL 复制到身份验证器应用（Google Authenticator、Authy 等）中：",
@@ -1709,14 +1737,37 @@
       },
       "link_device": {
         "title": "关联移动应用",
-        "description": "无需输入任何内容即可登录 Bulwark Mail 移动应用。在此生成二维码，然后在应用的登录界面扫描。",
+        "description": "无需在手机上输入密码即可登录手机上的 Bulwark Mail 应用。手机会获得独立的登录状态，因此在此处退出登录不会让手机退出。",
         "generate": "显示二维码",
         "regenerate": "显示新的二维码",
-        "instructions": "打开 Bulwark Mail 应用，在登录界面点按\"扫描二维码\"，然后将相机对准此处。",
+        "instructions": "打开 Bulwark Mail 应用，在登录界面点按“Scan a sign-in code”（如果已登录，则点按“Add account”→“Scan a sign-in code”），然后将相机对准此处。",
         "expires_in": "此二维码将在 {seconds} 秒后过期，且只能使用一次。",
         "expired": "此二维码已过期。",
         "generating": "生成中…",
-        "error": "无法创建配对码。请重试。"
+        "error": "无法创建配对码。请重试。",
+        "password_prompt": "请输入密码以确认是你本人。手机会获得独立的登录状态；你的密码不会发送到手机。",
+        "show_password": "显示密码",
+        "hide_password": "隐藏密码",
+        "continue": "继续",
+        "error_wrong_password": "密码错误，请重试。",
+        "totp_prompt": "请输入身份验证器应用中的验证码。",
+        "error_password_or_code": "密码或验证码不正确。",
+        "error_not_signed_in": "你的会话已过期。请重新登录后再关联设备。",
+        "error_impersonation": "查看其他用户的邮箱时无法关联设备。",
+        "error_too_many_attempts": "尝试次数过多，请稍后再试。",
+        "error_session_secret": "此服务器未设置设备关联（缺少 SESSION_SECRET）。请联系管理员。",
+        "error_server_unreachable": "无法连接到你的邮件服务器，请重试。",
+        "error_pairing_unavailable": "你的邮件服务器不允许以这种方式关联设备。请联系管理员。",
+        "qr_alt": "登录二维码",
+        "link_label": "登录链接",
+        "copy_link": "复制登录链接",
+        "copied": "已复制",
+        "copy_hint": "没有相机？复制链接，然后在应用中通过“Paste sign-in link”粘贴。",
+        "success_title": "已在手机上登录",
+        "success_body": "你可以关闭此页面。如需关联其他设备，请显示新的二维码。",
+        "link_another": "关联其他设备",
+        "use_sso": "改用单点登录",
+        "error_insecure_server": "移动应用只通过 https 连接邮件服务器，而此服务器使用的是 http。"
       },
       "public_keys": {
         "name_label": "公钥名称",
@@ -2033,7 +2084,9 @@
         "ends_with": "以…结尾",
         "matches": "匹配模式",
         "greater_than": "大于",
-        "less_than": "小于"
+        "less_than": "小于",
+        "address_is": "地址为",
+        "domain_is": "域名为"
       },
       "action_types": {
         "move": "移至文件夹",
@@ -2108,7 +2161,26 @@
         "actions_count": "{count, plural, one {# 个操作} other {# 个操作}}"
       },
       "origin_external": "外部",
-      "managed_by_tooltip": "由 {source} 管理。请在该应用中编辑，或使用原始 Sieve 编辑器。"
+      "managed_by_tooltip": "由 {source} 管理。请在该应用中编辑，或使用原始 Sieve 编辑器。",
+      "quick_rule_names": {
+        "move_sender": "将 {sender} 的邮件移至 {folder}",
+        "move_domain": "将 @{domain} 的邮件移至 {folder}",
+        "move_list": "将列表 {list} 移至 {folder}",
+        "mark_read": "将 {sender} 的邮件标记为已读",
+        "tag": "为 {sender} 的邮件添加标签 {tag}",
+        "block": "屏蔽 {sender}",
+        "custom": "来自 {sender} 的邮件",
+        "custom_plain": "新规则",
+        "senders": "{count, plural, other {# 个发件人}}"
+      },
+      "suggestions": "建议",
+      "suggest_subject": "主题“{subject}”",
+      "suggest_to": "收件人 {address}",
+      "suggest_cc": "抄送 {address}",
+      "suggest_list": "List-Id",
+      "suggest_domain": "@{domain}",
+      "apply_existing": "同时应用于此文件夹中已有的邮件",
+      "apply_existing_unsupported": "只有检查发件人、收件人、主题或邮件头，并执行移动、复制、标记为已读、加星标或添加标签的规则，才能应用于已有邮件。"
     },
     "templates": {
       "title": "邮件模板",
@@ -2210,9 +2282,9 @@
     },
     "themes": {
       "title": "主题",
-      "description": "选择由管理员部署的主题或内置预设。",
+      "description": "从管理员部署的主题和内置预设中选择。",
       "locked_by_admin": "主题选择已被管理员锁定。",
-      "admin_enforced": "管理员强制应用",
+      "admin_enforced": "管理员强制",
       "default_theme": "默认",
       "author_bulwark": "Bulwark",
       "activated": "主题已启用",
@@ -2281,7 +2353,22 @@
     "cancel_scheduled_send": "取消发送",
     "reschedule_send": "重新计划",
     "cancel_and_edit": "取消并编辑",
-    "cancel_and_compose_again": "取消并重新撰写"
+    "cancel_and_compose_again": "取消并重新撰写",
+    "rules": {
+      "title": "规则",
+      "move_from": "始终移动来自 {sender} 的邮件",
+      "move_from_domain": "始终移动来自 @{domain} 的邮件",
+      "move_from_list": "始终移动此邮件列表的邮件",
+      "mark_read_from": "始终将来自 {sender} 的邮件标记为已读",
+      "tag_with": "始终添加标签",
+      "block": "{count, plural, =1 {屏蔽发件人} other {屏蔽 # 个发件人}}",
+      "no_junk": "此账户没有垃圾邮件文件夹",
+      "create": "创建规则…",
+      "manage": "管理规则",
+      "senders_count": "{count, plural, other {# 个发件人}}",
+      "cross_account": "请选择同一账户中的邮件",
+      "opaque_hint": "你的过滤器已被手动编辑。请打开过滤器设置"
+    }
   },
   "mailbox_context_menu": {
     "mark_folder_read": "将文件夹标记为已读",
@@ -2859,7 +2946,9 @@
       "go_to_today": "前往今天",
       "new_all_day_event": "新建全天事件",
       "new_event": "新建事件",
-      "new_task": "新建任务"
+      "new_task": "新建任务",
+      "show_more": "展开",
+      "show_less": "收起"
     },
     "detail": {
       "add_note": "添加注释...",
@@ -2869,7 +2958,8 @@
       "meeting_link": "会议链接",
       "tentative": "暂定",
       "cancelled": "已取消",
-      "delete_confirm": "删除这个活动吗？"
+      "delete_confirm": "删除这个活动吗？",
+      "copy_location": "复制地点"
     },
     "form": {
       "title": "标题",
@@ -3089,7 +3179,7 @@
       "supported_formats": "支持 iCalendar (.ics) 文件",
       "url_description": "输入外部 iCalendar (.ics) 源的 URL 以导入事件。",
       "url_placeholder": "https://example.com/calendar.ics",
-      "url_hint": "支持 CalDAV 和 iCalendar (.ics) URL",
+      "url_hint": "支持 iCalendar (.ics) URL",
       "fetch": "获取",
       "invalid_url": "请输入有效的 URL",
       "url_fetch_failed": "无法从 URL 获取日历",
@@ -3298,7 +3388,8 @@
     "suggestions_people": "联系人",
     "suggestions_from": "搜索来自 {address} 的邮件",
     "suggestions_to": "搜索发给 {address} 的邮件",
-    "suggestions_remove_recent": "从最近搜索中移除"
+    "suggestions_remove_recent": "从最近搜索中移除",
+    "all_folders_except_spam_trash": "除垃圾邮件和已删除外的所有文件夹"
   },
   "welcome": {
     "title": "欢迎使用邮箱",

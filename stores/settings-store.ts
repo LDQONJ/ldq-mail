@@ -324,6 +324,7 @@ interface SettingsState {
   returnToListAfterAction: boolean; // After delete / mark-unread in an open message, return to the list instead of opening the next message
   clearSearchOnFolderChange: boolean; // Reset the search query + advanced filters when switching folders, instead of re-running the search in the newly selected folder (#553 keeps it applied when this is off)
   showPreview: boolean;
+  showVerificationCodes: boolean; // Offer the one-time code of a sign-in mail as a copy chip in the list and the reader
   mailLayout: MailLayout;
   emailsPerPage: number;
   externalContentPolicy: ExternalContentPolicy;
@@ -456,6 +457,7 @@ interface SettingsState {
   // Sidebar
   colorfulSidebarIcons: boolean; // Tint folder icons by role (inbox blue, junk red, etc.)
   tintListRowsByTag: boolean; // Tint mail-list rows by the first tag color
+  tintListRowsByAccount: boolean; // In the unified view, tint rows by account colour instead of showing the account dot
   showFolderTotalCount: boolean; // Show total message count next to folders/tags (alongside unread)
 
   // Folders
@@ -569,6 +571,7 @@ const DEFAULT_SETTINGS = {
   returnToListAfterAction: true,
   clearSearchOnFolderChange: false,
   showPreview: true,
+  showVerificationCodes: true,
   mailLayout: 'split' as MailLayout,
   emailsPerPage: 50,
   externalContentPolicy: 'ask' as ExternalContentPolicy,
@@ -671,6 +674,7 @@ const DEFAULT_SETTINGS = {
   // Sidebar
   colorfulSidebarIcons: true,
   tintListRowsByTag: true,
+  tintListRowsByAccount: false,
   showFolderTotalCount: true,
 
   // Folders
@@ -799,6 +803,7 @@ export const useSettingsStore = create<SettingsState>()(
           returnToListAfterAction: state.returnToListAfterAction,
           clearSearchOnFolderChange: state.clearSearchOnFolderChange,
           showPreview: state.showPreview,
+          showVerificationCodes: state.showVerificationCodes,
           mailLayout: state.mailLayout,
           emailsPerPage: state.emailsPerPage,
           externalContentPolicy: state.externalContentPolicy,
@@ -867,6 +872,7 @@ export const useSettingsStore = create<SettingsState>()(
           faviconUnreadBadge: state.faviconUnreadBadge,
           colorfulSidebarIcons: state.colorfulSidebarIcons,
           tintListRowsByTag: state.tintListRowsByTag,
+          tintListRowsByAccount: state.tintListRowsByAccount,
           showFolderTotalCount: state.showFolderTotalCount,
           folderIcons: state.folderIcons,
           emailKeywords: state.emailKeywords,

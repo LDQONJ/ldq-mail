@@ -254,6 +254,7 @@
       "button": "Esvaziar pasta",
       "confirm_title": "Esvaziar pasta",
       "confirm_message": "Todos os e-mails nesta pasta serão permanentemente excluídos. Esta ação não pode ser desfeita.",
+      "confirm_message_trash": "Todos os e-mails desta pasta serão movidos para a lixeira.",
       "confirm_button": "Esvaziar pasta",
       "junk_hint": "Você pode esvaziar a pasta de Spam para remover permanentemente todas as mensagens.",
       "trash_hint": "Você pode esvaziar a Lixeira para remover permanentemente todas as mensagens."
@@ -580,7 +581,12 @@
       "copied": "Copiado!",
       "copy_failed": "Falha ao copiar"
     },
-    "send_now": "Enviar agora"
+    "send_now": "Enviar agora",
+    "verification_code": {
+      "copy": "Copiar código {code}",
+      "copied": "Código copiado",
+      "copy_failed": "Não foi possível copiar o código"
+    }
   },
   "email_composer": {
     "read_receipt_on": "Confirmação de leitura solicitada (clique para desativar)",
@@ -673,6 +679,8 @@
     "smime_unlock_button": "Desbloquear",
     "smime_passphrase_placeholder": "Frase secreta S/MIME",
     "send_timeout": "O servidor deixou de responder. Verifique a pasta Enviados antes de enviar novamente — a mensagem pode já ter saído.",
+    "send_recipients_rejected": "Não enviado: o servidor rejeitou todos os destinatários.",
+    "send_some_recipients_rejected": "Enviado, mas não para estes destinatários, que foram rejeitados pelo servidor.",
     "continue_draft": "Continuar rascunho",
     "close_draft_title": "Salvar ou descartar rascunho?",
     "close_draft_message": "Você tem alterações não salvas. Deseja salvar como rascunho ou descartar?",
@@ -828,7 +836,19 @@
     "templates_import_empty": "Nenhum modelo encontrado no arquivo",
     "export_email_error": "Falha ao exportar o e-mail",
     "import_email_success": "E-mail importado com sucesso",
-    "import_email_error": "Falha ao importar o e-mail"
+    "import_email_error": "Falha ao importar o e-mail",
+    "rule_created": "Regra criada",
+    "rule_merged": "Adicionado à regra “{name}”",
+    "rule_already_covered": "Já coberto pela regra “{name}”",
+    "rule_apply_existing": "{count, plural, one {Aplicar a # mensagem existente} other {Aplicar a # mensagens existentes}}",
+    "rule_applied": "{count, plural, =0 {Nenhuma mensagem precisou de alterações} one {Regra aplicada a # mensagem} other {Regra aplicada a # mensagens}}",
+    "rule_apply_failed": "Não foi possível aplicar a regra às mensagens existentes",
+    "rule_edit": "Editar regra",
+    "rule_undo": "Desfazer",
+    "rule_undone": "Alteração da regra desfeita",
+    "rule_undo_failed": "Não foi possível desfazer a alteração da regra",
+    "rule_undo_conflict": "Seus filtros mudaram desde então. Desfaça a alteração nas configurações de filtros.",
+    "rule_folder_failed": "Não foi possível criar a pasta"
   },
   "date": {
     "today": "Hoje",
@@ -1086,6 +1106,10 @@
       "tint_list_rows": {
         "label": "Colorir as linhas da lista de acordo com a cor da etiqueta",
         "description": "Aplicar sombreado a cada linha de mensagem com a cor da primeira etiqueta. Desative essa opção para manter as linhas sem sombreado; os pontos e os ícones das etiquetas continuarão exibindo a cor."
+      },
+      "tint_list_rows_by_account": {
+        "label": "Tint List Rows by Account Color",
+        "description": "In the unified view, shade each row with its account color instead of showing the account dot. Takes precedence over the tag tint; tags keep their color on their chips."
       },
       "show_folder_total_count": {
         "label": "Mostrar contagem total de mensagens",
@@ -1387,6 +1411,10 @@
         "label": "Mostrar Texto de Visualização",
         "description": "Exibir visualização do e-mail na lista",
         "focus_description": "Exibir texto de pré-visualização em linha dentro da lista de mensagens focada de uma linha"
+      },
+      "show_verification_codes": {
+        "label": "Mostrar códigos de verificação",
+        "description": "Oferecer o código dos e-mails de início de sessão e confirmação para copiar com um clique, na lista durante um dia e na mensagem"
       },
       "attachment_click_action": {
         "label": "Ação ao clicar em anexos",
@@ -1719,14 +1747,37 @@
       },
       "link_device": {
         "title": "Vincular aplicativo móvel",
-        "description": "Entre no aplicativo móvel Bulwark Mail sem digitar nada. Gere um código QR aqui e escaneie-o na tela de login do aplicativo.",
+        "description": "Entre no aplicativo Bulwark Mail no seu celular sem digitar sua senha nele. Seu celular recebe um acesso próprio, então sair aqui não o desconecta.",
         "generate": "Mostrar código QR",
         "regenerate": "Mostrar um novo código",
-        "instructions": "Abra o aplicativo Bulwark Mail, toque em \"Escanear código QR\" na tela de login e aponte sua câmera para cá.",
+        "instructions": "Abra o aplicativo Bulwark Mail e toque em \"Scan a sign-in code\" na tela de login (ou em \"Add account\" → \"Scan a sign-in code\" se você já estiver conectado) e aponte a câmera para cá.",
         "expires_in": "Este código expira em {seconds} segundos. Ele só pode ser usado uma vez.",
         "expired": "Este código expirou.",
-        "generating": "Gerando…",
-        "error": "Não foi possível criar um código de pareamento. Tente novamente."
+        "error": "Não foi possível criar um código de pareamento. Tente novamente.",
+        "password_prompt": "Digite sua senha para confirmar que é você. Seu celular recebe um acesso próprio; sua senha não é enviada ao celular.",
+        "show_password": "Mostrar senha",
+        "hide_password": "Ocultar senha",
+        "continue": "Continuar",
+        "error_wrong_password": "Senha incorreta. Tente novamente.",
+        "totp_prompt": "Digite o código do seu aplicativo autenticador.",
+        "error_password_or_code": "A senha ou o código está incorreto.",
+        "error_not_signed_in": "Sua sessão expirou. Entre novamente para vincular um dispositivo.",
+        "error_impersonation": "Não é possível vincular dispositivos enquanto você visualiza a caixa de correio de outro usuário.",
+        "error_too_many_attempts": "Muitas tentativas. Aguarde um momento e tente novamente.",
+        "error_session_secret": "A vinculação de dispositivos não está configurada neste servidor (SESSION_SECRET ausente). Fale com o seu administrador.",
+        "error_server_unreachable": "Não foi possível acessar seu servidor de e-mail. Tente novamente.",
+        "error_pairing_unavailable": "Seu servidor de e-mail não permite vincular um dispositivo dessa forma. Fale com o seu administrador.",
+        "qr_alt": "Código QR de login",
+        "link_label": "Link de login",
+        "copy_link": "Copiar link de login",
+        "copied": "Copiado",
+        "copy_hint": "Sem câmera? Copie o link e cole-o no aplicativo com \"Paste sign-in link\".",
+        "success_title": "Conectado no seu celular",
+        "success_body": "Você pode fechar esta página. Para vincular outro dispositivo, mostre um novo código.",
+        "link_another": "Vincular outro dispositivo",
+        "use_sso": "Usar o início de sessão único",
+        "error_insecure_server": "A aplicação móvel só se liga a servidores de correio por https, e este usa http.",
+        "generating": "Gerando…"
       },
       "public_keys": {
         "name_label": "Nome da chave pública",
@@ -2043,7 +2094,9 @@
         "ends_with": "termina com",
         "matches": "corresponde ao padrão",
         "greater_than": "é maior que",
-        "less_than": "é menor que"
+        "less_than": "é menor que",
+        "address_is": "é o endereço",
+        "domain_is": "tem o domínio"
       },
       "action_types": {
         "move": "Mover para pasta",
@@ -2118,7 +2171,26 @@
         "actions_count": "{count, plural, one {# ação} other {# ações}}"
       },
       "origin_external": "Externo",
-      "managed_by_tooltip": "Gerenciado por {source}. Edite nesse aplicativo ou use o editor Sieve bruto."
+      "managed_by_tooltip": "Gerenciado por {source}. Edite nesse aplicativo ou use o editor Sieve bruto.",
+      "quick_rule_names": {
+        "move_sender": "Mover de {sender} para {folder}",
+        "move_domain": "Mover de @{domain} para {folder}",
+        "move_list": "Mover a lista {list} para {folder}",
+        "mark_read": "Marcar como lidas as de {sender}",
+        "tag": "Etiquetar como {tag} as de {sender}",
+        "block": "Bloquear {sender}",
+        "custom": "Mensagens de {sender}",
+        "custom_plain": "Nova regra",
+        "senders": "{count, plural, one {# remetente} other {# remetentes}}"
+      },
+      "suggestions": "Sugestões",
+      "suggest_subject": "Assunto “{subject}”",
+      "suggest_to": "Para {address}",
+      "suggest_cc": "Cc {address}",
+      "suggest_list": "List-Id",
+      "suggest_domain": "@{domain}",
+      "apply_existing": "Aplicar também às mensagens que já estão nesta pasta",
+      "apply_existing_unsupported": "Só regras que verificam o remetente, os destinatários, o assunto ou os cabeçalhos, e que movem, copiam, marcam como lida, marcam com estrela ou etiquetam, podem ser aplicadas a mensagens existentes."
     },
     "templates": {
       "title": "Modelos de e-mail",
@@ -2257,7 +2329,22 @@
     "cancel_scheduled_send": "Cancelar envio",
     "reschedule_send": "Reagendar",
     "cancel_and_edit": "Cancelar e editar",
-    "cancel_and_compose_again": "Cancelar e escrever novamente"
+    "cancel_and_compose_again": "Cancelar e escrever novamente",
+    "rules": {
+      "title": "Regras",
+      "move_from": "Sempre mover mensagens de {sender}",
+      "move_from_domain": "Sempre mover mensagens de @{domain}",
+      "move_from_list": "Sempre mover mensagens desta lista",
+      "mark_read_from": "Sempre marcar como lidas as mensagens de {sender}",
+      "tag_with": "Sempre etiquetar com",
+      "block": "{count, plural, one {Bloquear remetente} other {Bloquear # remetentes}}",
+      "no_junk": "Esta conta não tem pasta de spam",
+      "create": "Criar regra…",
+      "manage": "Gerenciar regras",
+      "senders_count": "{count, plural, one {# remetente} other {# remetentes}}",
+      "cross_account": "Selecione mensagens de uma única conta",
+      "opaque_hint": "Seus filtros foram editados manualmente. Abra as configurações de filtros"
+    }
   },
   "mailbox_context_menu": {
     "mark_folder_read": "Marcar pasta como lida",
@@ -2820,6 +2907,8 @@
       "no_events": "Nenhum evento",
       "all_day": "Dia inteiro",
       "more": "+{count} mais",
+      "show_more": "Mostrar mais",
+      "show_less": "Mostrar menos",
       "no_title": "(Sem título)",
       "resize": "Redimensionar evento",
       "duplicate": "Duplicar",
@@ -2842,6 +2931,7 @@
       "save_note": "Salvar",
       "note_saved": "Nota adicionada",
       "open_link": "Abrir link",
+      "copy_location": "Copiar local",
       "meeting_link": "Link da reunião",
       "tentative": "Provisório",
       "cancelled": "Cancelado",
@@ -3251,6 +3341,7 @@
     "body_placeholder": "O corpo contém...",
     "folder": "Pasta",
     "all_folders": "Todas as pastas",
+    "all_folders_except_spam_trash": "Todas as pastas exceto Spam e Lixeira",
     "has_attachment": "Anexos",
     "date_after": "Após",
     "date_before": "Antes de",

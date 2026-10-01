@@ -5,6 +5,7 @@ import { ThreadListItem } from "./thread-list-item";
 import type { Attachment } from "@/lib/jmap/types";
 import type { LoadListAttachments } from "@/lib/list-attachments";
 import { listRowShowsChips } from "./attachment-chips";
+import { listVerificationCode } from "@/lib/verification-code";
 import { EmailContextMenu } from "./email-context-menu";
 import { cn } from "@/lib/utils";
 import { Trash2, Mail, MailX, MailOpen, Loader2, SearchX, AlertTriangle, CalendarClock, ShieldCheck } from "@/components/icons";
@@ -25,6 +26,8 @@ import { useVirtualizer } from "@tanstack/react-virtual";
 import { TagDisplayContext, useMeasuredTagDisplay } from "@/hooks/use-tag-display";
 import { SearchChips } from "@/components/search/search-chips";
 import { isFilterEmpty, DEFAULT_SEARCH_FILTERS } from "@/lib/jmap/search-utils";
+import { getOwnAddresses } from "@/lib/filters/quick-rule-target";
+import { normalizeAddress } from "@/lib/filters/quick-rules";
 
 interface EmailListProps {
   emails: Email[];
@@ -142,12 +145,15 @@ export function EmailList({
   // Search results and cross-account views are always chronological.
   const fetchedListOrder = useEmailStore((state) => state.listOrder);
   const crossView = useEmailStore((state) => state.crossView);
+  // The row opened last stays where it was clicked while that order would
+  // move it (e.g. read in "unread first").
+  const listHold = useEmailStore((state) => state.listHold);
 
   const threadGroups = useMemo(() => {
     const listOrder = searchQuery || crossView || !isFilterEmpty(searchFilters) ? [] : fetchedListOrder;
     const groups = groupEmailsByThread(emails, disableThreading || isScheduledView, threadEmailCounts);
-    return sortThreadGroups(groups, listOrder);
-  }, [emails, disableThreading, isScheduledView, threadEmailCounts, fetchedListOrder, searchQuery, crossView, searchFilters]);
+    return sortThreadGroups(groups, listOrder, listHold?.keywords);
+  }, [emails, disableThreading, isScheduledView, threadEmailCounts, fetchedListOrder, searchQuery, crossView, searchFilters, listHold]);
 
   const { contextMenu, openContextMenu, closeContextMenu, menuRef } = useContextMenu<Email>();
   /**
@@ -158,6 +164,28 @@ export function EmailList({
   const contextMenuEmail = contextMenu.data
     ? emails.find((email) => email.id === contextMenu.data!.id) ?? contextMenu.data
     : null;
+  /**
+   * Whose sender the menu's Rules entry uses: every selected message, or the
+   * row's own message. A thread row whose newest message is the user's own
+   * reply takes the newest one someone else sent, when the thread has it
+   * loaded; otherwise the entry offers no sender rules.
+   */
+  const ruleEmails = useMemo(() => {
+    if (!contextMenuEmail) return undefined;
+    if (selectedEmailIds.has(contextMenuEmail.id) && selectedEmailIds.size > 1) {
+      return emails.filter((email) => selectedEmailIds.has(email.id));
+    }
+    const own = getOwnAddresses();
+    const isOwn = (email: Email) =>
+      (email.from ?? []).length > 0 && (email.from ?? []).every((f) => own.has(normalizeAddress(f.email)));
+    if (!isOwn(contextMenuEmail)) return undefined;
+    const thread = threadGroups.find((group) => group.latestEmail.id === contextMenuEmail.id);
+    if (!thread) return undefined;
+    const newestOther = [...(threadEmailsCache.get(thread.threadKey) ?? []), ...thread.emails]
+      .filter((email) => !isOwn(email))
+      .sort((a, b) => Date.parse(b.receivedAt) - Date.parse(a.receivedAt))[0];
+    return newestOther ? [newestOther] : undefined;
+  }, [contextMenuEmail, selectedEmailIds, emails, threadGroups, threadEmailsCache]);
   const { dialogProps: confirmDialogProps, confirm: confirmDialog } = useConfirmDialog();
 
   const [isProcessing, setIsProcessing] = useState(false);
@@ -192,6 +220,7 @@ export function EmailList({
   const tagDisplay = useMeasuredTagDisplay(parentRef);
   const density = useSettingsStore((state) => state.density);
   const showPreview = useSettingsStore((state) => state.showPreview);
+  const showVerificationCodes = useSettingsStore((state) => state.showVerificationCodes);
   const mailLayout = useSettingsStore((state) => state.mailLayout);
   const footerHasMore = hasMore ?? hasMoreEmails;
   const footerIsLoadingMore = isLoadingMoreItems ?? isLoadingMore;
@@ -214,10 +243,11 @@ export function EmailList({
       const emptyPreview = !!latest && !latest.preview?.trim() && !latest.searchSnippet?.preview;
       size += emptyPreview ? 36 - 23 : 36;
     }
-    // The attachment chip row: a 22px chip plus 6px margin.
-    if (latest && onOpenAttachment && listRowShowsChips(latest, loadAttachments)) size += 28;
+    // The chip row (attachments, verification code): a 22px chip plus 6px margin.
+    const hasCode = !!latest && showVerificationCodes && !!listVerificationCode(latest);
+    if (latest && (hasCode || (onOpenAttachment && listRowShowsChips(latest, loadAttachments)))) size += 28;
     return size;
-  }, [density, isFocusedMailLayout, showPreview, threadGroups, onOpenAttachment, loadAttachments]);
+  }, [density, isFocusedMailLayout, showPreview, showVerificationCodes, threadGroups, onOpenAttachment, loadAttachments]);
 
   // Stable per list, so the virtualizer does not rebuild every row's
   // measurement on each scroll render.
@@ -232,6 +262,11 @@ export function EmailList({
     estimateSize,
     overscan: 5,
     getItemKey,
+    // Keep sub-pixel row heights. The default measurer rounds them, so a
+    // row could start up to half a pixel inside the one above it and paint
+    // over that row's divider (at 125% or 150% display scaling).
+    measureElement: (element, entry) =>
+      entry?.borderBoxSize?.[0]?.blockSize ?? element.getBoundingClientRect().height,
   });
 
   const LoadingSkeleton = () => (
@@ -580,10 +615,11 @@ export function EmailList({
                     ref={virtualizer.measureElement}
                     style={{
                       position: 'absolute',
-                      top: 0,
+                      // `top`, not translateY: layout snaps it to device
+                      // pixels, so the fractional offsets stay crisp.
+                      top: virtualItem.start,
                       left: 0,
                       width: '100%',
-                      transform: `translateY(${virtualItem.start}px)`,
                     }}
                   >
                     <ThreadListItem
@@ -653,6 +689,7 @@ export function EmailList({
           currentMailboxRole={effectiveMailboxRole}
           isMultiSelect={selectedEmailIds.has(contextMenuEmail.id)}
           selectedCount={selectedEmailIds.size}
+          ruleEmails={ruleEmails}
           onReply={() => onReply?.(contextMenuEmail!)}
           onReplyAll={() => onReplyAll?.(contextMenuEmail!)}
           onForward={() => onForward?.(contextMenuEmail!)}

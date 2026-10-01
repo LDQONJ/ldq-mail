@@ -254,6 +254,7 @@
       "button": "Svuota cartella",
       "confirm_title": "Svuota cartella",
       "confirm_message": "Tutti i messaggi in questa cartella verranno eliminati definitivamente. Questa azione non può essere annullata.",
+      "confirm_message_trash": "Tutte le e-mail di questa cartella verranno spostate nel cestino.",
       "confirm_button": "Svuota cartella",
       "junk_hint": "Puoi svuotare la cartella Spam per rimuovere definitivamente tutti i messaggi.",
       "trash_hint": "Puoi svuotare il Cestino per rimuovere definitivamente tutti i messaggi."
@@ -580,7 +581,12 @@
       "copied": "Copiato!",
       "copy_failed": "Copia non riuscita"
     },
-    "send_now": "Invia ora"
+    "send_now": "Invia ora",
+    "verification_code": {
+      "copy": "Copia codice {code}",
+      "copied": "Codice copiato",
+      "copy_failed": "Impossibile copiare il codice"
+    }
   },
   "email_composer": {
     "read_receipt_on": "Conferma di lettura richiesta (clicca per disattivare)",
@@ -673,6 +679,8 @@
     "smime_unlock_button": "Sblocca",
     "smime_passphrase_placeholder": "Passphrase S/MIME",
     "send_timeout": "Il server ha smesso di rispondere. Controlli la cartella Posta inviata prima di inviare di nuovo: il messaggio potrebbe essere già partito.",
+    "send_recipients_rejected": "Non inviato: il server ha rifiutato tutti i destinatari.",
+    "send_some_recipients_rejected": "Inviato, ma non a questi destinatari: il server li ha rifiutati.",
     "continue_draft": "Continua bozza",
     "close_draft_title": "Salvare o eliminare la bozza?",
     "close_draft_message": "Hai modifiche non salvate. Vuoi salvare come bozza o eliminare?",
@@ -828,7 +836,19 @@
     "templates_import_empty": "Nessun modello trovato nel file",
     "export_email_error": "Impossibile esportare l'e-mail",
     "import_email_success": "E-mail importata con successo",
-    "import_email_error": "Impossibile importare l'e-mail"
+    "import_email_error": "Impossibile importare l'e-mail",
+    "rule_created": "Regola creata",
+    "rule_merged": "Aggiunto alla regola «{name}»",
+    "rule_already_covered": "Già coperto dalla regola «{name}»",
+    "rule_apply_existing": "{count, plural, one {Applica a # messaggio esistente} other {Applica a # messaggi esistenti}}",
+    "rule_applied": "{count, plural, =0 {Nessun messaggio da modificare} one {Regola applicata a # messaggio} other {Regola applicata a # messaggi}}",
+    "rule_apply_failed": "Impossibile applicare la regola ai messaggi esistenti",
+    "rule_edit": "Modifica regola",
+    "rule_undo": "Annulla",
+    "rule_undone": "Modifica della regola annullata",
+    "rule_undo_failed": "Impossibile annullare la modifica della regola",
+    "rule_undo_conflict": "I tuoi filtri sono cambiati nel frattempo. Annulla la modifica nelle impostazioni dei filtri.",
+    "rule_folder_failed": "Impossibile creare la cartella"
   },
   "date": {
     "today": "Oggi",
@@ -1086,6 +1106,10 @@
       "tint_list_rows": {
         "label": "Tint List Rows by Tag Color",
         "description": "Shade each message row with its first tag color. Disable to keep rows plain; tag dots and chips still show the color."
+      },
+      "tint_list_rows_by_account": {
+        "label": "Colora le righe in base all'account",
+        "description": "Nella vista unificata, colora ogni riga con il colore del suo account invece di mostrare il pallino. Ha la precedenza sulla tinta del tag; i tag mantengono il loro colore sulle etichette."
       },
       "show_folder_total_count": {
         "label": "Mostra il numero totale di messaggi",
@@ -1387,6 +1411,10 @@
         "label": "Mostra anteprima testo",
         "description": "Visualizza l'anteprima del messaggio nell'elenco",
         "focus_description": "Visualizza il testo di anteprima in linea nella lista di messaggi focalizzata a riga singola"
+      },
+      "show_verification_codes": {
+        "label": "Mostra codici di verifica",
+        "description": "Offri il codice delle email di accesso e conferma da copiare con un clic, nell'elenco per un giorno e nel messaggio"
       },
       "attachment_click_action": {
         "label": "Azione al clic sugli allegati",
@@ -1719,14 +1747,37 @@
       },
       "link_device": {
         "title": "Collega l'app mobile",
-        "description": "Accedi all'app mobile Bulwark Mail senza digitare nulla. Genera qui un codice QR e scansionalo dalla schermata di accesso dell'app.",
+        "description": "Accedi all'app Bulwark Mail sul telefono senza digitarvi la password. Il telefono ottiene un proprio accesso, quindi disconnetterti qui non lo disconnette.",
         "generate": "Mostra codice QR",
         "regenerate": "Mostra un nuovo codice",
-        "instructions": "Apri l'app Bulwark Mail, tocca \"Scansiona codice QR\" nella schermata di accesso e inquadra qui con la fotocamera.",
+        "instructions": "Apri l'app Bulwark Mail e tocca \"Scan a sign-in code\" nella schermata di accesso (oppure \"Add account\" → \"Scan a sign-in code\" se hai già effettuato l'accesso), poi inquadra qui con la fotocamera.",
         "expires_in": "Questo codice scade tra {seconds} secondi. Può essere usato una sola volta.",
         "expired": "Questo codice è scaduto.",
-        "generating": "Generazione…",
-        "error": "Impossibile creare un codice di associazione. Riprova."
+        "error": "Impossibile creare un codice di associazione. Riprova.",
+        "password_prompt": "Inserisci la password per confermare la tua identità. Il telefono ottiene un proprio accesso; la password non viene inviata al telefono.",
+        "show_password": "Mostra password",
+        "hide_password": "Nascondi password",
+        "continue": "Continua",
+        "error_wrong_password": "Password errata. Riprova.",
+        "totp_prompt": "Inserisci il codice dell'app di autenticazione.",
+        "error_password_or_code": "La password o il codice non sono corretti.",
+        "error_not_signed_in": "La sessione è scaduta. Accedi di nuovo per collegare un dispositivo.",
+        "error_impersonation": "Non puoi collegare dispositivi mentre visualizzi la casella di posta di un altro utente.",
+        "error_too_many_attempts": "Troppi tentativi. Attendi un momento e riprova.",
+        "error_session_secret": "Il collegamento dei dispositivi non è configurato su questo server (manca SESSION_SECRET). Rivolgiti al tuo amministratore.",
+        "error_server_unreachable": "Impossibile raggiungere il server di posta. Riprova.",
+        "error_pairing_unavailable": "Il tuo server di posta non consente di collegare un dispositivo in questo modo. Rivolgiti al tuo amministratore.",
+        "qr_alt": "Codice QR di accesso",
+        "link_label": "Link di accesso",
+        "copy_link": "Copia link di accesso",
+        "copied": "Copiato",
+        "copy_hint": "Niente fotocamera? Copia il link e incollalo nell'app con \"Paste sign-in link\".",
+        "success_title": "Accesso effettuato sul telefono",
+        "success_body": "Puoi chiudere questa pagina. Per collegare un altro dispositivo, mostra un nuovo codice.",
+        "link_another": "Collega un altro dispositivo",
+        "use_sso": "Usa invece l'accesso unico (SSO)",
+        "error_insecure_server": "L'app mobile si collega ai server di posta solo tramite https, e questo usa http.",
+        "generating": "Generazione…"
       },
       "public_keys": {
         "name_label": "Nome della chiave pubblica",
@@ -2043,7 +2094,9 @@
         "ends_with": "termina con",
         "matches": "corrisponde al modello",
         "greater_than": "è maggiore di",
-        "less_than": "è minore di"
+        "less_than": "è minore di",
+        "address_is": "è l'indirizzo",
+        "domain_is": "ha il dominio"
       },
       "action_types": {
         "move": "Sposta nella cartella",
@@ -2118,7 +2171,26 @@
         "actions_count": "{count, plural, one {# azione} other {# azioni}}"
       },
       "origin_external": "Esterno",
-      "managed_by_tooltip": "Gestito da {source}. Modificalo in quell'app o usa l'editor Sieve grezzo."
+      "managed_by_tooltip": "Gestito da {source}. Modificalo in quell'app o usa l'editor Sieve grezzo.",
+      "quick_rule_names": {
+        "move_sender": "Sposta da {sender} a {folder}",
+        "move_domain": "Sposta da @{domain} a {folder}",
+        "move_list": "Sposta la lista {list} in {folder}",
+        "mark_read": "Segna come letti i messaggi di {sender}",
+        "tag": "Etichetta {tag} i messaggi di {sender}",
+        "block": "Blocca {sender}",
+        "custom": "Messaggi di {sender}",
+        "custom_plain": "Nuova regola",
+        "senders": "{count, plural, one {# mittente} other {# mittenti}}"
+      },
+      "suggestions": "Suggerimenti",
+      "suggest_subject": "Oggetto «{subject}»",
+      "suggest_to": "A {address}",
+      "suggest_cc": "Cc {address}",
+      "suggest_list": "List-Id",
+      "suggest_domain": "@{domain}",
+      "apply_existing": "Applica anche ai messaggi già presenti in questa cartella",
+      "apply_existing_unsupported": "Solo le regole che controllano mittente, destinatari, oggetto o intestazioni, e che spostano, copiano, segnano come letto, contrassegnano con stella o etichettano, si possono applicare ai messaggi esistenti."
     },
     "templates": {
       "title": "Modelli email",
@@ -2257,7 +2329,22 @@
     "cancel_scheduled_send": "Annulla invio",
     "reschedule_send": "Riprogramma",
     "cancel_and_edit": "Annulla e modifica",
-    "cancel_and_compose_again": "Annulla e componi di nuovo"
+    "cancel_and_compose_again": "Annulla e componi di nuovo",
+    "rules": {
+      "title": "Regole",
+      "move_from": "Sposta sempre i messaggi di {sender}",
+      "move_from_domain": "Sposta sempre i messaggi di @{domain}",
+      "move_from_list": "Sposta sempre i messaggi di questa lista",
+      "mark_read_from": "Segna sempre come letti i messaggi di {sender}",
+      "tag_with": "Etichetta sempre con",
+      "block": "{count, plural, one {Blocca mittente} other {Blocca # mittenti}}",
+      "no_junk": "Questo account non ha una cartella Posta indesiderata",
+      "create": "Crea regola…",
+      "manage": "Gestisci regole",
+      "senders_count": "{count, plural, one {# mittente} other {# mittenti}}",
+      "cross_account": "Seleziona messaggi di un solo account",
+      "opaque_hint": "I tuoi filtri sono stati modificati a mano. Apri le impostazioni dei filtri"
+    }
   },
   "mailbox_context_menu": {
     "mark_folder_read": "Segna cartella come letta",
@@ -2820,6 +2907,8 @@
       "no_events": "Nessun evento",
       "all_day": "Tutto il giorno",
       "more": "+{count} altri",
+      "show_more": "Mostra di più",
+      "show_less": "Mostra meno",
       "no_title": "(Senza titolo)",
       "resize": "Ridimensiona evento",
       "duplicate": "Duplica",
@@ -2842,6 +2931,7 @@
       "save_note": "Salva",
       "note_saved": "Nota aggiunta",
       "open_link": "Apri link",
+      "copy_location": "Copia luogo",
       "meeting_link": "Link riunione",
       "tentative": "Provvisorio",
       "cancelled": "Annullato",
@@ -3251,6 +3341,7 @@
     "body_placeholder": "Il corpo contiene...",
     "folder": "Cartella",
     "all_folders": "Tutte le cartelle",
+    "all_folders_except_spam_trash": "Tutte le cartelle tranne Spam e Cestino",
     "has_attachment": "Allegati",
     "date_after": "Dopo il",
     "date_before": "Prima del",

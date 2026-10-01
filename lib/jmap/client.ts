@@ -1,5 +1,5 @@
 import { generateUUID } from '@/lib/utils';
-import type { Attachment, Email, Mailbox, MailboxRights, StateChange, AccountStates, CollectionChanges, ShareNotification, BusyPeriod, CalendarParticipantIdentity, CalendarEventNotification, Thread, Identity, EmailAddress, ContactCard, AddressBook, AddressBookRights, VacationResponse, Calendar, CalendarComponentType, CalendarRights, CalendarEvent, CalendarEventFilter, CalendarTask, CreateCalendarOptions, FileNode, FileNodeFilter, FileNodeRights, Principal, PushSubscription, EmailPushConfig, EmailSubmission, ScheduledEmail, SendEmailResult, SharedAccount } from "./types";
+import type { Attachment, Email, Mailbox, MailboxRights, StateChange, AccountStates, CollectionChanges, ShareNotification, BusyPeriod, CalendarParticipantIdentity, CalendarEventNotification, Thread, Identity, EmailAddress, ContactCard, AddressBook, AddressBookRights, VacationResponse, Calendar, CalendarComponentType, CalendarRights, CalendarEvent, CalendarEventFilter, CalendarTask, CreateCalendarOptions, FileNode, FileNodeFilter, FileNodeRights, Principal, PushSubscription, EmailPushConfig, DeliveryStatus, EmailSubmission, RejectedRecipient, ScheduledEmail, SendEmailResult, SharedAccount } from "./types";
 import type { SieveScript, SieveCapabilities } from "./sieve-types";
 import type { CalendarEventUpdateOptions, IJMAPClient, KeywordDiscoveryResult, KeywordInfo, KeywordMigration } from "./client-interface";
 import { attachSearchSnippets, filterHasSnippetTerms, snippetFilterFor, type SearchSnippetResult } from "@/lib/search-snippet";
@@ -434,6 +434,15 @@ function isTaskObject(obj: { '@type'?: string; progress?: unknown; due?: unknown
   return false;
 }
 
+/**
+ * Whether a calendar method error means the account grants this user no
+ * calendar access at all - the expected answer from a shared account the
+ * fan-out probed on suspicion (see getCalendarCapableAccountIds).
+ */
+function isCalendarAccessDenial(type: string | undefined, message: string | undefined): boolean {
+  return type === 'forbidden' || type === 'accountNotFound' || /not have access/i.test(message ?? '');
+}
+
 const CALENDAR_EVENT_PROPERTIES = [
   'id',
   '@type',
@@ -684,6 +693,76 @@ export function sendMethodErrors(
     }
   }
   return { failure, filing };
+}
+
+/** Call id of the deliveryStatus read-back that rides along with a send. */
+const DELIVERY_STATUS_CALL_ID = 'deliveryStatus';
+
+/**
+ * Reads back the deliveryStatus of the submission an earlier call of the same
+ * request creates as `creationId`. Stalwart runs RCPT TO while creating the
+ * submission and records a refused recipient on it as delivered "no" instead
+ * of failing the create, so the set response alone reads as a success - even
+ * when every recipient was refused and nothing was queued (#1123).
+ *
+ * A creation-id reference (RFC 8620 §5.3), not a `#ids` result reference:
+ * Stalwart does not evaluate result references into /set responses.
+ */
+function deliveryStatusCall(accountId: string, creationId: string): JMAPMethodCall {
+  return ['EmailSubmission/get', {
+    accountId,
+    ids: [`#${creationId}`],
+    properties: ['deliveryStatus'],
+  }, DELIVERY_STATUS_CALL_ID];
+}
+
+/**
+ * Splits the deliveryStatus read-back off a send response. It only reports:
+ * an error from it (a failed set leaves its back-reference dangling) must not
+ * be taken for a failed send or a filing problem by sendMethodErrors.
+ */
+function takeDeliveryStatus(response: JMAPResponse): {
+  response: JMAPResponse;
+  deliveryStatus?: Record<string, DeliveryStatus>;
+} {
+  const entry = response.methodResponses?.find(([, , callId]) => callId === DELIVERY_STATUS_CALL_ID);
+  if (!entry) return { response };
+  const [name, result] = entry;
+  return {
+    response: {
+      ...response,
+      methodResponses: response.methodResponses.filter(([, , callId]) => callId !== DELIVERY_STATUS_CALL_ID),
+    },
+    deliveryStatus: name === 'EmailSubmission/get' ? (result?.list?.[0]?.deliveryStatus ?? undefined) : undefined,
+  };
+}
+
+/**
+ * The recipients a submission's deliveryStatus (RFC 8621 §7) marks as not
+ * delivered, and whether that is all of them - then the message went nowhere.
+ */
+export function rejectedRecipients(deliveryStatus: Record<string, DeliveryStatus> | null | undefined): {
+  rejected: RejectedRecipient[];
+  all: boolean;
+} {
+  const entries = Object.entries(deliveryStatus ?? {});
+  const rejected = entries
+    .filter(([, status]) => status?.delivered === 'no')
+    .map(([email, status]) => ({ email, smtpReply: status.smtpReply?.trim() ?? '' }));
+  return { rejected, all: rejected.length > 0 && rejected.length === entries.length };
+}
+
+/** "a@example.com (550 5.1.2 Mailbox does not exist.), b@example.com" */
+export function formatRejectedRecipients(recipients: RejectedRecipient[]): string {
+  return recipients.map(({ email, smtpReply }) => (smtpReply ? `${email} (${smtpReply})` : email)).join(', ');
+}
+
+/** The server refused every recipient of a send, so nothing went out. */
+export class RecipientsRejectedError extends Error {
+  constructor(readonly recipients: RejectedRecipient[]) {
+    super(`The server rejected every recipient: ${formatRejectedRecipients(recipients)}`);
+    this.name = 'RecipientsRejectedError';
+  }
 }
 
 /** "report.pdf" -> "report (2).pdf", the way Stalwart's onExists "rename" names copies. */
@@ -2838,6 +2917,49 @@ export class JMAPClient implements IJMAPClient {
     return totalDestroyed;
   }
 
+  async moveMailboxContents(
+    fromMailboxId: string,
+    toMailboxId: string,
+    accountId?: string,
+    markAsRead?: boolean,
+  ): Promise<number> {
+    const targetAccountId = accountId || this.accountId;
+    const batchSize = Math.min(500, this.getMaxObjectsInGet(), this.getMaxObjectsInSet());
+    const patch: Record<string, unknown> = { mailboxIds: { [toMailboxId]: true } };
+    if (markAsRead) patch["keywords/$seen"] = true;
+    let totalMoved = 0;
+
+    // Moved emails leave the folder, so the next query returns the next page.
+    // `update` is keyed by id and cannot take a result reference, hence the
+    // separate query per batch.
+    while (true) {
+      const queryResponse = await this.request([
+        ["Email/query", {
+          accountId: targetAccountId,
+          filter: { inMailbox: fromMailboxId },
+          limit: batchSize,
+        }, "0"],
+      ]);
+      const ids: string[] = queryResponse.methodResponses?.[0]?.[1]?.ids || [];
+      if (ids.length === 0) break;
+
+      // A refused update leaves the ids in the folder, and the next query
+      // would return them again forever.
+      const setResponse = await this.request([
+        ["Email/set", {
+          accountId: targetAccountId,
+          update: Object.fromEntries(ids.map(id => [id, patch])),
+        }, "0"],
+      ]);
+      this.assertEmailSetSucceeded(setResponse, 'move the folder contents');
+
+      totalMoved += ids.length;
+      if (ids.length < batchSize) break;
+    }
+
+    return totalMoved;
+  }
+
   async markMailboxAsRead(mailboxId: string, accountId?: string): Promise<number> {
     const targetAccountId = accountId || this.accountId;
     const pageSize = Math.min(500, this.getMaxObjectsInSet());
@@ -3231,6 +3353,72 @@ export class JMAPClient implements IJMAPClient {
       console.error('Advanced search failed:', error);
       throw error;
     }
+  }
+
+  async getEmailFields(
+    emailIds: string[],
+    properties: string[],
+    accountId?: string,
+  ): Promise<Array<Record<string, unknown>>> {
+    if (emailIds.length === 0) return [];
+    const targetAccountId = accountId || this.accountId;
+    const list: Array<Record<string, unknown>> = [];
+    for (const batchIds of batched(emailIds, this.getMaxObjectsInGet())) {
+      const response = await this.request([
+        ["Email/get", { accountId: targetAccountId, ids: batchIds, properties: ["id", ...properties] }, "0"],
+      ]);
+      const [name, result] = response.methodResponses?.[0] ?? [];
+      if (name !== "Email/get" || !result) {
+        throw new Error(methodErrorMessage(response, 'Failed to get emails'));
+      }
+      list.push(...((result.list || []) as Array<Record<string, unknown>>));
+    }
+    return list;
+  }
+
+  async queryEmailFields(
+    filter: Record<string, unknown>,
+    properties: string[],
+    accountId?: string,
+    limit: number = 10000,
+  ): Promise<Array<Record<string, unknown>>> {
+    const targetAccountId = accountId || this.accountId;
+    const pageSize = Math.min(500, this.getMaxObjectsInGet());
+    const seen = new Set<string>();
+    const list: Array<Record<string, unknown>> = [];
+    let position = 0;
+    while (list.length < limit) {
+      const requested = Math.min(pageSize, limit - list.length);
+      const response = await this.request([
+        ["Email/query", {
+          accountId: targetAccountId,
+          filter,
+          sort: [{ property: "receivedAt", isAscending: false }],
+          position,
+          limit: requested,
+        }, "0"],
+        ["Email/get", {
+          accountId: targetAccountId,
+          "#ids": { resultOf: "0", name: "Email/query", path: "/ids" },
+          properties: ["id", ...properties],
+        }, "1"],
+      ]);
+      assertQuerySucceeded(response, 'Email query');
+      const [getName, getResult] = response.methodResponses?.[1] ?? [];
+      if (getName !== "Email/get" || !getResult) {
+        throw new Error(methodErrorMessage(response, 'Failed to get emails'));
+      }
+      const ids = (response.methodResponses?.[0]?.[1]?.ids ?? []) as string[];
+      for (const email of (getResult.list || []) as Array<Record<string, unknown>>) {
+        const id = email.id as string;
+        if (seen.has(id)) continue;
+        seen.add(id);
+        list.push(email);
+      }
+      if (ids.length < requested) break;
+      position += ids.length;
+    }
+    return list;
   }
 
   async searchSentRecipients(query: string, sentMailboxId: string, accountId?: string, limit: number = 60): Promise<Array<{ name: string; email: string }>> {
@@ -3937,6 +4125,7 @@ export class JMAPClient implements IJMAPClient {
       create: buildSubmissionCreate(`#${emailId}`, firstMailFrom),
       onSuccessUpdateEmail,
     }, "1"]);
+    methodCalls.push(deliveryStatusCall(this.getSubmissionAccountId(targetAccountId), "1"));
 
     let response = await this.request(methodCalls);
 
@@ -3956,7 +4145,7 @@ export class JMAPClient implements IJMAPClient {
           accountId: this.getSubmissionAccountId(targetAccountId),
           create: buildSubmissionCreate(draftCopyId, identityMailFrom),
           onSuccessUpdateEmail,
-        }, "1"]]);
+        }, "1"], deliveryStatusCall(this.getSubmissionAccountId(targetAccountId), "1")]);
         response = {
           ...retry,
           methodResponses: [
@@ -3971,6 +4160,9 @@ export class JMAPClient implements IJMAPClient {
     let emailSubmissionId: string | undefined;
     let serverSendAt: string | undefined;
     let filingError: string | undefined;
+
+    const statusReadBack = takeDeliveryStatus(response);
+    response = statusReadBack.response;
 
     const { failure, filing } = sendMethodErrors(response.methodResponses);
     if (failure) {
@@ -4038,6 +4230,21 @@ export class JMAPClient implements IJMAPClient {
       }
     }
 
+    // With every recipient refused nothing was queued, yet the submission
+    // exists and its onSuccessUpdateEmail filed the copy into Sent (#1123).
+    // Drop that copy and keep the old draft: the send failed.
+    const { rejected, all: noneAccepted } = rejectedRecipients(statusReadBack.deliveryStatus);
+    if (noneAccepted) {
+      if (createdEmailId) {
+        try {
+          await this.request([["Email/set", { accountId: targetAccountId, destroy: [createdEmailId] }, "0"]]);
+        } catch (err) {
+          console.error('[sendEmail] removing the unsent copy from Sent failed:', err);
+        }
+      }
+      throw new RecipientsRejectedError(rejected);
+    }
+
     // The message is out (or scheduled) - now it is safe to drop the old
     // draft. A failure here leaves an orphan in Drafts, which is reported as
     // a filing warning rather than a failed send (#849).
@@ -4067,9 +4274,10 @@ export class JMAPClient implements IJMAPClient {
       serverSendAt = await this.getEmailSubmissionSendAt(emailSubmissionId, submissionAccountId);
     }
 
+    const rejectedRecipientsResult = rejected.length ? rejected : undefined;
     return delayedUntil
-      ? { scheduled: true, emailId: createdEmailId, emailSubmissionId, sendAt: serverSendAt, submissionAccountId, filingError }
-      : { scheduled: false, emailId: createdEmailId, emailSubmissionId, submissionAccountId, filingError };
+      ? { scheduled: true, emailId: createdEmailId, emailSubmissionId, sendAt: serverSendAt, submissionAccountId, filingError, rejectedRecipients: rejectedRecipientsResult }
+      : { scheduled: false, emailId: createdEmailId, emailSubmissionId, submissionAccountId, filingError, rejectedRecipients: rejectedRecipientsResult };
   }
 
   /**
@@ -6311,42 +6519,63 @@ export class JMAPClient implements IJMAPClient {
 
   async getAllCalendars(): Promise<Calendar[]> {
     try {
-      const allCalendars: Calendar[] = [];
-      const primaryId = this.getCalendarsAccountId();
-      const accountIds = this.getCalendarCapableAccountIds();
-
-      for (const accountId of accountIds) {
-        const isPrimary = accountId === primaryId;
-        if (!isPrimary && this.calendarAccessDenied.has(accountId)) continue;
-        const account = this.accounts[accountId];
-
-        try {
-          const response = await this.requestCalendars(accountId);
-
-          if (response.methodResponses?.[0]?.[0] === "Calendar/get") {
-            const rawCalendars = (response.methodResponses[0][1].list || []) as Calendar[];
-            const tasksOnly = await this.getTasksOnlyCalendarIds(accountId, rawCalendars.map((c) => c.id));
-            const calendars = rawCalendars.map((cal) => ({
-              ...cal,
-              id: isPrimary ? cal.id : `${accountId}:${cal.id}`,
-              originalId: cal.id,
-              accountId,
-              accountName: account?.name || (isPrimary ? this.username : accountId),
-              isShared: !isPrimary,
-              isTasksOnly: tasksOnly.has(cal.id),
-            }));
-            allCalendars.push(...calendars);
-          }
-        } catch (error) {
-          console.error(`Failed to fetch calendars for account ${accountId}:`, error);
-        }
-      }
-
-      return allCalendars;
+      return (await this.getAllCalendarsWithFailures()).calendars;
     } catch (error) {
       console.error('Failed to fetch all calendars:', error);
-      return this.getCalendars();
+      return [];
     }
+  }
+
+  /**
+   * getAllCalendars() for callers that reconcile state against the list: a
+   * failure on the primary account throws instead of yielding a list without
+   * its calendars, and shared accounts that could not be loaded are named in
+   * `failedAccountIds`. Read as "no calendars", a failed fetch dropped every
+   * calendar from the persisted selection.
+   */
+  async getAllCalendarsWithFailures(): Promise<{ calendars: Calendar[]; failedAccountIds: string[] }> {
+    const allCalendars: Calendar[] = [];
+    const failedAccountIds: string[] = [];
+    const primaryId = this.getCalendarsAccountId();
+    const accountIds = this.getCalendarCapableAccountIds();
+
+    for (const accountId of accountIds) {
+      const isPrimary = accountId === primaryId;
+      if (!isPrimary && this.calendarAccessDenied.has(accountId)) continue;
+      const account = this.accounts[accountId];
+
+      try {
+        const response = await this.requestCalendars(accountId);
+        const [method, result] = response.methodResponses?.[0] ?? [];
+
+        if (method !== "Calendar/get") {
+          // Shared accounts are probed on suspicion (see
+          // getCalendarCapableAccountIds); one that grants no calendar access
+          // has no calendars to lose.
+          if (!isPrimary && isCalendarAccessDenial(result?.type, result?.description)) continue;
+          throw new Error(result?.description || result?.type || "Calendar/get failed");
+        }
+
+        const rawCalendars = (result.list || []) as Calendar[];
+        const tasksOnly = await this.getTasksOnlyCalendarIds(accountId, rawCalendars.map((c) => c.id));
+        const calendars = rawCalendars.map((cal) => ({
+          ...cal,
+          id: isPrimary ? cal.id : `${accountId}:${cal.id}`,
+          originalId: cal.id,
+          accountId,
+          accountName: account?.name || (isPrimary ? this.username : accountId),
+          isShared: !isPrimary,
+          isTasksOnly: tasksOnly.has(cal.id),
+        }));
+        allCalendars.push(...calendars);
+      } catch (error) {
+        if (isPrimary) throw error;
+        console.error(`Failed to fetch calendars for account ${accountId}:`, error);
+        failedAccountIds.push(accountId);
+      }
+    }
+
+    return { calendars: allCalendars, failedAccountIds };
   }
 
   async createCalendar(calendar: Partial<Calendar>, targetAccountId?: string, options?: CreateCalendarOptions): Promise<Calendar> {
@@ -6845,8 +7074,7 @@ export class JMAPClient implements IJMAPClient {
       // calendar access at all. Remember the rejection and go quiet instead
       // of re-probing - and re-logging - on every range change.
       const type = (error as { jmapErrorType?: string } | null)?.jmapErrorType;
-      const denied = type === 'forbidden' || type === 'accountNotFound' ||
-        /not have access/i.test(error instanceof Error ? error.message : '');
+      const denied = isCalendarAccessDenial(type, error instanceof Error ? error.message : undefined);
       if (targetAccountId && denied) {
         this.calendarAccessDenied.add(targetAccountId);
         debug.log('calendar', `No calendar access to account ${targetAccountId} - skipping it from now on`);
@@ -8971,9 +9199,10 @@ export class JMAPClient implements IJMAPClient {
           },
         } : {}),
       }, '1'],
+      deliveryStatusCall(this.getSubmissionAccountId(), 'raw-submit'),
     ];
 
-    const response = await this.request(methodCalls);
+    const { response, deliveryStatus } = takeDeliveryStatus(await this.request(methodCalls));
     let emailId: string | undefined;
     let emailSubmissionId: string | undefined;
     let serverSendAt: string | undefined;
@@ -9000,6 +9229,20 @@ export class JMAPClient implements IJMAPClient {
       }
     }
 
+    // Every recipient refused: nothing was queued, but the imported copy was
+    // filed as sent. Remove it and fail the send (#1123).
+    const { rejected, all: noneAccepted } = rejectedRecipients(deliveryStatus);
+    if (noneAccepted) {
+      if (emailId) {
+        try {
+          await this.request([['Email/set', { accountId: this.accountId, destroy: [emailId] }, '0']]);
+        } catch (err) {
+          console.error('[sendRawEmail] removing the unsent copy failed:', err);
+        }
+      }
+      throw new RecipientsRejectedError(rejected);
+    }
+
     // These raw/S-MIME paths submit through the primary submission account, so
     // report that as the owning account rather than leaving it unset.
     const submissionAccountId = this.getSubmissionAccountId();
@@ -9008,9 +9251,10 @@ export class JMAPClient implements IJMAPClient {
       serverSendAt = await this.getEmailSubmissionSendAt(emailSubmissionId, submissionAccountId);
     }
 
+    const rejectedRecipientsResult = rejected.length ? rejected : undefined;
     return delayedUntil
-      ? { scheduled: true, emailId, emailSubmissionId, sendAt: serverSendAt, submissionAccountId, isSmime: true }
-      : { scheduled: false, emailId, emailSubmissionId, submissionAccountId, isSmime: true };
+      ? { scheduled: true, emailId, emailSubmissionId, sendAt: serverSendAt, submissionAccountId, isSmime: true, rejectedRecipients: rejectedRecipientsResult }
+      : { scheduled: false, emailId, emailSubmissionId, submissionAccountId, isSmime: true, rejectedRecipients: rejectedRecipientsResult };
   }
 
   /**
@@ -9062,9 +9306,10 @@ export class JMAPClient implements IJMAPClient {
         //destroy the temporary email after submission to avoid leaving a draft behind.
         onSuccessDestroyEmail: ['#raw-submit'],
       }, '1'],
+      deliveryStatusCall(this.getSubmissionAccountId(), 'raw-submit'),
     ];
 
-    const response = await this.request(methodCalls);
+    const { response, deliveryStatus } = takeDeliveryStatus(await this.request(methodCalls));
     let emailSubmissionId: string | undefined;
     let serverSendAt: string | undefined;
 
@@ -9086,15 +9331,21 @@ export class JMAPClient implements IJMAPClient {
       }
     }
 
+    // The temporary copy is already gone (onSuccessDestroyEmail), so all that
+    // is left is to report refused recipients (#1123).
+    const { rejected, all: noneAccepted } = rejectedRecipients(deliveryStatus);
+    if (noneAccepted) throw new RecipientsRejectedError(rejected);
+
     const submissionAccountId = this.getSubmissionAccountId();
 
     if (delayedUntil && emailSubmissionId && !serverSendAt) {
       serverSendAt = await this.getEmailSubmissionSendAt(emailSubmissionId, submissionAccountId);
     }
 
+    const rejectedRecipientsResult = rejected.length ? rejected : undefined;
     return delayedUntil
-      ? { scheduled: true, emailSubmissionId, sendAt: serverSendAt, submissionAccountId, isSmime: true }
-      : { scheduled: false, emailSubmissionId, submissionAccountId, isSmime: true };
+      ? { scheduled: true, emailSubmissionId, sendAt: serverSendAt, submissionAccountId, isSmime: true, rejectedRecipients: rejectedRecipientsResult }
+      : { scheduled: false, emailSubmissionId, submissionAccountId, isSmime: true, rejectedRecipients: rejectedRecipientsResult };
   }
 
   async getScheduledEmails(limit = 50, position = 0): Promise<{ emails: ScheduledEmail[]; hasMore: boolean; total: number; totalByAccount?: Record<string, number>; nextPosition: number }> {
