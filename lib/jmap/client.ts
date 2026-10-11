@@ -90,6 +90,16 @@ function basicAuthHeader(username: string, password: string): string {
   return `Basic ${btoa(binary)}`;
 }
 
+/** Origin of an absolute URL; null for a relative one or garbage. */
+function absoluteOrigin(url: string | undefined): string | null {
+  if (!url || !/^https?:\/\//i.test(url)) return null;
+  try {
+    return new URL(url).origin;
+  } catch {
+    return null;
+  }
+}
+
 /**
  * Parse a recipient string that may be "Name <email>" or bare "email" into
  * { name?, email }. The display name is unquoted and stripped of any address
@@ -669,6 +679,7 @@ function computeHasMore(position: number, emailCount: number, total: number, lim
 interface JMAPMethodError {
   type?: string;
   description?: string;
+  properties?: string[];
 }
 
 /**
@@ -677,6 +688,11 @@ interface JMAPMethodError {
  * EmailSubmission comes from its implicit onSuccessUpdateEmail /
  * onSuccessDestroyEmail call: the message has already left, so it is a filing
  * problem, not a failed send (reporting it as one invites a duplicate resend).
+ *
+ * A refused create ahead of the submission (the Email/set or Email/import of
+ * the message itself) is the failure: the submission's `#creationId` then points at
+ * nothing and Stalwart fails the whole call with "Invalid reference to
+ * non-existing object", which says nothing about why the message was refused.
  */
 export function sendMethodErrors(
   methodResponses: JMAPResponse['methodResponses'] | undefined,
@@ -687,6 +703,9 @@ export function sendMethodErrors(
   for (const [name, result] of methodResponses ?? []) {
     if (name === 'EmailSubmission/set' && Object.keys(result?.created ?? {}).length > 0) {
       submitted = true;
+    } else if (!submitted && name !== 'EmailSubmission/set' && name !== 'error') {
+      const refused = Object.values((result?.notCreated ?? {}) as Record<string, JMAPMethodError>)[0];
+      if (refused) failure ??= refused;
     } else if (name === 'error') {
       if (submitted) filing ??= result;
       else failure ??= result;
@@ -762,6 +781,17 @@ export class RecipientsRejectedError extends Error {
   constructor(readonly recipients: RejectedRecipient[]) {
     super(`The server rejected every recipient: ${formatRejectedRecipients(recipients)}`);
     this.name = 'RecipientsRejectedError';
+  }
+}
+
+/**
+ * The send request came back without an EmailSubmission: nothing confirms the
+ * message left, and it may still have. The draft is kept.
+ */
+export class SendUnconfirmedError extends Error {
+  constructor() {
+    super('Send confirmation was not received. Check Sent before sending again. Your draft has been kept.');
+    this.name = 'SendUnconfirmedError';
   }
 }
 
@@ -1479,14 +1509,27 @@ export class JMAPClient implements IJMAPClient {
     }
   }
 
+  /**
+   * The server names its URLs under the base URL it believes it has, which
+   * behind a reverse proxy may not be one the browser can reach, so they are
+   * moved onto `serverUrl`'s origin. A URL on another HTTPS origin than the
+   * server's own `apiUrl` is one it deliberately hosts elsewhere (Fastmail
+   * serves downloads from a separate domain) and is kept.
+   */
   private rewriteSessionUrls(session: JMAPSession): void {
+    const reportedOrigin = absoluteOrigin(session.apiUrl);
+    const rewrite = (url: string): string => {
+      const origin = absoluteOrigin(url);
+      const hostedElsewhere = !!origin && !!reportedOrigin && origin !== reportedOrigin && origin.startsWith('https:');
+      return hostedElsewhere ? url : this.rewriteSessionUrl(url);
+    };
     session.apiUrl = this.rewriteSessionUrl(session.apiUrl);
-    session.downloadUrl = this.rewriteSessionUrl(session.downloadUrl);
+    session.downloadUrl = rewrite(session.downloadUrl);
     if (session.uploadUrl) {
-      session.uploadUrl = this.rewriteSessionUrl(session.uploadUrl);
+      session.uploadUrl = rewrite(session.uploadUrl);
     }
     if (session.eventSourceUrl) {
-      session.eventSourceUrl = this.rewriteSessionUrl(session.eventSourceUrl);
+      session.eventSourceUrl = rewrite(session.eventSourceUrl);
     }
   }
 
@@ -2036,10 +2079,13 @@ export class JMAPClient implements IJMAPClient {
     return allEmails;
   }
 
-  async getTagCounts(tagIds: string[], accountId?: string): Promise<Record<string, { total: number; unread: number }>> {
+  async getTagCounts(tagIds: string[], accountId?: string, excludeMailboxIds?: string[]): Promise<Record<string, { total: number; unread: number }>> {
     if (tagIds.length === 0) return {};
     const result: Record<string, { total: number; unread: number }> = {};
     const targetAccountId = accountId || this.accountId;
+    const exclusion = excludeMailboxIds && excludeMailboxIds.length > 0
+      ? [{ inMailboxOtherThan: excludeMailboxIds }]
+      : [];
 
     const CALLS_PER_TAG = 2;
     const perRequest = itemsPerRequest(this.getMaxCallsInRequest(), CALLS_PER_TAG);
@@ -2052,7 +2098,9 @@ export class JMAPClient implements IJMAPClient {
           // Total count for this tag
           methodCalls.push(["Email/query", {
             accountId: targetAccountId,
-            filter: { hasKeyword: keyword },
+            filter: exclusion.length > 0
+              ? { operator: "AND", conditions: [{ hasKeyword: keyword }, ...exclusion] }
+              : { hasKeyword: keyword },
             // limit 1, not 0: Stalwart treats 0 as "no limit" and returns every id.
             limit: 1,
             calculateTotal: true,
@@ -2065,6 +2113,7 @@ export class JMAPClient implements IJMAPClient {
               conditions: [
                 { hasKeyword: keyword },
                 { notKeyword: "$seen" },
+                ...exclusion,
               ],
             },
             // limit 1, not 0: Stalwart treats 0 as "no limit" and returns every id.
@@ -3119,7 +3168,7 @@ export class JMAPClient implements IJMAPClient {
     this.assertEmailSetSucceeded(response, "mark as not spam");
   }
 
-  async createMailbox(name: string, parentId?: string, accountId?: string): Promise<Mailbox> {
+  async createMailbox(name: string, parentId?: string, accountId?: string, options?: { role?: string }): Promise<Mailbox> {
     const targetAccountId = accountId || this.accountId;
     const createId = `new-${Date.now()}`;
     // Subscribe explicitly: IMAP clients that list folders via LSUB
@@ -3128,6 +3177,9 @@ export class JMAPClient implements IJMAPClient {
     const createData: Record<string, unknown> = { name, isSubscribed: true };
     if (parentId) {
       createData.parentId = parentId;
+    }
+    if (options?.role) {
+      createData.role = options.role;
     }
 
     const response = await this.request([
@@ -3157,6 +3209,7 @@ export class JMAPClient implements IJMAPClient {
       id: created.id,
       name,
       parentId,
+      role: options?.role,
       sortOrder: 0,
       totalEmails: 0,
       unreadEmails: 0,
@@ -3183,6 +3236,28 @@ export class JMAPClient implements IJMAPClient {
     if (result?.notUpdated?.[mailboxId]) {
       throw new Error(`Failed to update mailbox: ${result.notUpdated[mailboxId].type || 'unknown error'}`);
     }
+  }
+
+  async updateMailboxes(
+    updates: Record<string, { name?: string; parentId?: string | null; role?: string | null; sortOrder?: number }>,
+    accountId?: string,
+  ): Promise<Record<string, string>> {
+    const targetAccountId = accountId || this.accountId;
+    const failed: Record<string, string> = {};
+    for (const batch of batched(Object.entries(updates), this.getMaxObjectsInSet())) {
+      const response = await this.request([
+        ["Mailbox/set", { accountId: targetAccountId, update: Object.fromEntries(batch) }, "0"],
+      ]);
+      const [name, result] = response.methodResponses?.[0] ?? [];
+      if (name === 'error') {
+        throw new Error(result?.description || result?.type || 'Failed to update mailboxes');
+      }
+      const notUpdated = (result?.notUpdated ?? {}) as Record<string, { type?: string }>;
+      for (const [id, err] of Object.entries(notUpdated)) {
+        failed[id] = err?.type || 'unknown';
+      }
+    }
+    return failed;
   }
 
   /**
@@ -3846,7 +3921,8 @@ export class JMAPClient implements IJMAPClient {
     if (response.methodResponses?.[0]?.[0] === "Email/set") {
       const result = response.methodResponses[0][1];
 
-      if (result.notCreated) {
+      // An empty notCreated map is a success some servers spell out.
+      if (result.notCreated && Object.keys(result.notCreated).length) {
         const errors = result.notCreated;
         const firstError = Object.values(errors)[0] as { description?: string; type?: string };
         console.error('Draft save error:', firstError);
@@ -4167,7 +4243,8 @@ export class JMAPClient implements IJMAPClient {
     const { failure, filing } = sendMethodErrors(response.methodResponses);
     if (failure) {
       console.error('[sendEmail] JMAP method error:', failure);
-      throw new Error(failure.description || `Failed to send email: ${failure.type}`);
+      const propsHint = failure.properties?.length ? ` (properties: ${failure.properties.join(', ')})` : '';
+      throw new Error(`${failure.description || `Failed to send email: ${failure.type}`}${propsHint}`);
     }
     if (filing) {
       console.error('[sendEmail] post-send method error:', filing);
@@ -4176,7 +4253,7 @@ export class JMAPClient implements IJMAPClient {
 
     if (response.methodResponses) {
       for (const [methodName, result] of response.methodResponses) {
-        if (result.notCreated) {
+        if (result.notCreated && Object.keys(result.notCreated).length) {
           // Include method name + full error object so it's clear whether the
           // failure came from Email/set (draft create) or EmailSubmission/set
           // (actual send) and which JMAP error type/properties were returned.
@@ -4228,6 +4305,13 @@ export class JMAPClient implements IJMAPClient {
           serverSendAt = result.created['1'].sendAt;
         }
       }
+    }
+
+    // No EmailSubmission came back - a method error, or no answer for it at
+    // all. Nothing confirms the message left: report a failure and keep the
+    // old draft rather than replacing it as if the send had worked.
+    if (!emailSubmissionId) {
+      throw new SendUnconfirmedError();
     }
 
     // With every recipient refused nothing was queued, yet the submission
@@ -9051,6 +9135,7 @@ export class JMAPClient implements IJMAPClient {
     fromAccountId: string,
     toAccountId: string,
     destMailboxId: string,
+    options?: { keepOriginal?: boolean },
   ): Promise<string> {
     // Email/copy drops keywords unless the create sets them, so carry the
     // source's over — otherwise the moved message shows up as unread.
@@ -9082,6 +9167,7 @@ export class JMAPClient implements IJMAPClient {
     if (!id) {
       throw new Error("Email/copy succeeded but no ID returned");
     }
+    if (options?.keepOriginal) return id;
 
     const destroyResponse = await this.request([
       ["Email/set", { accountId: fromAccountId, destroy: [emailId] }, "0"],
@@ -9095,6 +9181,7 @@ export class JMAPClient implements IJMAPClient {
     mailboxIds: Record<string, boolean>,
     keywords?: Record<string, boolean>,
     accountId?: string,
+    receivedAt?: string,
   ): Promise<string> {
     const targetAccountId = accountId || this.accountId;
     // First upload the blob. Blob uploads are scoped to an account too —
@@ -9112,6 +9199,7 @@ export class JMAPClient implements IJMAPClient {
             blobId,
             mailboxIds,
             keywords: keywords ?? { '$seen': true },
+            ...(receivedAt ? { receivedAt } : {}),
           },
         },
       }, '0'],

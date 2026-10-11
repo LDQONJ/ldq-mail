@@ -17,17 +17,24 @@
     "reconnecting": "З'єднання втрачено. Спроба повторного підключення…",
     "error": {
       "invalid_credentials": "Неправильна адреса електронної пошти або пароль. Перевірте свої облікові дані та повторіть спробу.",
+      "invalid_token": "Сервер не прийняв цей токен доступу. Перевірте, чи його скопійовано повністю, чи не минув термін його дії і чи його не відкликано.",
       "connection_failed": "Не вдалося підключитися до сервера. Перевірте підключення до Інтернету та повторіть спробу.",
       "cors_blocked": "Сервер доступний, але він блокує перехресні запити. Перевірте налаштування CORS свого сервера JMAP і дозвольте цей домен.",
       "server_error": "Сервер тимчасово недоступний. Спробуйте пізніше.",
       "generic": "Сталася неочікувана помилка. Якщо це не зникне, зверніться до адміністратора.",
       "totp_required": "Потрібен код двофакторної автентифікації. Будь ласка, введіть свій код нижче.",
       "totp_invalid": "Недійсний код автентифікації. Перевірте свою програму автентифікації та повторіть спробу.",
-      "oauth_discovery_failed": "Система єдиного входу ввімкнена, але зв’язатися з постачальником ідентифікаційної інформації не вдалося. Перевірте конфігурацію OAuth."
+      "oauth_discovery_failed": "Система єдиного входу ввімкнена, але зв’язатися з постачальником ідентифікаційної інформації не вдалося. Перевірте конфігурацію OAuth.",
+      "token_exchange_failed": "Пароль і код прийнято, але поштовий сервер відмовився відкрити сеанс для цього застосунку. Попросіть адміністратора перевірити налаштування OAuth-клієнта."
     },
     "show_password": "Показати пароль",
     "hide_password": "Приховати пароль",
     "totp_toggle": "У мене є код 2FA",
+    "token_toggle": "Увійти за допомогою токена доступу",
+    "password_toggle": "Увійти за допомогою пароля",
+    "token_label": "Токен доступу",
+    "token_placeholder": "Вставте свій API-токен",
+    "token_hint": "Створіть API-токен у налаштуваннях свого поштового провайдера та вставте його сюди.",
     "remember_me": "пам'ятай мене",
     "config_error": {
       "title": "Помилка конфігурації",
@@ -61,7 +68,9 @@
       "token_exchange_failed": "Не вдалося завершити автентифікацію. Спробуйте ще раз.",
       "access_denied": "У доступі відмовлено. Будь ласка, зверніться до свого адміністратора.",
       "back_to_login": "Назад до входу"
-    }
+    },
+    "have_invite_code": "Have an invite code?",
+    "register_link": "Register Account"
   },
   "sidebar": {
     "close": "Закрити",
@@ -114,6 +123,7 @@
     "unified_archive": "Усі архіви",
     "unified_junk": "Весь спам",
     "all_accounts": "Усі облікові записи",
+    "all_accounts_loading": "Завантаження облікових записів: {loaded} з {total}",
     "unified_mailbox": "Спільна поштова скринька",
     "expand": "Розгорнути",
     "collapse": "Згорнути",
@@ -337,6 +347,15 @@
     "external_content_warning": "Зображення та зовнішній вміст заблоковано",
     "load_external_content": "Завантажити зображення",
     "trust_sender": "Завжди довіряйте цьому відправнику",
+    "sender_check": {
+      "unverified_label": "Неперевірений відправник",
+      "failed_label": "Перевірку відправника не пройдено",
+      "unverified": "Це повідомлення нібито надіслано з домену {domain}, але ніщо цього не підтверджує. Воно не має дійсного підпису домену {domain} і надійшло не з сервера, якому домен {domain} дозволяє надсилання.",
+      "unverified_sent_from": "Це повідомлення нібито надіслано з домену {domain}, але насправді його надіслано з домену {host}, і воно не має дійсного підпису домену {domain}.",
+      "failed": "Це повідомлення нібито надіслано з домену {domain}, але воно не пройшло перевірку відправника цього домену. Можливо, воно підроблене.",
+      "failed_sent_from": "Це повідомлення нібито надіслано з домену {domain}, але насправді його надіслано з домену {host}, і воно не пройшло перевірку відправника домену {domain}. Можливо, воно підроблене.",
+      "caution": "Будьте обережні з посиланнями, вкладеннями та запитами паролів чи платіжних даних."
+    },
     "back_to_list": "Повернутися до списку",
     "view_contact": "Переглянути контакт",
     "message_details": "Деталі повідомлення",
@@ -616,6 +635,12 @@
     "attach": "Прикріпити",
     "attach_photos": "Photos & Videos",
     "attach_files": "Files",
+    "attach_from_files": "Прикріпити з Файлів",
+    "files_picker": {
+      "attach": "{count, plural, =0 {Прикріпити} one {Прикріпити # файл} few {Прикріпити # файли} many {Прикріпити # файлів} other {Прикріпити # файлу}}",
+      "empty_folder": "Ця папка порожня",
+      "load_failed": "Не вдалося завантажити ваші файли"
+    },
     "discard": "Відкинути",
     "discard_draft_title": "Відхилити чернетку?",
     "discard_draft_confirm": "У вас є незбережені зміни. Ви хочете відхилити цю чернетку?",
@@ -718,6 +743,7 @@
     "recipient_name_placeholder": "Відображуване ім'я",
     "autocomplete_search_server": "Шукати на сервері",
     "autocomplete_searching": "Пошук...",
+    "mention_recipients": "Одержувачі",
     "toolbar": {
       "bold": "Жирний",
       "italic": "Курсив",
@@ -812,6 +838,8 @@
     "emails_moved": "{count} електронних листів переміщено",
     "moved_to_mailbox": "Переміщено до {mailbox}",
     "move_failed": "Не вдалося перемістити",
+    "emails_copied": "{count} електронних листів скопійовано",
+    "copy_failed": "Не вдалося скопіювати",
     "move_error": "Не вдалося перемістити електронні листи до вибраної папки",
     "email_tagged": "Електронна пошта позначена тегами",
     "emails_tagged": "{count} електронних листів позначено тегами",
@@ -825,8 +853,8 @@
     "identity_delete_failed": "Не вдалося видалити особу: {error}",
     "identity_unauthorized": "Ви не авторизовані надсилати з цієї електронної адреси",
     "identity_not_found": "Особа не знайдена",
-    "vacation_saved": "Налаштування автовідповідача збережено",
-    "vacation_save_failed": "Не вдалося зберегти налаштування автовідповідача",
+    "vacation_saved": "Налаштування відсутності збережено",
+    "vacation_save_failed": "Не вдалося зберегти налаштування відсутності",
     "filters_saved": "Фільтри успішно збережено",
     "filters_save_failed": "Не вдалося зберегти фільтри",
     "filters_deleted": "Правило фільтра видалено",
@@ -848,7 +876,8 @@
     "rule_undone": "Зміну правила скасовано",
     "rule_undo_failed": "Не вдалося скасувати зміну правила",
     "rule_undo_conflict": "Ваші фільтри відтоді змінилися. Скасуйте зміну в налаштуваннях фільтрів.",
-    "rule_folder_failed": "Не вдалося створити папку"
+    "rule_folder_failed": "Не вдалося створити папку",
+    "vacation_filters_save_failed": "Налаштування відсутності збережено, але пересилання та отримувачів відповіді зберегти не вдалося"
   },
   "date": {
     "today": "Сьогодні",
@@ -933,7 +962,7 @@
       "privacy": "Конфіденційність і безпека",
       "account": "Обліковий запис",
       "identities": "Ідентичності",
-      "vacation": "Відповідач у відпустці",
+      "vacation": "Відсутність",
       "advanced": "Просунутий",
       "calendar": "Календар",
       "filters": "Фільтри",
@@ -967,7 +996,11 @@
       "default_restored": "Тему за замовчуванням відновлено",
       "default_name": "За замовчуванням",
       "default_badge": "За замовчуванням",
-      "admin_enforced": "Встановлено адміністратором"
+      "admin_enforced": "Встановлено адміністратором",
+      "locked_by_admin": "Theme selection is locked by an administrator.",
+      "default_theme": "Default",
+      "author_bulwark": "Bulwark",
+      "forced_notice": "Theme \"{name}\" is forced by admin and cannot be changed"
     },
     "tab_groups": {
       "general": "Загальний",
@@ -1509,6 +1542,10 @@
         "label": "Попередження про порожню тему",
         "description": "Запитувати підтвердження перед надсиланням листа без теми."
       },
+      "recipient_mentions": {
+        "label": "Згадувати одержувачів через @",
+        "description": "Під час введення @ у тексті листа пропонуються його одержувачі, і вставляється ім'я вибраного. Enter або Tab вибирає виділене ім'я."
+      },
       "hide_inline_image_attachments": {
         "label": "Приховувати вбудовані зображення з вкладень",
         "description": "Зображення, вбудовані в тіло повідомлення, не відображаються як окремі вкладення"
@@ -1603,6 +1640,7 @@
       "auth_method_label": "Аутентифікація",
       "auth_method_oauth": "Єдиний вхід (OAuth/OIDC)",
       "auth_method_basic": "Пароль",
+      "auth_method_token": "Токен доступу",
       "demo_account": "Демо-рахунок",
       "email": {
         "label": "Адреса електронної пошти",
@@ -1805,28 +1843,26 @@
       }
     },
     "vacation": {
-      "title": "Відповідач у відпустці",
-      "description": "Автоматично відповідайте на вхідні листи, поки вас немає",
+      "title": "Відсутність",
+      "description": "Автоматично обробляйте вхідні листи, поки вас немає",
       "loading": "Завантаження налаштувань відпустки...",
       "not_supported": "Ваш поштовий сервер не підтримує відповіді про відпустку.",
       "fetch_error": "Не вдалося завантажити налаштування відпустки. Спробуйте ще раз.",
       "status": {
-        "label": "Відповідач у відпустці",
+        "label": "Відповідати автоматично",
         "description": "Надсилайте автоматичну відповідь людям, які надсилають вам електронні листи",
         "active": "Активний",
         "inactive": "Неактивний"
       },
       "date_range": {
-        "title": "Діапазон дат",
-        "description": "За бажанням можна обмежити автоматичну відповідь певним періодом",
         "start": "Дата початку",
         "start_description": "Залиште пустим, щоб не було обмеження на початок",
         "end": "Дата закінчення",
-        "end_description": "Залиште пустим, щоб не було кінцевого обмеження"
+        "end_description": "Залиште пустим, щоб не було кінцевого обмеження",
+        "title": "Діапазон дат",
+        "description": "За бажанням можна обмежити автоматичну відповідь певним періодом"
       },
       "message": {
-        "title": "Повідомлення автоматичної відповіді",
-        "description": "Повідомлення, яке буде надіслано у відповідь",
         "subject_label": "Тема",
         "subject_description": "Тема автоматичної відповіді",
         "subject_placeholder": "Поза офісом",
@@ -1835,7 +1871,9 @@
         "body_placeholder": "Дякуємо за ваш електронний лист. Мене зараз немає в офісі, я відповім, коли повернуся.",
         "html_label": "Форматоване повідомлення (HTML)",
         "html_description": "Додайте форматовану версію з посиланнями та оформленням. Одержувачі, чий поштовий клієнт не може її показати, побачать звичайний текст вище.",
-        "html_placeholder": "Напишіть форматовану відповідь про відсутність…"
+        "html_placeholder": "Напишіть форматовану відповідь про відсутність…",
+        "title": "Повідомлення автоматичної відповіді",
+        "description": "Повідомлення, яке буде надіслано у відповідь"
       },
       "preview": {
         "title": "Попередній перегляд",
@@ -1846,10 +1884,32 @@
       "saving": "Збереження...",
       "warnings": {
         "end_before_start": "Дата завершення має бути після дати початку",
+        "invalid_date": "Вкажіть дійсні дати початку й закінчення з часом або залиште поле порожнім",
         "start_in_past": "Дата початку в минулому",
         "empty_body": "Тіло повідомлення порожнє - одержувачі отримають порожню відповідь",
         "subject_too_long": "Тема задовга для сервера (не більше {max} байтів).",
-        "body_too_long": "Повідомлення задовге для сервера (не більше {max} байтів разом із форматуванням)."
+        "body_too_long": "Повідомлення задовге для сервера (не більше {max} байтів разом із форматуванням).",
+        "forward_address": "Вкажіть дійсну адресу для пересилання",
+        "not_running": "Пересилання або отримувачів відповіді збережено, але зараз вони не діють. Збережіть, щоб знову їх увімкнути."
+      },
+      "forward": {
+        "title": "Пересилання",
+        "description": "Пересилає вхідні листи на іншу адресу, з автовідповіддю або без неї, у зазначений вище період (без дати завершення, доки пересилання не вимкнуть). Спам не пересилається.",
+        "enabled_label": "Пересилати листи",
+        "to_label": "Переслати до",
+        "to_placeholder": "email@example.com",
+        "keep_label": "Зберігати у вхідних",
+        "keep_description": "Інакше лист лише пересилається: він не залишається в цій поштовій скриньці, і до нього не застосовується жодне правило фільтра."
+      },
+      "audience": {
+        "label": "Відповідати",
+        "description": "Внутрішні відправники: {domains}",
+        "all": "Усім відправникам",
+        "internal": "Лише внутрішнім відправникам",
+        "external": "Лише зовнішнім відправникам"
+      },
+      "auto_reply": {
+        "title": "Автовідповідь"
       }
     },
     "folders": {
@@ -1874,6 +1934,15 @@
       "reorder": "Перетягніть, щоб змінити порядок",
       "reorder_error": "Не вдалося змінити порядок папок",
       "move_error": "Не вдалося перемістити папку",
+      "select_folder": "Вибрати {name}",
+      "select_hint": "Вибрати. Shift+клацання вибирає всі папки до останньої, яку ви клацнули.",
+      "selected_count": "{count, plural, one {Вибрано # папку} few {Вибрано # папки} many {Вибрано # папок} other {Вибрано # папки}}",
+      "move_to": "Перемістити до...",
+      "move_to_top_level": "Верхній рівень",
+      "move": "Перемістити",
+      "clear_selection": "Зняти виділення",
+      "folders_moved": "{count, plural, one {Переміщено # папку} few {Переміщено # папки} many {Переміщено # папок} other {Переміщено # папки}}",
+      "move_partial_error": "{count, plural, one {Не вдалося перемістити # папку} few {Не вдалося перемістити # папки} many {Не вдалося перемістити # папок} other {Не вдалося перемістити # папки}}",
       "subfolder_of": "Всередині {name}",
       "subfolder_name": "Назва вкладеної папки",
       "new_folder_name": "Назва папки",
@@ -1960,7 +2029,34 @@
         "button": "Імпорт"
       },
       "about": {
-        "title": "Оплот веб-пошти"
+        "title": "Оплот веб-пошти",
+        "source_code": "Вихідний код"
+      },
+      "spam_siege": {
+        "title": "Spam Siege",
+        "intro": "Натискайте на спам і фішинг, доки вони не потрапили у вхідні. Справжні листи пропускайте. Втратите всі три щити — вхідні впадуть.",
+        "kinds": {
+          "spam": "Спам",
+          "phishing": "Фішинг",
+          "legit": "Справжній лист"
+        },
+        "click_to_block": "Натисніть, щоб заблокувати",
+        "let_through": "Пропустити",
+        "start": "Почати",
+        "play_again": "Грати ще",
+        "score": "Очки",
+        "combo": "Бонус за серію",
+        "shields_left": "Залишилось щитів: {count} з {total}",
+        "seconds": "{seconds} с",
+        "best": "Рекорд: {score}",
+        "new_best": "Новий рекорд",
+        "held": "Вхідні встояли",
+        "overrun": "Вхідні захоплено",
+        "stats": {
+          "caught": "Заблоковано",
+          "delivered": "Доставлено",
+          "mistakes": "Помилки"
+        }
       }
     },
     "sidebar_apps": {
@@ -2081,7 +2177,8 @@
         "subject": "Тема",
         "header": "Спеціальний заголовок",
         "size": "Розмір",
-        "body": "Тіло"
+        "body": "Тіло",
+        "all": "Усі листи"
       },
       "comparators": {
         "has_any": "присутнє",
@@ -2190,7 +2287,19 @@
       "suggest_list": "List-Id",
       "suggest_domain": "@{domain}",
       "apply_existing": "Застосувати й до листів, які вже є в цій папці",
-      "apply_existing_unsupported": "До наявних листів можна застосувати лише правила, що перевіряють відправника, одержувачів, тему або заголовки й переміщують, копіюють, позначають прочитаними, зірочкою чи міткою."
+      "apply_existing_unsupported": "До наявних листів можна застосувати лише правила, що перевіряють відправника, одержувачів, тему або заголовки й переміщують, копіюють, позначають прочитаними, зірочкою чи міткою.",
+      "period_title": "Діапазон дат",
+      "period_start": "Дата початку",
+      "period_end": "Дата закінчення",
+      "validation_period_order": "Дата завершення має бути після дати початку",
+      "period_toggle": "Активне лише в певний період",
+      "period_hint": "Діє для листів, що надходять у цей період. Залиште поле порожнім, щоб не обмежувати цю межу.",
+      "validation_period_empty": "Вкажіть дату початку або закінчення періоду",
+      "validation_period_invalid": "Вкажіть для періоду дійсну дату з часом або залиште поле порожнім",
+      "apply_existing_period": "Правило з періодом діє лише на листи, що надходять у цей період, тому його не можна застосувати до наявних листів.",
+      "period_status_scheduled": "заплановано",
+      "period_status_active": "активне",
+      "period_status_expired": "завершено"
     },
     "templates": {
       "title": "Шаблони електронної пошти",
@@ -2289,6 +2398,24 @@
     "scoped": {
       "back": "Назад до мого облікового запису",
       "managing": "Керування: {name}"
+    },
+    "plugins": {
+      "title": "Plugins",
+      "description": "Plugins deployed by your administrator. Toggle to enable or disable for your account.",
+      "no_plugins": "No plugins available",
+      "no_plugins_desc": "Your administrator has not deployed any plugins",
+      "syncing": "Syncing plugin policy and managed state...",
+      "forced_by_admin": "Plugin \"{name}\" is forced by admin and cannot be disabled",
+      "requires_approval": "Plugin \"{name}\" requires admin approval before it can be enabled",
+      "enabled_toast": "Plugin \"{name}\" enabled",
+      "disabled_toast": "Plugin \"{name}\" disabled",
+      "forced_badge": "Forced",
+      "managed_badge": "Managed",
+      "awaiting_approval": "Awaiting approval",
+      "forced_desc": "This plugin is forced by an administrator and cannot be disabled.",
+      "awaiting_approval_desc": "This plugin is awaiting admin approval and cannot be enabled until an administrator approves it.",
+      "permissions": "Permissions:",
+      "settings_label": "Settings:"
     }
   },
   "errors": {
@@ -2319,6 +2446,7 @@
     "pin": "Закріпити",
     "unpin": "Відкріпити",
     "move_to": "Перейти до...",
+    "copy_to_account": "Копіювати в обліковий запис...",
     "archive": "Архів",
     "delete": "Видалити",
     "mark_as_spam": "Повідомити про спам",
@@ -2900,6 +3028,10 @@
       "tasks_hint": "Завдання (k)"
     },
     "events": {
+      "hidden_before": "{count, plural, one {# раніша подія} few {# раніші події} many {# раніших подій} other {# раніших події}}",
+      "hidden_after": "{count, plural, one {# пізніша подія} few {# пізніші події} many {# пізніших подій} other {# пізніших події}}",
+      "show_all_hours": "Показати всі години",
+      "show_display_hours": "Показати лише {start} – {end}",
       "create": "Створити подію",
       "edit": "Редагувати подію",
       "delete": "Видалити подію",
@@ -3059,6 +3191,14 @@
       "unit": "Одиниця нагадування"
     },
     "settings": {
+      "limit_hours": "Обмежити видимі години",
+      "limit_hours_desc": "Показувати в поданнях дня і тижня лише ці години. Події поза ними доступні через стрілки вгорі та внизу кожного дня.",
+      "visible_hours": "Видимі години",
+      "visible_hours_start": "Початок видимих годин",
+      "visible_hours_end": "Кінець видимих годин",
+      "hide_non_working_days": "Приховувати неробочі дні",
+      "hide_non_working_days_desc": "Не показувати в поданні тижня дні, коли ви не працюєте. Їхні події й далі видно в поданнях місяця, дня та порядку денного.",
+      "working_days": "Робочі дні",
       "title": "Налаштування календаря",
       "default_view": "Перегляд за замовчуванням",
       "week_starts_on": "Тиждень починається о",
@@ -3749,5 +3889,37 @@
     "preview_empty": "Виберіть результат для перегляду",
     "open_full": "Відкрити",
     "view_label": "Вигляд"
+  },
+  "register": {
+    "title": "Create Email Account",
+    "subtitle": "Join using your registration invite code",
+    "invite_code_label": "Invite Code",
+    "invite_code_placeholder": "e.g. INV-88F2A-991",
+    "email_label": "Email Address",
+    "username_placeholder": "username",
+    "display_name_label": "Name",
+    "display_name_optional": "(optional)",
+    "display_name_placeholder": "defaults to username(email prefix)",
+    "password_label": "Password",
+    "password_placeholder": "At least 8 characters",
+    "confirm_password_label": "Confirm Password",
+    "confirm_password_placeholder": "Re-enter your password",
+    "submit_button": "Register Account",
+    "submitting": "Creating Account...",
+    "success_title": "Registration Successful!",
+    "success_subtitle": "Your new email account has been created:",
+    "proceed_to_login": "Proceed to Login",
+    "already_have_account": "Already have an account?",
+    "login_link": "Log In",
+    "have_invite_code": "Have an invite code?",
+    "register_link": "Register Account",
+    "error": {
+      "invite_required": "Please enter a valid invite code.",
+      "username_required": "Please enter a username.",
+      "username_invalid": "Username contains invalid characters (letters, numbers, dot, dash, underscore only).",
+      "password_required": "Please enter a password.",
+      "password_short": "Password must be at least 8 characters.",
+      "password_mismatch": "Passwords do not match."
+    }
   }
 }

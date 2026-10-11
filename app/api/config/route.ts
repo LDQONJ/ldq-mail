@@ -4,6 +4,7 @@ import { configManager } from '@/lib/admin/config-manager';
 import { parseJmapServers, redactJmapServers } from '@/lib/admin/jmap-servers';
 import { hasSessionSecret } from '@/lib/auth/session-secret';
 import { getOauthScopes } from '@/lib/oauth/tokens';
+import { httpUrlOrEmpty } from '@/lib/config-validation';
 import {
   matchDomainBranding,
   parseDomainBranding,
@@ -83,6 +84,7 @@ export async function GET(request: NextRequest) {
       loginShowHeading: configManager.get<boolean>('loginShowHeading', true),
       loginShowSubtitle: configManager.get<boolean>('loginShowSubtitle', true),
       loginShowTotp: configManager.get<boolean>('loginShowTotp', true),
+      loginShowTokenLogin: configManager.get<boolean>('loginShowTokenLogin', false),
       loginShowVersion: configManager.get<boolean>('loginShowVersion', true),
       demoMode: configManager.get<boolean>('demoMode', false),
       allowCustomJmapEndpoint: configManager.get<boolean>('allowCustomJmapEndpoint', false),
@@ -94,6 +96,7 @@ export async function GET(request: NextRequest) {
       autoSsoEnabled: configManager.get<boolean>('autoSsoEnabled', false),
       embeddedMode: !!allowedFrameAncestors && allowedFrameAncestors !== "'none'",
       parentOrigin: configManager.get<string>('parentOrigin', ''),
+      sourceCodeUrl: httpUrlOrEmpty(configManager.get<string>('sourceCodeUrl', '')),
     },
     {
       // Runtime settings can change without new asset URLs. Prevent stale

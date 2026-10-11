@@ -568,8 +568,9 @@ export async function enableWebPush(
       }
       await params.client.destroyPushSubscription(storedServerId).catch(() => undefined);
     }
-    localStorage.removeItem(subIdKey);
-    localStorage.removeItem(subscriptionIdKey(params.client.getAccountId()));
+    // The stored id stays until the replacement is verified below: it is
+    // what tells resyncWebPush this account opted in, so dropping it here
+    // would end recovery for good after one interrupted attempt.
   }
 
   // Reap leftover subscriptions that would otherwise starve the new one's
@@ -795,6 +796,8 @@ export async function isWebPushEnabled(target?: IJMAPClient | string): Promise<b
 // clamps `expires` to 7 days, so a tab or installed app left open for a
 // week would otherwise let the subscription lapse and push stop silently.
 const RESYNC_INTERVAL_MS = 24 * 60 * 60 * 1000;
+// After a failed attempt: soon again, but not on every return to the tab.
+const RESYNC_RETRY_MS = 15 * 60 * 1000;
 const lastResyncAt = new Map<string, number>();
 
 export interface ResyncWebPushParams {
@@ -808,7 +811,7 @@ export interface ResyncWebPushParams {
 /**
  * Bring an already-enabled push registration up to date without any user
  * action: refresh its expiry and install/repair the delivery filter. Nothing
- * here can prompt - it only runs when push is already on for the account -
+ * here can prompt - it requires a saved opt-in and granted permission -
  * and every failure is swallowed because the app must not care whether the
  * background touch-up worked. Returns true when a re-sync actually ran.
  */
@@ -818,7 +821,16 @@ export async function resyncWebPush(params: ResyncWebPushParams): Promise<boolea
   const last = lastResyncAt.get(accountKey);
   if (last !== undefined && Date.now() - last < RESYNC_INTERVAL_MS) return false;
   try {
-    if (!(await isWebPushEnabled(params.client))) return false;
+    // The browser may have lost its endpoint while our saved opt-in and
+    // server registration survived. Recreate it through the normal enable
+    // flow instead of skipping the account in that state, which is what
+    // isWebPushEnabled (it requires a live browser subscription) would do.
+    const rawAccountId = typeof params.client?.getAccountId === 'function' ? params.client.getAccountId() : null;
+    const hasSavedSub = Boolean(
+      localStorage.getItem(subscriptionIdKey(accountKey))
+      || (rawAccountId && localStorage.getItem(subscriptionIdKey(rawAccountId)))
+    );
+    if (!isWebPushSupported() || Notification.permission !== 'granted' || !hasSavedSub) return false;
     lastResyncAt.set(accountKey, Date.now());
     const clientUsername = typeof params.client?.getUsername === 'function' ? params.client.getUsername() : undefined;
     await enableWebPush({
@@ -829,6 +841,9 @@ export async function resyncWebPush(params: ResyncWebPushParams): Promise<boolea
     });
     return true;
   } catch {
+    // A failed attempt must not wait a day for the next one, nor rerun the
+    // whole enable on every tab focus.
+    lastResyncAt.set(accountKey, Date.now() - RESYNC_INTERVAL_MS + RESYNC_RETRY_MS);
     return false;
   }
 }

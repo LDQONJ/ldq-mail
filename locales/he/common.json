@@ -14,17 +14,24 @@
     "reconnecting": "החיבור אבד. מנסה להתחבר מחדש...",
     "error": {
       "invalid_credentials": "אימייל או סיסמה לא חוקיים. אנא בדוק את האישורים שלך ונסה שוב.",
+      "invalid_token": "השרת לא קיבל את אסימון הגישה הזה. בדוק שהוא הועתק במלואו, שתוקפו לא פג ושהוא לא בוטל.",
       "connection_failed": "לא ניתן להגיע לשרת. בדוק את חיבור האינטרנט שלך ונסה שוב.",
       "cors_blocked": "השרת נגיש אך חוסם בקשות חוצות מוצא. בדוק את הגדרות CORS של שרת ה-JMAP שלך ואפשר את הדומיין הזה.",
       "server_error": "השרת אינו זמין באופן זמני. אנא נסה שוב מאוחר יותר.",
       "generic": "אירעה שגיאה בלתי צפויה. אם זה נמשך, פנה למנהל המערכת שלך.",
       "totp_required": "נדרש קוד אימות דו-גורמי. אנא הזן את הקוד שלך למטה.",
       "totp_invalid": "קוד אימות לא חוקי. בדוק את אפליקציית המאמת שלך ונסה שוב.",
-      "oauth_discovery_failed": "SSO מופעל אך לא ניתן היה להשיג את ספק הזהות. בדוק את תצורת ה-OAuth שלך."
+      "oauth_discovery_failed": "SSO מופעל אך לא ניתן היה להשיג את ספק הזהות. בדוק את תצורת ה-OAuth שלך.",
+      "token_exchange_failed": "הסיסמה והקוד התקבלו, אך שרת הדואר סירב לפתוח הפעלה עבור האפליקציה הזו. בקשו ממנהל המערכת לבדוק את הגדרות לקוח ה-OAuth."
     },
     "show_password": "הצג סיסמה",
     "hide_password": "הסתר את הסיסמה",
     "totp_toggle": "יש לי קוד 2FA",
+    "token_toggle": "כניסה באמצעות אסימון גישה",
+    "password_toggle": "כניסה באמצעות סיסמה",
+    "token_label": "אסימון גישה",
+    "token_placeholder": "הדבק את אסימון ה-API שלך",
+    "token_hint": "צור אסימון API בהגדרות של ספק הדואר שלך והדבק אותו כאן.",
     "remember_me": "תזכור אותי",
     "config_error": {
       "title": "שגיאת תצורה",
@@ -60,7 +67,9 @@
       "back_to_login": "חזרה לכניסה"
     },
     "jmap_server_label": "שרת",
-    "jmap_server_auto_picked": "שרת שנבחר מדומיין הדוא״ל שלך."
+    "jmap_server_auto_picked": "שרת שנבחר מדומיין הדוא״ל שלך.",
+    "have_invite_code": "Have an invite code?",
+    "register_link": "Register Account"
   },
   "sidebar": {
     "unified_mailbox": "תיבת דואר מאוחדת",
@@ -136,6 +145,7 @@
     "unified_archive": "הכל ארכיון",
     "unified_junk": "הכל דואר זבל",
     "all_accounts": "כל החשבונות",
+    "all_accounts_loading": "טוען חשבונות: {loaded} מתוך {total}",
     "shared": "משותף",
     "scheduled": "מתוכננים",
     "unified_all_unread": "הכל שלא נקראו",
@@ -284,6 +294,15 @@
     "external_content_warning": "תמונות ותוכן חיצוני נחסמו",
     "load_external_content": "טען תמונות",
     "trust_sender": "בטח תמיד בשולח הזה",
+    "sender_check": {
+      "unverified_label": "שולח לא מאומת",
+      "failed_label": "בדיקת השולח נכשלה",
+      "unverified": "ההודעה הזו טוענת שהיא מהדומיין {domain}, אבל שום דבר לא מאשר זאת. אין בה חתימה תקפה של {domain} והיא לא הגיעה משרת שמורשה על ידי {domain}.",
+      "unverified_sent_from": "ההודעה הזו טוענת שהיא מהדומיין {domain}, אבל היא נשלחה מהדומיין {host} ואין בה חתימה תקפה של {domain}.",
+      "failed": "ההודעה הזו טוענת שהיא מהדומיין {domain}, אבל היא נכשלה בבדיקות השולח של הדומיין הזה. ייתכן שהיא מזויפת.",
+      "failed_sent_from": "ההודעה הזו טוענת שהיא מהדומיין {domain}, אבל היא נשלחה מהדומיין {host} ונכשלה בבדיקות השולח של {domain}. ייתכן שהיא מזויפת.",
+      "caution": "היזהר מקישורים, מקבצים מצורפים ומבקשות לסיסמאות או לפרטי תשלום."
+    },
     "back_to_list": "חזרה לרשימה",
     "view_contact": "הצג איש קשר",
     "message_details": "פרטי הודעה",
@@ -641,6 +660,12 @@
     "require_tls_off": "דרישת מסירה מוצפנת (TLS)",
     "attach_photos": "תמונות וסרטונים",
     "attach_files": "קבצים",
+    "attach_from_files": "צירוף מקבצים",
+    "files_picker": {
+      "attach": "{count, plural, =0 {צירוף} one {צירוף קובץ 1} other {צירוף # קבצים}}",
+      "empty_folder": "התיקייה הזו ריקה",
+      "load_failed": "לא ניתן היה לטעון את הקבצים שלך"
+    },
     "sending": "שולח…",
     "add_link": "הוסף קישור",
     "link_url_prompt": "הזן את כתובת ה־URL",
@@ -683,6 +708,7 @@
     "recipient_name_placeholder": "שם תצוגה",
     "autocomplete_search_server": "חיפוש בשרת",
     "autocomplete_searching": "מחפש...",
+    "mention_recipients": "נמענים",
     "toolbar": {
       "bold": "מודגש",
       "italic": "נטוי",
@@ -777,6 +803,8 @@
     "emails_moved": "דוא\"ל{count}הועברו",
     "moved_to_mailbox": "הועבר אל{mailbox}",
     "move_failed": "המהלך נכשל",
+    "emails_copied": "{count} הודעות הועתקו",
+    "copy_failed": "ההעתקה נכשלה",
     "move_error": "לא ניתן היה להעביר הודעות דוא\"ל לתיקיה שנבחרה",
     "email_tagged": "אימייל מתויג",
     "emails_tagged": "דוא\"ל{count}מתויג",
@@ -790,8 +818,8 @@
     "identity_delete_failed": "מחיקת הזהות נכשלה:{error}",
     "identity_unauthorized": "אינך מורשה לשלוח מכתובת דוא\"ל זו",
     "identity_not_found": "זהות לא נמצאה",
-    "vacation_saved": "הגדרות משיב חופשה נשמרו",
-    "vacation_save_failed": "שמירת הגדרות משיב חופשה נכשלה",
+    "vacation_saved": "הגדרות ההיעדרות נשמרו",
+    "vacation_save_failed": "שמירת הגדרות ההיעדרות נכשלה",
     "filters_saved": "המסננים נשמרו בהצלחה",
     "filters_save_failed": "שמירת המסננים נכשלה",
     "filters_deleted": "כלל הסינון נמחק",
@@ -813,7 +841,8 @@
     "rule_undone": "שינוי הכלל בוטל",
     "rule_undo_failed": "לא ניתן היה לבטל את שינוי הכלל",
     "rule_undo_conflict": "המסננים שלך השתנו מאז. בטל את השינוי בהגדרות המסננים.",
-    "rule_folder_failed": "לא ניתן היה ליצור את התיקייה"
+    "rule_folder_failed": "לא ניתן היה ליצור את התיקייה",
+    "vacation_filters_save_failed": "הגדרות ההיעדרות נשמרו, אך שמירת ההעברה ונמעני המענה נכשלה"
   },
   "date": {
     "today": "היום",
@@ -898,7 +927,7 @@
       "privacy": "פרטיות ואבטחה",
       "account": "חשבון",
       "identities": "זהויות",
-      "vacation": "משיב נופש",
+      "vacation": "היעדרות",
       "advanced": "מתקדם",
       "calendar": "לוּחַ שָׁנָה",
       "filters": "מסננים",
@@ -932,7 +961,11 @@
       "default_restored": "ערכת הנושא המוגדרת כברירת מחדל שוחזרה",
       "default_name": "ברירת מחדל",
       "default_badge": "ברירת מחדל",
-      "admin_enforced": "נאכף על ידי המנהל"
+      "admin_enforced": "נאכף על ידי המנהל",
+      "locked_by_admin": "Theme selection is locked by an administrator.",
+      "default_theme": "Default",
+      "author_bulwark": "Bulwark",
+      "forced_notice": "Theme \"{name}\" is forced by admin and cannot be changed"
     },
     "tab_groups": {
       "general": "כללי",
@@ -1474,6 +1507,10 @@
         "label": "אזהרה על נושא ריק",
         "description": "בקש אישור לפני שליחת הודעה ללא נושא."
       },
+      "recipient_mentions": {
+        "label": "אזכור נמענים עם @",
+        "description": "הקלדת @ בהודעה מציעה את הנמענים ומכניסה את השם הפרטי של הנמען שנבחר. Enter או Tab בוחרים את השם המסומן."
+      },
       "hide_inline_image_attachments": {
         "label": "הסתר תמונות מוטבעות מקבצים מצורפים",
         "description": "תמונות מוטבעות בגוף ההודעה אינן מופיעות כקבצים מצורפים נפרדים"
@@ -1568,6 +1605,7 @@
       "auth_method_label": "אימות",
       "auth_method_oauth": "כניסה יחידה (OAuth/OIDC)",
       "auth_method_basic": "סִיסמָה",
+      "auth_method_token": "אסימון גישה",
       "demo_account": "חשבון הדגמה",
       "email": {
         "label": "כתובת אימייל",
@@ -1770,28 +1808,26 @@
       }
     },
     "vacation": {
-      "title": "משיב נופש",
-      "description": "הגב באופן אוטומטי להודעות דוא״ל נכנסות בזמן שאתה רחוק",
+      "title": "היעדרות",
+      "description": "טפל באופן אוטומטי בהודעות דוא״ל נכנסות בזמן שאתה רחוק",
       "loading": "טוען הגדרות חופשה...",
       "not_supported": "שרת הדואר שלך אינו תומך בתגובות חופשה.",
       "fetch_error": "טעינת הגדרות החופשה נכשלה. אנא נסה שוב.",
       "status": {
-        "label": "משיב נופש",
+        "label": "שליחת מענה אוטומטי",
         "description": "שלח תשובה אוטומטית לאנשים ששלחו לך דוא\"ל",
         "active": "פעיל",
         "inactive": "לא פעיל"
       },
       "date_range": {
-        "title": "טווח תאריכים",
-        "description": "אפשר להגביל את המענה האוטומטי לתקופה מסוימת",
         "start": "תאריך התחלה",
         "start_description": "השאר ריק ללא מגבלת התחלה",
         "end": "תאריך סיום",
-        "end_description": "השאר ריק ללא הגבלה"
+        "end_description": "השאר ריק ללא הגבלה",
+        "title": "טווח תאריכים",
+        "description": "אפשר להגביל את המענה האוטומטי לתקופה מסוימת"
       },
       "message": {
-        "title": "הודעת תשובה אוטומטית",
-        "description": "ההודעה שתישלח כתשובה",
         "subject_label": "נושא",
         "subject_description": "שורת הנושא של התשובה האוטומטית",
         "subject_placeholder": "מחוץ למשרד",
@@ -1800,7 +1836,9 @@
         "body_placeholder": "תודה על המייל שלך. אני כרגע מחוץ למשרד ואענה כשאחזור.",
         "html_label": "הודעה מעוצבת (HTML)",
         "html_description": "הוסיפו גרסה מעוצבת עם קישורים וסגנון. נמענים שתוכנת הדוא״ל שלהם אינה יכולה להציג אותה יראו את הטקסט הרגיל שלמעלה.",
-        "html_placeholder": "כתבו תשובת היעדרות מעוצבת…"
+        "html_placeholder": "כתבו תשובת היעדרות מעוצבת…",
+        "title": "הודעת תשובה אוטומטית",
+        "description": "ההודעה שתישלח כתשובה"
       },
       "preview": {
         "title": "תצוגה מקדימה",
@@ -1811,10 +1849,32 @@
       "saving": "שומר...",
       "warnings": {
         "end_before_start": "תאריך הסיום חייב להיות אחרי תאריך ההתחלה",
+        "invalid_date": "יש להזין תאריך התחלה וסיום תקינים עם שעה, או להשאיר את השדה ריק",
         "start_in_past": "תאריך ההתחלה הוא בעבר",
         "empty_body": "גוף ההודעה ריק - הנמענים יקבלו תשובה ריקה",
         "subject_too_long": "הנושא ארוך מדי עבור השרת (לכל היותר {max} בתים).",
-        "body_too_long": "ההודעה ארוכה מדי עבור השרת (לכל היותר {max} בתים, כולל עיצוב)."
+        "body_too_long": "ההודעה ארוכה מדי עבור השרת (לכל היותר {max} בתים, כולל עיצוב).",
+        "forward_address": "יש להזין כתובת תקינה להעברה",
+        "not_running": "ההעברה או נמעני המענה שמורים אך אינם פעילים כרגע. יש לשמור כדי להפעיל אותם מחדש."
+      },
+      "forward": {
+        "title": "העברה",
+        "description": "מעביר הודעות נכנסות לכתובת אחרת, עם מענה אוטומטי או בלעדיו, בטווח הזמן שלמעלה (ללא תאריך סיום, עד שיכובה). דואר זבל אינו מועבר.",
+        "enabled_label": "העברת הודעות",
+        "to_label": "העבר אל",
+        "to_placeholder": "email@example.com",
+        "keep_label": "שמור בתיבת הדואר הנכנס",
+        "keep_description": "אחרת ההודעה רק מועברת: היא לא נשמרת בתיבת דואר זו, ואף כלל סינון לא חל עליה."
+      },
+      "audience": {
+        "label": "להשיב אל",
+        "description": "שולחים פנימיים: {domains}",
+        "all": "כל השולחים",
+        "internal": "שולחים פנימיים בלבד",
+        "external": "שולחים חיצוניים בלבד"
+      },
+      "auto_reply": {
+        "title": "מענה אוטומטי"
       }
     },
     "folders": {
@@ -1838,6 +1898,15 @@
       "reorder": "גרור לשינוי הסדר",
       "reorder_error": "שינוי סדר התיקיות נכשל",
       "move_error": "העברת התיקייה נכשלה",
+      "select_folder": "בחירת {name}",
+      "select_hint": "בחירה. Shift+לחיצה בוחרת את כל התיקיות עד האחרונה שלחצת עליה.",
+      "selected_count": "{count, plural, one {נבחרה תיקייה #} other {נבחרו # תיקיות}}",
+      "move_to": "העברה אל...",
+      "move_to_top_level": "רמה עליונה",
+      "move": "העברה",
+      "clear_selection": "ניקוי הבחירה",
+      "folders_moved": "{count, plural, one {תיקייה # הועברה} other {# תיקיות הועברו}}",
+      "move_partial_error": "{count, plural, one {לא ניתן היה להעביר תיקייה #} other {לא ניתן היה להעביר # תיקיות}}",
       "subfolder_of": "בתוך{name}",
       "subfolder_name": "שם תיקיית משנה",
       "new_folder_name": "שם התיקיה",
@@ -1922,7 +1991,34 @@
         "button": "ייבוא"
       },
       "about": {
-        "title": "Bulwark Webmail"
+        "title": "Bulwark Webmail",
+        "source_code": "קוד מקור"
+      },
+      "spam_siege": {
+        "title": "Spam Siege",
+        "intro": "לחצו על ספאם ופישינג לפני שהם מגיעים לתיבת הדואר הנכנס. תנו לדואר אמיתי לעבור. אם תאבדו את שלושת המגנים, התיבה נופלת.",
+        "kinds": {
+          "spam": "ספאם",
+          "phishing": "פישינג",
+          "legit": "דואר אמיתי"
+        },
+        "click_to_block": "לחצו לחסימה",
+        "let_through": "תנו לעבור",
+        "start": "התחלה",
+        "play_again": "משחק חוזר",
+        "score": "ניקוד",
+        "combo": "בונוס רצף",
+        "shields_left": "נותרו {count} מתוך {total} מגנים",
+        "seconds": "{seconds} ש׳",
+        "best": "שיא: {score}",
+        "new_best": "שיא חדש",
+        "held": "התיבה הוגנה",
+        "overrun": "התיבה נפרצה",
+        "stats": {
+          "caught": "נחסמו",
+          "delivered": "נמסרו",
+          "mistakes": "טעויות"
+        }
       },
       "show_avatars_in_junk": {
         "label": "הצג אווטרים בתיקייה זבל",
@@ -2001,7 +2097,8 @@
         "header": "כותרת מותאמת אישית",
         "size": "גודל",
         "body": "גוף",
-        "attachment": "קובץ מצורף"
+        "attachment": "קובץ מצורף",
+        "all": "כל ההודעות"
       },
       "comparators": {
         "contains": "מכיל",
@@ -2112,7 +2209,19 @@
       "suggest_list": "List-Id",
       "suggest_domain": "@{domain}",
       "apply_existing": "החל גם על הודעות שכבר נמצאות בתיקייה זו",
-      "apply_existing_unsupported": "אפשר להחיל על הודעות קיימות רק כללים שבודקים שולח, נמענים, נושא או כותרות, ושמעבירים, מעתיקים, מסמנים כנקרא, בכוכב או בתווית."
+      "apply_existing_unsupported": "אפשר להחיל על הודעות קיימות רק כללים שבודקים שולח, נמענים, נושא או כותרות, ושמעבירים, מעתיקים, מסמנים כנקרא, בכוכב או בתווית.",
+      "period_title": "טווח תאריכים",
+      "period_start": "תאריך התחלה",
+      "period_end": "תאריך סיום",
+      "validation_period_order": "תאריך הסיום חייב להיות אחרי תאריך ההתחלה",
+      "period_toggle": "פעיל רק בטווח זמן מסוים",
+      "period_hint": "חל על הודעות שמגיעות בטווח זה. השאירו שדה ריק כדי להשאיר את הקצה הזה פתוח.",
+      "validation_period_empty": "יש להזין תאריך התחלה או סיום לטווח",
+      "validation_period_invalid": "יש להזין תאריך תקין עם שעה לטווח, או להשאיר את השדה ריק",
+      "apply_existing_period": "כלל עם טווח זמן פועל רק על הודעות שמגיעות בתוכו, ולכן לא ניתן להחיל אותו על הודעות קיימות.",
+      "period_status_scheduled": "מתוזמן",
+      "period_status_active": "פעיל",
+      "period_status_expired": "פג תוקף"
     },
     "templates": {
       "title": "תבניות דואר אלקטרוני",
@@ -2255,6 +2364,24 @@
         "archive": "העבר לארכיון",
         "trash": "העבר לאשפה"
       }
+    },
+    "plugins": {
+      "title": "Plugins",
+      "description": "Plugins deployed by your administrator. Toggle to enable or disable for your account.",
+      "no_plugins": "No plugins available",
+      "no_plugins_desc": "Your administrator has not deployed any plugins",
+      "syncing": "Syncing plugin policy and managed state...",
+      "forced_by_admin": "Plugin \"{name}\" is forced by admin and cannot be disabled",
+      "requires_approval": "Plugin \"{name}\" requires admin approval before it can be enabled",
+      "enabled_toast": "Plugin \"{name}\" enabled",
+      "disabled_toast": "Plugin \"{name}\" disabled",
+      "forced_badge": "Forced",
+      "managed_badge": "Managed",
+      "awaiting_approval": "Awaiting approval",
+      "forced_desc": "This plugin is forced by an administrator and cannot be disabled.",
+      "awaiting_approval_desc": "This plugin is awaiting admin approval and cannot be enabled until an administrator approves it.",
+      "permissions": "Permissions:",
+      "settings_label": "Settings:"
     }
   },
   "errors": {
@@ -2285,6 +2412,7 @@
     "pin": "הצמד",
     "unpin": "בטל הצמדה",
     "move_to": "העבר ל...",
+    "copy_to_account": "העתק לחשבון...",
     "archive": "ארכיון",
     "delete": "לִמְחוֹק",
     "mark_as_spam": "דווח על ספאם",
@@ -2422,7 +2550,7 @@
       "use_address": "השתמש בכתובת זו",
       "invalid_tag": "התג חייב להיות אלפאנומרי ומקפים בלבד",
       "tag_too_long": "התג חייב להכיל 30 תווים או פחות",
-      "help_text": "הודעות דוא\"ל שנשלחות אלuser+tag@domain.comיגיעו לתיבת הדואר הנכנס שלך",
+      "help_text": "הודעות דוא\"ל שנשלחות אל user{delimiter}tag@domain.com יגיעו לתיבת הדואר הנכנס שלך",
       "validation": {
         "empty": "התג לא יכול להיות ריק",
         "too_long": "התג חייב להיות{max}תווים או פחות",
@@ -2824,6 +2952,10 @@
       "tasks_hint": "משימות (ק)"
     },
     "events": {
+      "hidden_before": "{count, plural, one {אירוע מוקדם יותר אחד} other {# אירועים מוקדמים יותר}}",
+      "hidden_after": "{count, plural, one {אירוע מאוחר יותר אחד} other {# אירועים מאוחרים יותר}}",
+      "show_all_hours": "הצגת כל השעות",
+      "show_display_hours": "הצגת {start} – {end} בלבד",
       "create": "צור אירוע",
       "edit": "ערוך אירוע",
       "delete": "מחק את האירוע",
@@ -2983,6 +3115,14 @@
       "unit": "יחידת תזכורת"
     },
     "settings": {
+      "limit_hours": "הגבלת השעות המוצגות",
+      "limit_hours_desc": "הצגת שעות אלה בלבד בתצוגת היום והשבוע. אירועים מחוץ להן נשארים נגישים דרך החצים בראש ובתחתית כל יום.",
+      "visible_hours": "שעות מוצגות",
+      "visible_hours_start": "תחילת השעות המוצגות",
+      "visible_hours_end": "סוף השעות המוצגות",
+      "hide_non_working_days": "הסתרת ימים שאינם ימי עבודה",
+      "hide_non_working_days_desc": "השמטת הימים שבהם אינך עובד/ת מתצוגת השבוע. האירועים שלהם עדיין מופיעים בתצוגות החודש, היום וסדר היום.",
+      "working_days": "ימי עבודה",
       "title": "הגדרות לוח שנה",
       "default_view": "תצוגת ברירת מחדל",
       "week_starts_on": "השבוע מתחיל ב",
@@ -3750,5 +3890,37 @@
     "preview_empty": "בחרו תוצאה לתצוגה מקדימה",
     "open_full": "פתיחה",
     "view_label": "תצוגה"
+  },
+  "register": {
+    "title": "Create Email Account",
+    "subtitle": "Join using your registration invite code",
+    "invite_code_label": "Invite Code",
+    "invite_code_placeholder": "e.g. INV-88F2A-991",
+    "email_label": "Email Address",
+    "username_placeholder": "username",
+    "display_name_label": "Name",
+    "display_name_optional": "(optional)",
+    "display_name_placeholder": "defaults to username(email prefix)",
+    "password_label": "Password",
+    "password_placeholder": "At least 8 characters",
+    "confirm_password_label": "Confirm Password",
+    "confirm_password_placeholder": "Re-enter your password",
+    "submit_button": "Register Account",
+    "submitting": "Creating Account...",
+    "success_title": "Registration Successful!",
+    "success_subtitle": "Your new email account has been created:",
+    "proceed_to_login": "Proceed to Login",
+    "already_have_account": "Already have an account?",
+    "login_link": "Log In",
+    "have_invite_code": "Have an invite code?",
+    "register_link": "Register Account",
+    "error": {
+      "invite_required": "Please enter a valid invite code.",
+      "username_required": "Please enter a username.",
+      "username_invalid": "Username contains invalid characters (letters, numbers, dot, dash, underscore only).",
+      "password_required": "Please enter a password.",
+      "password_short": "Password must be at least 8 characters.",
+      "password_mismatch": "Passwords do not match."
+    }
   }
 }
