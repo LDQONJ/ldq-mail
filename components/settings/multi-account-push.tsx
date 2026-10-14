@@ -47,11 +47,17 @@ export function MultiAccountPushSettings({ relayBaseUrl }: { relayBaseUrl?: stri
 
   const refresh = useCallback(async () => {
     // Push state is stored under the JMAP account id the server assigned (see
-    // enableWebPush), not under the login's own id: read it back the same way.
+    // enableWebPush), or scoped username@host under multi-domain Stalwart setups.
+    // Try jmapAccountId first, and fall back to the client object so scoped keys resolve.
     const entries = await Promise.all(
       useAccountStore.getState().accounts.map(async (a) => {
-        const jmapAccountId = useAuthStore.getState().getClientForAccount(a.id)?.getAccountId();
-        return [a.id, jmapAccountId ? await isWebPushEnabled(jmapAccountId) : false] as const;
+        const client = useAuthStore.getState().getClientForAccount(a.id);
+        const jmapAccountId = client?.getAccountId();
+        let isOn = jmapAccountId ? await isWebPushEnabled(jmapAccountId) : false;
+        if (!isOn && client) {
+          isOn = await isWebPushEnabled(client);
+        }
+        return [a.id, isOn] as const;
       }),
     );
     setEnabled(Object.fromEntries(entries));
