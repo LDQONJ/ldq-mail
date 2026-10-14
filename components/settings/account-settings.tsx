@@ -15,6 +15,9 @@ import { useRouter } from '@/i18n/navigation';
 import { getMaxAccounts } from '@/lib/account-utils';
 import { formatFileSize, cn } from '@/lib/utils';
 import { toUnicodeEmail } from '@/lib/idn';
+import { IS_LITE } from '@/lib/lite';
+import { usePolicyStore } from '@/stores/policy-store';
+import { AccountArchiveSettings } from './account-archive-settings';
 
 // First scoped settings tab to land on for a shared account, by capability.
 // Mirrors the scoped-tab gating in the settings page. null = nothing editable.
@@ -34,6 +37,7 @@ export function AccountSettings() {
   const activeAccountId = useAuthStore((s) => s.activeAccountId);
   const switchAccount = useAuthStore((s) => s.switchAccount);
   const setManagedAccount = useManagedAccountStore((s) => s.setManagedAccount);
+  const archiveEnabled = usePolicyStore((s) => s.isFeatureEnabled('accountArchiveEnabled')) && !IS_LITE && !isDemoMode;
 
   // Shared/group accounts delegated to this session (excludes the user's own
   // primary account). These can be drilled into for scoped settings editing.
@@ -223,6 +227,8 @@ export function AccountSettings() {
           </div>
         </SettingsSection>
       )}
+
+      {archiveEnabled && <AccountArchiveSettings />}
 
       {/* Shared / group accounts delegated to this session. Clicking one drills
           into a scoped settings view (filters, vacation, calendars, contacts). */}

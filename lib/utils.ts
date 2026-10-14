@@ -5,7 +5,7 @@ import type { UnifiedMailboxRole } from "./jmap/types";
 import { debug } from "./debug";
 import { getEffectiveLocale } from '@/i18n/detect-locale';
 import { useSettingsStore } from "@/stores/settings-store";
-import type { DateLocale } from "@/stores/settings-store";
+import type { DateFormat, DateLocale } from "@/stores/settings-store";
 import { getEffectiveTimeZone, getWallClock } from "./timezone";
 
 export function cn(...inputs: ClassValue[]) {
@@ -78,6 +78,8 @@ function resolveDateLocale<T extends string | undefined>(
  *       today        → time only           ("15:31" or "3:31 PM")
  *       last 7 days  → short weekday+time  ("Fr 15:31", "Fri 3:31 PM")
  *       older        → full locale date    ("28.04.2026", "04/28/2026")
+ *       With `listStyle: 'mountain-view'` the buckets are Gmail's instead:
+ *       today → time, this year → "Oct 10", older → "10/10/25".
  *   - `relative` — legacy en-US relative format ("1h ago", "2d ago").
  *   - `full` — always the full locale date+time.
  *
@@ -94,7 +96,11 @@ function resolveDateLocale<T extends string | undefined>(
  * bucketing - a browser pinned to UTC for anti-fingerprinting must not
  * roll a 00:30 local mail into "yesterday" (#755).
  */
-export function formatDate(date: Date | string): string {
+export function formatDate(
+  date: Date | string,
+  // Settings preview: render as if these were picked, without saving them.
+  overrides?: { dateFormat?: DateFormat; dateLocale?: DateLocale; listStyle?: 'mountain-view' },
+): string {
   const d = typeof date === "string" ? new Date(date) : date;
   // An unparsable receivedAt (e.g. a 5-digit year) makes Intl throw
   // "RangeError: Invalid time value" and takes the whole list down with it.
@@ -107,7 +113,7 @@ export function formatDate(date: Date | string): string {
   // en-US in Intl; everything else uses the language subtag as-is and lets
   // the runtime pick a sensible default region.
   const uiLocale = locale === "en" ? "en-US" : locale;
-  const { dateFormat, dateLocale, timeFormat } = useSettingsStore.getState();
+  const { dateFormat, dateLocale, timeFormat } = { ...useSettingsStore.getState(), ...overrides };
   // Numeric dates additionally honour the regional `dateLocale` override
   // (defaults to `auto` = the UI language, preserving prior behaviour). (#456)
   const numericLocale = resolveDateLocale(dateLocale, uiLocale);
@@ -162,6 +168,13 @@ export function formatDate(date: Date | string): string {
     dWall.month === nowWall.month &&
     dWall.day === nowWall.day;
   if (isSameDay) return timeStr;
+
+  if (overrides?.listStyle === 'mountain-view') {
+    if (dWall.year === nowWall.year) {
+      return d.toLocaleDateString(uiLocale, { timeZone, month: "short", day: "numeric" });
+    }
+    return d.toLocaleDateString(numericLocale, { timeZone, year: "2-digit", month: "numeric", day: "numeric" });
+  }
 
   const daysAgo = Math.floor((now.getTime() - d.getTime()) / 86400000);
   if (daysAgo < 7) {
@@ -221,6 +234,27 @@ export function formatDateTime(
   }
 
   return d.toLocaleString(effectiveLocale, localeOptions);
+}
+
+/**
+ * How long ago `date` was, in words ("3 minutes ago", "2 days ago"), for the
+ * parenthesis Gmail puts after a message's time. Empty once it is a month
+ * old, where the date alone says enough.
+ */
+export function formatRelativeAgo(date: Date | string, now: Date = new Date()): string {
+  const d = typeof date === 'string' ? new Date(date) : date;
+  if (!d || Number.isNaN(d.getTime())) return '';
+  const diff = Math.max(0, now.getTime() - d.getTime());
+  const minutes = Math.floor(diff / 60000);
+  const hours = Math.floor(diff / 3600000);
+  const days = Math.floor(diff / 86400000);
+  if (days >= 30) return '';
+  const locale = getEffectiveLocale();
+  const rtf = new Intl.RelativeTimeFormat(locale === 'en' ? 'en-US' : locale, { numeric: 'auto' });
+  if (minutes < 1) return rtf.format(0, 'second');
+  if (minutes < 60) return rtf.format(-minutes, 'minute');
+  if (hours < 24) return rtf.format(-hours, 'hour');
+  return rtf.format(-days, 'day');
 }
 
 // Marketing emails pad the preheader with whitespace, format chars (soft
@@ -297,14 +331,27 @@ export function truncateText(text: string, maxLength: number): string {
   return text.substring(0, maxLength).trim() + "...";
 }
 
+/**
+ * A size people can read at a glance: whole numbers from 10 up ("67 KB"),
+ * one decimal below that ("2.1 MB"), never a trailing ".0".
+ */
 export function formatFileSize(bytes: number): string {
-  if (!Number.isFinite(bytes) || bytes <= 0) return '0 Bytes';
+  if (!Number.isFinite(bytes) || bytes <= 0) return '0 B';
 
   const k = 1024;
-  const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB'];
-  const i = Math.floor(Math.log(bytes) / Math.log(k));
+  const units = ['B', 'KB', 'MB', 'GB', 'TB'];
+  let i = Math.min(units.length - 1, Math.floor(Math.log(bytes) / Math.log(k)));
+  let value = bytes / Math.pow(k, i);
+  if (i === 0) return `${Math.round(bytes)} B`;
 
-  return Math.round(bytes / Math.pow(k, i) * 100) / 100 + ' ' + sizes[i];
+  let rounded = value < 10 ? Math.round(value * 10) / 10 : Math.round(value);
+  // 1023.6 KB rounds to 1024 KB: show it as 1 MB instead.
+  if (rounded >= k && i < units.length - 1) {
+    i += 1;
+    value /= k;
+    rounded = Math.round(value * 10) / 10;
+  }
+  return `${rounded} ${units[i]}`;
 }
 
 // Types for mailbox tree

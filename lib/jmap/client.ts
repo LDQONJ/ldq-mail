@@ -341,6 +341,9 @@ const EMAIL_LIST_PROPERTIES = [
   "keywords",
   "size",
   "receivedAt",
+  // The "Date sent" list order sorts each page on it client-side too; without
+  // it every row fell back to receivedAt and undid the server order (#1219).
+  "sentAt",
   "from",
   "to",
   "cc",
@@ -966,8 +969,12 @@ export function submissionEnvelopeParameters(options: SubmissionSendOptions | un
 
 function createDelayedSubmissionEnvelope(fromEmail: string, holdForSeconds?: number, recipients?: Array<string | EmailAddress>, options?: SubmissionSendOptions): Record<string, unknown> | undefined {
   const parameters = submissionEnvelopeParameters(options, holdForSeconds);
-  if (Object.keys(parameters.mailFrom).length === 0 && Object.keys(parameters.rcptTo).length === 0) return undefined;
-  const rcptTo = normalizeEnvelopeRecipients(recipients).map((r) =>
+  // Raw sends (S/MIME) leave Bcc out of the message, so the server cannot
+  // derive those recipients from the headers. Explicit recipients always
+  // need an envelope, even without SMTP parameters (#1206).
+  const recipientList = normalizeEnvelopeRecipients(recipients);
+  if (Object.keys(parameters.mailFrom).length === 0 && Object.keys(parameters.rcptTo).length === 0 && recipientList.length === 0) return undefined;
+  const rcptTo = recipientList.map((r) =>
     Object.keys(parameters.rcptTo).length > 0 ? { ...r, parameters: parameters.rcptTo } : r,
   );
   return {
@@ -4240,8 +4247,23 @@ export class JMAPClient implements IJMAPClient {
     const statusReadBack = takeDeliveryStatus(response);
     response = statusReadBack.response;
 
+    // The outgoing copy is created in Drafts, next to the user's own draft.
+    // When the submission fails it never moves to Sent, so remove it before
+    // reporting the failure; the user's draft is kept for the retry.
+    const unsentCopyId = response.methodResponses
+      ?.find(([name]) => name === 'Email/set')?.[1]?.created?.[emailId]?.id as string | undefined;
+    const dropUnsentCopy = async () => {
+      if (!unsentCopyId) return;
+      try {
+        await this.request([["Email/set", { accountId: targetAccountId, destroy: [unsentCopyId] }, "0"]]);
+      } catch (err) {
+        console.error('[sendEmail] removing the unsent copy from Drafts failed:', err);
+      }
+    };
+
     const { failure, filing } = sendMethodErrors(response.methodResponses);
     if (failure) {
+      await dropUnsentCopy();
       console.error('[sendEmail] JMAP method error:', failure);
       const propsHint = failure.properties?.length ? ` (properties: ${failure.properties.join(', ')})` : '';
       throw new Error(`${failure.description || `Failed to send email: ${failure.type}`}${propsHint}`);
@@ -4269,6 +4291,7 @@ export class JMAPClient implements IJMAPClient {
             `[sendEmail] ${methodName} notCreated:`,
             JSON.stringify(errors, null, 2),
           );
+          if (methodName === 'EmailSubmission/set') await dropUnsentCopy();
           this.throwIfHoldTooLong(firstError);
           const propsHint = firstError?.properties?.length
             ? ` (properties: ${firstError.properties.join(', ')})`
@@ -7619,8 +7642,72 @@ export class JMAPClient implements IJMAPClient {
    * CalendarEvent/query (which returns events *and* tasks), fetch in
    * /get-sized batches, and detect tasks client-side.
    */
+  // Store ids for shared calendars and their events and tasks are namespaced
+  // `accountId:id`; bare ids belong to the primary calendars account. JMAP ids
+  // never contain ':'.
+  private splitCalendarObjectId(id: string): { accountId: string; id: string } {
+    const sep = id.indexOf(':');
+    if (sep < 0) return { accountId: this.getCalendarsAccountId(), id };
+    return { accountId: id.slice(0, sep), id: id.slice(sep + 1) };
+  }
+
+  private namespaceCalendarTask(task: CalendarTask, accountId: string): CalendarTask {
+    if (accountId === this.getCalendarsAccountId()) return task;
+    return {
+      ...task,
+      id: `${accountId}:${task.id}`,
+      calendarIds: Object.fromEntries(
+        Object.entries(task.calendarIds || {}).map(([calId, v]) => [`${accountId}:${calId}`, v])
+      ),
+      originalId: task.id,
+      accountId,
+      isShared: true,
+    };
+  }
+
+  // Maps the (possibly namespaced) calendarIds of a task to the account that
+  // owns those calendars and their real ids there.
+  private resolveTaskCalendarIds(calendarIds: Record<string, boolean>): { accountId: string; calendarIds: Record<string, boolean> } {
+    let accountId: string | undefined;
+    const real: Record<string, boolean> = {};
+    for (const [key, value] of Object.entries(calendarIds)) {
+      const parts = this.splitCalendarObjectId(key);
+      if (accountId && parts.accountId !== accountId) {
+        throw new Error("A task can only belong to calendars of one account");
+      }
+      accountId = parts.accountId;
+      real[parts.id] = value;
+    }
+    return { accountId: accountId ?? this.getCalendarsAccountId(), calendarIds: real };
+  }
+
+  /**
+   * Without `targetAccountId`, collects tasks from every calendar account, not
+   * just the primary one, so tasks in calendars shared with the user show up
+   * too. Shared tasks come back namespaced like shared events. (#1204)
+   */
   async getCalendarTasks(calendarIds?: string[], targetAccountId?: string): Promise<CalendarTask[]> {
-    const accountId = targetAccountId || this.getCalendarsAccountId();
+    if (targetAccountId) return this.getAccountCalendarTasks(calendarIds, targetAccountId);
+
+    const primaryId = this.getCalendarsAccountId();
+    const tasks: CalendarTask[] = [];
+    for (const accountId of this.getCalendarCapableAccountIds()) {
+      if (accountId !== primaryId && this.calendarAccessDenied.has(accountId)) continue;
+      let accountCalendarIds: string[] | undefined;
+      if (calendarIds && calendarIds.length > 0) {
+        accountCalendarIds = calendarIds
+          .map((id) => this.splitCalendarObjectId(id))
+          .filter((parts) => parts.accountId === accountId)
+          .map((parts) => parts.id);
+        if (accountCalendarIds.length === 0) continue;
+      }
+      const accountTasks = await this.getAccountCalendarTasks(accountCalendarIds, accountId);
+      tasks.push(...accountTasks.map((task) => this.namespaceCalendarTask(task, accountId)));
+    }
+    return tasks;
+  }
+
+  private async getAccountCalendarTasks(calendarIds: string[] | undefined, accountId: string): Promise<CalendarTask[]> {
     debug.group('CalendarTask/fetch', 'tasks');
     debug.log('tasks', 'CalendarTask/fetch start', { accountId, calendarIds: calendarIds || 'all' });
 
@@ -7712,8 +7799,15 @@ export class JMAPClient implements IJMAPClient {
   }
 
   async createCalendarTask(task: Partial<CalendarTask>, targetAccountId?: string): Promise<CalendarTask> {
-    const accountId = targetAccountId || this.getCalendarsAccountId();
-    const { '@type': _type, progressUpdated: _pu, ...taskData } = task as Partial<CalendarTask> & { progressUpdated?: string | null };
+    let accountId = targetAccountId || this.getCalendarsAccountId();
+    const { '@type': _type, progressUpdated: _pu, id: _id, originalId: _oi, accountId: _ai, isShared: _is, ...taskData } = task as Partial<CalendarTask> & { progressUpdated?: string | null };
+    if (!targetAccountId && taskData.calendarIds && Object.keys(taskData.calendarIds).length > 0) {
+      // A task created in a shared calendar has to be created in the account
+      // that owns the calendar. (#1204)
+      const resolved = this.resolveTaskCalendarIds(taskData.calendarIds);
+      accountId = resolved.accountId;
+      taskData.calendarIds = resolved.calendarIds;
+    }
     const cleanTask = { ...taskData, '@type': 'Task' };
 
     debug.group('CalendarTask/create', 'tasks');
@@ -7765,7 +7859,10 @@ export class JMAPClient implements IJMAPClient {
       const notFound = getResponse.methodResponses[0][1].notFound || [];
       debug.log('calendar', 'CalendarTask/create get response', { found: list.length, notFound });
       if (list[0]) {
-        const created = normalizeCalendarTask({ ...list[0], '@type': 'Task' as const } as CalendarTask);
+        const created = this.namespaceCalendarTask(
+          normalizeCalendarTask({ ...list[0], '@type': 'Task' as const } as CalendarTask),
+          accountId,
+        );
         debug.log('tasks', 'CalendarTask/create final task object', {
           id: created.id,
           uid: created.uid,
@@ -7787,12 +7884,50 @@ export class JMAPClient implements IJMAPClient {
     throw new Error("Failed to fetch created task");
   }
 
-  async updateCalendarTask(taskId: string, updates: Partial<CalendarTask>, targetAccountId?: string): Promise<void> {
-    await this.updateCalendarEvent(taskId, updates as unknown as Partial<CalendarEvent>, false, targetAccountId);
+  /**
+   * Updates a task and resolves to its id afterwards. Moving a task into a
+   * calendar of another account (a shared calendar) recreates it there, so
+   * the id changes. (#1204)
+   */
+  async updateCalendarTask(taskId: string, updates: Partial<CalendarTask>, targetAccountId?: string): Promise<string> {
+    const source = targetAccountId ? { accountId: targetAccountId, id: taskId } : this.splitCalendarObjectId(taskId);
+    let patch = updates;
+    if (!targetAccountId && updates.calendarIds) {
+      const dest = this.resolveTaskCalendarIds(updates.calendarIds);
+      patch = { ...updates, calendarIds: dest.calendarIds };
+      if (dest.accountId !== source.accountId) {
+        return this.moveCalendarTaskToAccount(source, dest.accountId, patch);
+      }
+    }
+    await this.updateCalendarEvent(source.id, patch as unknown as Partial<CalendarEvent>, false, source.accountId);
+    return taskId;
+  }
+
+  // JMAP has no cross-account CalendarEvent move: create the task in the
+  // destination account, then destroy the original. Creating first means a
+  // failed create leaves the task where it was.
+  private async moveCalendarTaskToAccount(
+    source: { accountId: string; id: string },
+    destAccountId: string,
+    patch: Partial<CalendarTask>,
+  ): Promise<string> {
+    const response = await this.request([
+      ["CalendarEvent/get", { accountId: source.accountId, ids: [source.id] }, "0"]
+    ], this.calendarUsing());
+    const [method, result] = response.methodResponses?.[0] ?? [];
+    const original = method === "CalendarEvent/get" ? result.list?.[0] : undefined;
+    if (!original) throw new Error("Task not found");
+
+    // Drop what the server sets itself; keep the uid so it stays the same task.
+    const { id: _id, created: _cr, updated: _up, sequence: _sq, isDraft: _idr, isOrigin: _io, baseEventId: _be, blobId: _bl, utcStart: _us, utcEnd: _ue, ...rest } = original as Record<string, unknown>;
+    const created = await this.createCalendarTask({ ...rest, ...patch } as Partial<CalendarTask>, destAccountId);
+    await this.deleteCalendarEvent(source.id, false, source.accountId);
+    return created.id;
   }
 
   async deleteCalendarTask(taskId: string, targetAccountId?: string): Promise<void> {
-    await this.deleteCalendarEvent(taskId, false, targetAccountId);
+    const target = targetAccountId ? { accountId: targetAccountId, id: taskId } : this.splitCalendarObjectId(taskId);
+    await this.deleteCalendarEvent(target.id, false, target.accountId);
   }
 
   // ─── JMAP FileNode methods (draft-ietf-jmap-filenode) ───
@@ -9295,14 +9430,29 @@ export class JMAPClient implements IJMAPClient {
     let emailSubmissionId: string | undefined;
     let serverSendAt: string | undefined;
 
+    // A failed submission leaves the imported copy behind; drop it so retries
+    // do not pile up copies next to the draft (see sendEmail).
+    const importedId = (response.methodResponses ?? [])
+      .find(([name]) => name === 'Email/import')?.[1]?.created?.['raw-import']?.id as string | undefined;
+    const dropUnsentCopy = async () => {
+      if (!importedId) return;
+      try {
+        await this.request([['Email/set', { accountId: this.accountId, destroy: [importedId] }, '0']]);
+      } catch (err) {
+        console.error('[sendRawEmail] removing the unsent copy failed:', err);
+      }
+    };
+
     // Check for errors
     const { failure } = sendMethodErrors(response.methodResponses);
     if (failure) {
+      await dropUnsentCopy();
       throw new Error(failure.description || `Failed: ${failure.type}`);
     }
     for (const [methodName, result] of response.methodResponses ?? []) {
       const r = result as { notCreated?: Record<string, { description?: string; type?: string }> };
       if (r.notCreated) {
+        if (methodName === 'EmailSubmission/set') await dropUnsentCopy();
         const firstErr = Object.values(r.notCreated)[0];
         this.throwIfHoldTooLong(firstErr);
         throw new Error(firstErr?.description || firstErr?.type || 'Failed to send raw email');

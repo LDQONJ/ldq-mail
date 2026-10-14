@@ -144,6 +144,8 @@
     "show_all_tags": "Show all ({count})",
     "show_fewer_tags": "Show less",
     "folders": "Folders",
+    "show_more": "More",
+    "show_fewer": "Less",
     "shared": "Shared",
     "mail": "Mail",
     "nav_label": "Navigation",
@@ -153,7 +155,17 @@
     "unified_all_starred": "All starred",
     "unified_all_mail": "All mail",
     "remove_account": "Remove account",
-    "remove_account_confirm": "Remove {account} from this device? You can add it back later."
+    "remove_account_confirm": "Remove {account} from this device? You can add it back later.",
+    "labels": "Labels",
+    "create_label": "Create new label",
+    "mv_tasks": "Tasks",
+    "mv_side_panel": "Side panel",
+    "mv_open_full": "Open in full view",
+    "mv_previous_day": "Previous day",
+    "mv_next_day": "Next day",
+    "mv_add_another_account": "Add another account",
+    "mv_manage_account": "Manage your account",
+    "mv_storage_used": "{percent}% of {total} used"
   },
   "protocol_handlers": {
     "title": "Default apps",
@@ -239,6 +251,7 @@
     "replied": "Replied",
     "forwarded": "Forwarded",
     "has_attachment": "Has attachment",
+    "conversations_range": "{from}–{to, number} of {total, number}",
     "conversations_count": "{count} of {total} conversations",
     "conversations_count_plus": "{count}+ conversations",
     "conversations_count_simple": "{count} conversations",
@@ -574,6 +587,8 @@
     "more": "more",
     "scheduled_banner": "Scheduled to send at {date}",
     "scheduled_send_created": "Email scheduled for sending",
+    "sending_in": "Sending in {seconds, plural, one {# second} other {# seconds}}",
+    "undo_send_failed": "Could not undo. The message may already have been sent.",
     "cancel_scheduled_send": "Cancel send",
     "reschedule_send": "Reschedule",
     "cancel_and_edit": "Cancel and edit",
@@ -605,17 +620,13 @@
       "copy": "Copy code {code}",
       "copied": "Code copied",
       "copy_failed": "Could not copy the code"
-    }
+    },
+    "mv_position": "{index} of {total}"
   },
   "email_composer": {
-    "read_receipt_on": "Read receipt requested (click to disable)",
-    "read_receipt_off": "Request a read receipt",
-    "dsn_on": "Delivery notification requested (click to disable)",
-    "dsn_off": "Request a delivery notification",
-    "format_plain_text": "Switch to plain text",
-    "format_rich_text": "Switch to rich text (HTML)",
-    "require_tls_on": "Encrypted delivery required (click to disable)",
-    "require_tls_off": "Require encrypted delivery (TLS)",
+    "minimize": "Minimize",
+    "maximize": "Full screen",
+    "restore": "Restore",
     "new_message": "New Message",
     "signature_edit_hint": "Double-click to edit the signature",
     "reply": "Reply",
@@ -630,6 +641,7 @@
     "bcc": "BCC",
     "subject": "Subject",
     "body_placeholder": "Write your message...",
+    "formatting": "Formatting",
     "send": "Send",
     "cancel": "Cancel",
     "attach": "Attach",
@@ -644,6 +656,7 @@
     "discard": "Discard",
     "discard_draft_title": "Discard draft?",
     "discard_draft_confirm": "You have unsaved changes. Do you want to discard this draft?",
+    "discard_draft_message": "The draft will be deleted.",
     "saving": "Saving...",
     "sending": "Sending...",
     "add_link": "Add link",
@@ -683,11 +696,23 @@
       "email_placeholder": "alias@example.com",
       "envelope_notice": "If your server doesn't accept this address as the envelope sender, {identity} is used there instead, and recipients can see it in the Return-Path header."
     },
-    "use_template": "Template",
     "save_as_template": "Save as Template",
+    "attach_from_device": "Upload from this device",
+    "templates_menu": "Templates",
+    "insert_template": "Insert template",
+    "options": "Options",
+    "option_plain_text": "Plain text",
+    "option_plain_text_hint": "Send without formatting",
+    "option_read_receipt": "Request read receipt",
+    "option_read_receipt_hint": "Ask the recipient to confirm they opened it",
+    "option_dsn": "Delivery notification",
+    "option_dsn_hint": "Get a report when the server delivers it",
+    "option_require_tls": "Require encrypted delivery",
+    "option_require_tls_hint": "Only deliver over TLS, otherwise bounce",
     "validation": {
       "recipient_required": "Add a recipient to send",
       "body_required": "Write a message or attach a file",
+      "invalid_recipients": "Not sent - check these addresses: {addresses}",
       "attachments_uploading": "Attachments are still uploading — sending as soon as they finish",
       "attachment_upload_failed": "Not sent — an attachment failed to upload. Remove it and try again."
     },
@@ -699,8 +724,10 @@
     "drop_files": "Drop files to attach",
     "show_less": "Show less",
     "send_failed": "Failed to send email",
+    "send_offline": "You seem to be offline. The message is still here, send it again once you are back online.",
     "send_timeout": "The server stopped responding. Check your Sent folder before sending again — the message may have gone out.",
     "send_recipients_rejected": "Not sent - the server rejected every recipient.",
+    "send_plugin_failed": "Not sent - a plugin that handles sending failed or took too long. Check your Sent folder before sending again.",
     "send_some_recipients_rejected": "Sent, but not to these recipients - the server rejected them.",
     "continue_draft": "Continue draft",
     "close_draft_title": "Save or discard draft?",
@@ -729,6 +756,11 @@
     },
     "schedule_send": "Schedule send",
     "schedule_send_description": "Choose when the server should release this message.",
+    "schedule_preset": {
+      "tomorrow_morning": "Tomorrow morning",
+      "tomorrow_afternoon": "Tomorrow afternoon",
+      "monday_morning": "Monday morning"
+    },
     "schedule_send_required": "Choose a date and time.",
     "schedule_send_invalid": "Enter a valid date and time.",
     "schedule_send_future": "Choose a future date and time.",
@@ -741,6 +773,7 @@
     "recipient_edit_name": "Edit display name",
     "recipient_email_placeholder": "Email address",
     "recipient_name_placeholder": "Display name",
+    "invalid_recipient": "Not a valid email address",
     "autocomplete_search_server": "Search the server",
     "autocomplete_searching": "Searching...",
     "mention_recipients": "Recipients",
@@ -781,6 +814,16 @@
       "remove_background_color": "Remove background color"
     },
     "send_filing_warning": "Sent - but the post-send cleanup failed, a stale draft may remain.",
+    "pop_out": "Pop out reply",
+    "read_receipt_on": "Read receipt requested (click to disable)",
+    "read_receipt_off": "Request a read receipt",
+    "dsn_on": "Delivery notification requested (click to disable)",
+    "dsn_off": "Request a delivery notification",
+    "format_plain_text": "Switch to plain text",
+    "format_rich_text": "Switch to rich text (HTML)",
+    "require_tls_on": "Encrypted delivery required (click to disable)",
+    "require_tls_off": "Require encrypted delivery (TLS)",
+    "use_template": "Template",
     "use_oracle_relay": "Send via Oracle Relay"
   },
   "confirm_dialog": {
@@ -1095,6 +1138,12 @@
         "regular": "Regular",
         "comfortable": "Comfortable"
       },
+      "interface_layout": {
+        "label": "Interface layout",
+        "description": "Where search, navigation and toolbars sit",
+        "default": "Default",
+        "mountain_view": "Mountain View"
+      },
       "animations": {
         "label": "Enable Animations",
         "description": "Show smooth transitions and effects"
@@ -1264,6 +1313,18 @@
         "confirm_revoke_message": "It will stop receiving background notifications immediately. Enabling push again on that device registers it anew.",
         "confirm_revoke_message_this": "This device will stop receiving background notifications immediately."
       },
+      "push_all": {
+        "title": "All accounts",
+        "description": "Turn push on or off for several accounts at once. One browser subscription serves them all.",
+        "select_all": "Select every connected account",
+        "state_on": "notifications on",
+        "state_off": "notifications off",
+        "enable_selected": "Enable for selected",
+        "disable_selected": "Disable for selected",
+        "result_enabled": "Notifications enabled for {count} accounts.",
+        "result_partial": "Enabled for {enabled} accounts; {failed} could not be enabled.",
+        "result_disabled": "Notifications disabled for {count} accounts."
+      },
       "sound_selection": {
         "title": "Notification Sound",
         "description": "Choose which sound to play for notifications",
@@ -1303,8 +1364,8 @@
       "date_format": {
         "label": "Date Format",
         "description": "How dates are shown in the email list",
-        "smart": "Smart (locale-aware)",
-        "relative": "Relative (1h ago, 2d ago)",
+        "smart": "Smart",
+        "relative": "Relative",
         "full": "Always full date",
         "preview_today": "Today:",
         "preview_this_week": "This week:",
@@ -1313,8 +1374,8 @@
       "date_locale": {
         "label": "Date format region",
         "description": "How numeric dates are ordered (day, month, year)",
-        "auto": "Automatic (match language)",
-        "iso": "ISO 8601 (YYYY-MM-DD)",
+        "auto": "Automatic",
+        "iso": "ISO 8601",
         "dmy": "Day/Month/Year",
         "mdy": "Month/Day/Year"
       },
@@ -1673,6 +1734,33 @@
         "move_down": "Move down",
         "drag_handle": "Drag to reorder",
         "add": "Add account"
+      },
+      "backup": {
+        "title": "Account list backup",
+        "description": "Keep the list of accounts in this browser on the server, encrypted with a password only you know, and bring it back on another device. Mailbox passwords are not saved: you sign in to each restored account yourself.",
+        "status_none": "No list is saved for {account}.",
+        "status_saved": "A list is saved for {account}.",
+        "save": "Save list",
+        "restore": "Restore list",
+        "delete": "Delete saved list",
+        "cancel": "Cancel",
+        "delete_confirm": "Delete the saved account list from the server?",
+        "password": "Backup password",
+        "password_hint": "At least 10 characters. It cannot be recovered: if you forget it, save the list again with a new one.",
+        "restore_hint": "The password chosen when the list was saved.",
+        "confirm": "Confirm password",
+        "saved": "List saved ({count, plural, one {# account} other {# accounts}}).",
+        "restored": "Accounts added: {added}. Accounts already here and updated: {updated}. Open each new account from the account list to sign in.",
+        "skipped": "{count, plural, one {# account was} other {# accounts were}} not added: the account limit is reached.",
+        "deleted": "Saved list deleted.",
+        "errors": {
+          "mismatch": "The passwords do not match.",
+          "password_length": "Use at least 10 characters.",
+          "unlock_failed": "Wrong password, or the list was saved for another account.",
+          "owner_signin_required": "Sign in to this account again, then retry.",
+          "https_required": "This needs a secure (HTTPS) connection.",
+          "storage_failed": "The server could not read or store the list. Try again later."
+        }
       },
       "shared_accounts": {
         "title": "Shared with me",
@@ -2220,6 +2308,7 @@
       "forward_placeholder": "email@example.com",
       "forward_keep_copy": "Keep a copy",
       "forward_limit": "Forward limit per message on this server: {count}. Extra forwards are skipped.",
+      "forward_unavailable": "This server does not allow forwarding. Forward actions in filter rules have no effect.",
       "reject_message": "Rejection message",
       "reject_placeholder": "Your email has been rejected",
       "label_name": "Tag name",
@@ -2346,12 +2435,6 @@
         "title": "Display",
         "description": "Configure how files and folders are displayed"
       },
-      "folder_layout": {
-        "label": "Folder Navigation",
-        "description": "Choose how folders are displayed: inline with files or in a sidebar tree",
-        "inline": "Inline",
-        "sidebar": "Sidebar"
-      },
       "default_view": {
         "label": "Default View",
         "description": "Choose between grid and list layout",
@@ -2397,6 +2480,12 @@
       },
       "preview": {
         "label": "Preview"
+      },
+      "folder_layout": {
+        "label": "Folder Navigation",
+        "description": "Choose how folders are displayed: inline with files or in a sidebar tree",
+        "inline": "Inline",
+        "sidebar": "Sidebar"
       }
     },
     "plugins": {
@@ -2471,8 +2560,14 @@
       "manage": "Manage rules",
       "senders_count": "{count, plural, one {# sender} other {# senders}}",
       "cross_account": "Select messages from one account",
-      "opaque_hint": "Your filters were edited by hand. Open Filters settings"
-    }
+      "opaque_hint": "Your filters were edited by hand. Open Filters settings",
+      "loading": "Loading rules…",
+      "load_failed": "Could not load the rules",
+      "none": "No rules yet",
+      "new_mail_only": "Only for new messages",
+      "running": "Running \"{name}\" on {folder}…"
+    },
+    "find_emails_from": "Find emails from {name}"
   },
   "mailbox_context_menu": {
     "mark_folder_read": "Mark folder as read",
@@ -2530,7 +2625,8 @@
       "next_email": "Next email",
       "previous_email": "Previous email",
       "open_email": "Open email",
-      "close_email": "Close / Deselect"
+      "close_email": "Close / Deselect",
+      "go_to_folder": "Go to folder"
     },
     "actions": {
       "reply": "Reply",
@@ -2552,7 +2648,8 @@
       "global_search": "Search everything"
     },
     "threads": {
-      "expand_collapse": "Expand/collapse thread"
+      "expand_collapse": "Expand/collapse thread",
+      "select_mountain_view": "Select the conversation"
     },
     "composer": {
       "send": "Send email",
@@ -3308,7 +3405,9 @@
     },
     "quick_create": {
       "placeholder": "New event title",
-      "aria_label": "Quick create event"
+      "aria_label": "Quick create event",
+      "add_title": "Add title",
+      "more_options": "More options"
     },
     "nav_prev": "Previous",
     "nav_next": "Next",
@@ -3467,7 +3566,13 @@
       "due_today": "Today",
       "due_tomorrow": "Tomorrow",
       "overdue": "Overdue"
-    }
+    },
+    "toolbar": {
+      "more": "More actions",
+      "select_view": "Change view, currently {view}"
+    },
+    "other_calendars": "Other calendars",
+    "calendar_options": "Options for {name}"
   },
   "calendar_event_notifications": {
     "someone": "Someone",
@@ -3547,7 +3652,13 @@
     "suggestions_people": "People",
     "suggestions_from": "Search mail from {address}",
     "suggestions_to": "Search mail to {address}",
-    "suggestions_remove_recent": "Remove from recent searches"
+    "suggestions_remove_recent": "Remove from recent searches",
+    "has_words": "Has the words",
+    "size": "Size",
+    "date_within": "Date",
+    "search_in": "Search in",
+    "has_attachment_check": "Has attachment",
+    "search": "Search"
   },
   "welcome": {
     "title": "Welcome to your mailbox",
@@ -3555,6 +3666,8 @@
     "tip_shortcuts": "Press ? to see all keyboard shortcuts",
     "tip_sidebar": "Find Calendar, Contacts and Settings in the sidebar menu",
     "tip_settings": "Customize your experience in Settings",
+    "tip_compose_touch": "Tap the pencil button to write a new email",
+    "tip_sidebar_touch": "Find Calendar, Contacts and Settings in the bar at the bottom",
     "got_it": "Got it",
     "settings": "Settings",
     "dismiss": "Dismiss",
@@ -3576,10 +3689,8 @@
     "office_close": "Close editor",
     "open_in_new_tab": "Open in new tab",
     "title": "Files",
-    "search_placeholder": "Search files...",
+    "search_placeholder": "Search this folder",
     "empty_state_title": "No files yet",
-    "empty_state_description": "Upload files or create folders to get started",
-    "upload": "Upload",
     "upload_files": "Upload Files",
     "new_folder": "New Folder",
     "new_folder_name": "Folder name",
@@ -3598,13 +3709,11 @@
     "type": "Type",
     "folder": "Folder",
     "file": "File",
-    "parent_directory": "Parent directory",
-    "breadcrumb_root": "Home",
-    "other_accounts": "Other accounts",
     "no_accounts": "No connected accounts.",
-    "drop_files_here": "Drop files or folders here to upload",
     "uploading": "Uploading...",
     "upload_success": "{count, plural, one {1 file uploaded} other {# files uploaded}}",
+    "upload_canceled": "Upload canceled",
+    "upload_canceled_partial": "{count, plural, one {1 file was} other {# files were}} uploaded before you canceled",
     "upload_error": "Failed to upload file",
     "create_folder_success": "Folder created",
     "create_folder_error": "Failed to create folder",
@@ -3637,7 +3746,6 @@
     "file_name": "File name",
     "retry": "Retry",
     "refresh": "Refresh",
-    "toggle_favorite": "Toggle favorite",
     "duplicate": "Duplicate",
     "duplicate_success": "Duplicated successfully",
     "duplicate_error": "Failed to duplicate",
@@ -3647,10 +3755,10 @@
     "shared_by": "Shared by {name}",
     "create_file_success": "File created",
     "create_file_error": "Failed to create file",
-    "favorites": "Favorites",
+    "favorites": "Starred",
     "recent": "Recent",
-    "properties": "Properties",
-    "open_folder": "Open folder",
+    "show_in_folder": "Show in folder",
+    "remove_from_recent": "Remove from recent",
     "upload_folder": "Upload Folder",
     "file_too_large": "\"{name}\" exceeds the maximum file size ({max})",
     "undo": "Undo",
@@ -3660,6 +3768,66 @@
     "open_folder_tree": "Open folder tree",
     "file_list": "Files and folders",
     "context_menu": "Actions",
+    "settings_ascending": "Ascending",
+    "settings_descending": "Descending",
+    "disabled_title": "Files feature is disabled by your administrator",
+    "disabled_description": "Large file uploads via WebDAV can cause Stalwart/RocksDB instability, including out-of-memory crashes and unrecoverable disk usage. Deleted files may not be immediately purged from blob storage. This feature is not recommended for production environments.",
+    "migration_title": "Updating your files…",
+    "migration_description": "Organising folders and files into their proper structure. This happens only once.",
+    "new": "New",
+    "my_files": "My files",
+    "folders": "Folders",
+    "files_heading": "Files",
+    "open": "Open",
+    "star": "Star",
+    "unstar": "Remove star",
+    "expand_folder": "Expand {name}",
+    "collapse_folder": "Collapse {name}",
+    "sidebar_hint": "Star folders and open files to find them here.",
+    "breadcrumbs": "Folder path",
+    "show_path": "Show hidden folders in the path",
+    "selection_actions": "Actions for selected items",
+    "selected_count": "{count, plural, one {1 selected} other {# selected}}",
+    "clear_selection": "Clear selection",
+    "select_all": "Select all",
+    "select_item": "Select {name}",
+    "more_actions": "More actions for {name}",
+    "paste_here": "Paste into this folder",
+    "paste_count": "{count, plural, one {Paste 1 item} other {Paste # items}}",
+    "sort_by": "Sort by",
+    "view_mode": "Layout",
+    "clear_search": "Clear search",
+    "no_results_for": "Nothing in this folder matches \"{query}\"",
+    "download_count": "{count, plural, one {Download 1 file} other {Download # files}}",
+    "delete_count": "{count, plural, one {Delete 1 item} other {Delete # items}}",
+    "close_details": "Close details",
+    "file_kind": "{ext} file",
+    "folder_summary": "{folders, plural, =0 {No folders} one {1 folder} other {# folders}}, {files, plural, =0 {no files} one {1 file} other {# files}}",
+    "details_hint": "Select a file or folder to see its details.",
+    "sharing": "Sharing",
+    "shared_with_count": "{count, plural, one {Shared with 1 person} other {Shared with # people}}",
+    "only_you": "Only you",
+    "empty_folder_title": "This folder is empty",
+    "empty_folder_description": "Drop files here, or upload them from your device.",
+    "empty_folder_read_only": "You can't add files to this folder.",
+    "choose_account": "Choose an account",
+    "drop_to_upload": "Drop to upload to {folder}",
+    "uploading_count": "Uploading {current} of {total}",
+    "dismiss": "Dismiss",
+    "zoom_in": "Zoom in",
+    "zoom_out": "Zoom out",
+    "zoom_reset": "Fit to screen",
+    "rotate": "Rotate",
+    "close_preview": "Close",
+    "empty_state_description": "Upload files or create folders to get started",
+    "upload": "Upload",
+    "parent_directory": "Parent directory",
+    "breadcrumb_root": "Home",
+    "other_accounts": "Other accounts",
+    "drop_files_here": "Drop files or folders here to upload",
+    "toggle_favorite": "Toggle favorite",
+    "properties": "Properties",
+    "open_folder": "Open folder",
     "settings_title": "File Settings",
     "settings_display": "Display",
     "settings_default_view": "Default View",
@@ -3668,8 +3836,6 @@
     "settings_default_sort_desc": "Choose the default sorting for files",
     "settings_sort_direction": "Sort Direction",
     "settings_sort_direction_desc": "Choose ascending or descending order",
-    "settings_ascending": "Ascending",
-    "settings_descending": "Descending",
     "settings_icons": "Icons",
     "settings_show_icons": "Show File Icons",
     "settings_show_icons_desc": "Display icons next to files and folders",
@@ -3684,11 +3850,7 @@
     "settings_folder_layout_desc": "Choose how folders are displayed: inline with files or in a sidebar tree",
     "settings_folder_layout_inline": "Inline",
     "settings_folder_layout_sidebar": "Sidebar",
-    "disabled_title": "Files feature is disabled by your administrator",
-    "disabled_description": "Large file uploads via WebDAV can cause Stalwart/RocksDB instability, including out-of-memory crashes and unrecoverable disk usage. Deleted files may not be immediately purged from blob storage. This feature is not recommended for production environments.",
-    "stability_warning": "Large file uploads can cause server instability. Deleted files may not be immediately purged from storage. Use with caution.",
-    "migration_title": "Updating your files…",
-    "migration_description": "Organising folders and files into their proper structure. This happens only once."
+    "stability_warning": "Large file uploads can cause server instability. Deleted files may not be immediately purged from storage. Use with caution."
   },
   "smime": {
     "your_certificates": "Your Certificates",
