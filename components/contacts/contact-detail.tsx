@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useMemo } from "react";
 import { useTranslations } from "next-intl";
 import { Mail, Phone, Building, MapPin, StickyNote, Pencil, Trash2, BookUser, Copy, Send, Globe, Cake, KeyRound, Users, Briefcase, Heart, Languages, Calendar, UserCircle, Download, MoreHorizontal, Printer } from "@/components/icons";
 import { Avatar } from "@/components/ui/avatar";
@@ -16,6 +16,8 @@ import { exportContact } from "./contact-export";
 import { printContact } from "./contact-print";
 import { usePluginSlotOffers } from "@/hooks/use-plugin-slot-offers";
 import { PluginSlot } from "@/components/plugins/plugin-slot";
+import { contactHooks } from "@/lib/plugin-hooks";
+import { contactToView } from "@/lib/plugin-projection";
 
 type MoreItem =
   | {
@@ -123,6 +125,17 @@ export function ContactDetail({ contact, onEdit, onDelete, onAddToGroup, onDupli
 
   const cryptoKeys = contact?.cryptoKeys ? Object.values(contact.cryptoKeys) : [];
   const hasCryptoKeysSlotOffers = usePluginSlotOffers('contact-cryptokeys').length > 0;
+  const pluginContactProps = useMemo(() => (contact ? { contact: contactToView(contact) } : null), [contact]);
+
+  // Tell plugins once per contact shown here, not on every edit of that card.
+  const latestContact = useRef(contact);
+  useEffect(() => { latestContact.current = contact; });
+  const openedId = contact?.id;
+  useEffect(() => {
+    const opened = latestContact.current;
+    if (!openedId || !opened) return;
+    void contactHooks.onContactOpen.emit(contactToView(opened));
+  }, [openedId]);
 
   if (!contact) {
     return (
@@ -187,8 +200,8 @@ export function ContactDetail({ contact, onEdit, onDelete, onAddToGroup, onDupli
   return (
     <div className={cn("flex flex-col h-full overflow-y-auto", className)}>
       <div className={cn("border-b border-border", isMobile ? "px-4 py-4" : "px-6 py-6")}>
-        <div className={cn("flex gap-4", isMobile ? "flex-col" : "items-start justify-between")}>
-          <div className="flex items-center gap-4 min-w-0 flex-1">
+        <div className={cn("flex gap-4", isMobile ? "flex-col" : "flex-wrap items-start justify-between")}>
+          <div className="flex items-center gap-4 min-w-0 flex-1 basis-60">
             <Avatar name={name} email={email} contactPhotoUri={photoUri} size={isMobile ? "md" : "lg"} />
             <div className="min-w-0 flex-1">
               <h2 className={cn("font-semibold truncate", isMobile ? "text-lg" : "text-xl")}>{name || "-"}</h2>
@@ -495,6 +508,10 @@ export function ContactDetail({ contact, onEdit, onDelete, onAddToGroup, onDupli
               </div>
             </div>
           </Section>
+        )}
+
+        {pluginContactProps && (
+          <PluginSlot name="contact-detail-section" className="w-full py-6" extraProps={pluginContactProps} />
         )}
 
         <ContactActivity contact={contact} />

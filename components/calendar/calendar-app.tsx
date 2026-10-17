@@ -25,7 +25,7 @@ import { CalendarMonthView } from "@/components/calendar/calendar-month-view";
 import { CalendarWeekView } from "@/components/calendar/calendar-week-view";
 import { CalendarDayView } from "@/components/calendar/calendar-day-view";
 import { CalendarAgendaView } from "@/components/calendar/calendar-agenda-view";
-import { TaskListView } from "@/components/calendar/task-list-view";
+import { TaskListView, filterTasksForList } from "@/components/calendar/task-list-view";
 import { TaskToolbar } from "@/components/calendar/task-toolbar";
 import { TaskModal } from "@/components/calendar/task-modal";
 import { MiniCalendar } from "@/components/calendar/mini-calendar";
@@ -97,6 +97,8 @@ import { findMeetingLink } from "@/lib/event-links";
 import { useDocumentTitle } from "@/hooks/use-document-title";
 import { MvTopBar } from "@/components/layout/mv-top-bar";
 import { useMountainViewShell } from "@/hooks/use-mountain-view-shell";
+import { calendarHooks } from "@/lib/plugin-hooks";
+import { eventToView } from "@/lib/plugin-projection";
 
 type PendingScopeAction =
   | { type: "edit"; event: CalendarEvent; updates: Partial<CalendarEvent>; sendScheduling?: boolean }
@@ -665,20 +667,21 @@ export function CalendarApp({ linkSegments: routeSegments }: CalendarAppProps = 
     if (client) toggleTaskCompleteFn(client, task);
   }, [client, toggleTaskCompleteFn]);
 
+  // false: a plugin stopped it and said why, so the task form stays open.
   const handleSaveTask = useCallback(async (data: Partial<import("@/lib/jmap/types").CalendarTask>) => {
-    if (!client) return;
-    if (editTask) {
-      await taskStore.updateTask(client, editTask.id, data);
-    } else {
-      await taskStore.createTask(client, data);
-    }
+    if (!client) return false;
+    const saved = editTask
+      ? await taskStore.updateTask(client, editTask.id, data)
+      : (await taskStore.createTask(client, data)) !== null;
+    if (!saved) return false;
     setShowTaskModal(false);
     setEditTask(null);
+    return true;
   }, [client, editTask, taskStore]);
 
   const handleDeleteTask = useCallback(async (id: string) => {
     if (!client) return;
-    await taskStore.deleteTask(client, id);
+    if (!(await taskStore.deleteTask(client, id))) return;
     setShowTaskModal(false);
     setEditTask(null);
   }, [client, taskStore]);
@@ -707,6 +710,9 @@ export function CalendarApp({ linkSegments: routeSegments }: CalendarAppProps = 
     setDetailPinned(true);
     setDetailEvent(event);
     setDetailAnchorRect(anchorRect);
+    // A click opens the event's card; the hover preview does not count as
+    // opening it. The editor reports its own opens (event-modal).
+    void calendarHooks.onCalendarEventOpen.emit(eventToView(event));
   }, [isMobile, closeDetail, openEditModal]);
 
   const {
@@ -954,7 +960,8 @@ export function CalendarApp({ linkSegments: routeSegments }: CalendarAppProps = 
             setEditEvent(null);
             return;
           }
-          await updateEvent(client, editEvent.id, data, sendSchedulingMessages);
+          // false: a plugin stopped it and said why; the form stays open.
+          if (!(await updateEvent(client, editEvent.id, data, sendSchedulingMessages))) return;
           if (data.start) {
             focusCalendarOnEvent({ start: data.start });
           }
@@ -1101,17 +1108,17 @@ export function CalendarApp({ linkSegments: routeSegments }: CalendarAppProps = 
       return;
     }
     try {
-      await deleteEvent(client, id, sendSchedulingMessages);
-      toast.success(t("notifications.event_deleted"));
+      if (await deleteEvent(client, id, sendSchedulingMessages)) toast.success(t("notifications.event_deleted"));
     } catch {
       toast.error(t("notifications.event_error"));
     }
   }, [client, deleteEvent, events, editEvent, t]);
 
+  // null: no series found; "stopped": a plugin refused to shorten it.
   const truncateRecurrenceAtEvent = useCallback(async (event: CalendarEvent): Promise<{
     master: CalendarEvent;
     originalRules: CalendarEvent["recurrenceRules"];
-  } | null> => {
+  } | null | "stopped"> => {
     const master = await findMasterEvent(event);
     if (!master) return null;
     const originalRules = master.recurrenceRules
@@ -1126,7 +1133,7 @@ export function CalendarApp({ linkSegments: routeSegments }: CalendarAppProps = 
       until,
       count: null,
     }));
-    await updateEvent(client!, master.id, { recurrenceRules: truncatedRules });
+    if (!(await updateEvent(client!, master.id, { recurrenceRules: truncatedRules }))) return "stopped";
     return { master, originalRules };
   }, [client, findMasterEvent, updateEvent]);
 
@@ -1138,8 +1145,7 @@ export function CalendarApp({ linkSegments: routeSegments }: CalendarAppProps = 
   ) => {
     if (!client) return;
     try {
-      await rsvpEvent(client, eventId, participantId, status, undefined, scope);
-      toast.success(t("notifications.rsvp_updated"));
+      if (await rsvpEvent(client, eventId, participantId, status, undefined, scope)) toast.success(t("notifications.rsvp_updated"));
     } catch {
       toast.error(t("notifications.rsvp_error"));
     }
@@ -1157,6 +1163,8 @@ export function CalendarApp({ linkSegments: routeSegments }: CalendarAppProps = 
     const updates = type === "edit" ? pendingScopeAction.updates : undefined;
     setPendingScopeAction(null);
 
+    // false when a plugin stopped the change (it says why): no "updated".
+    let done = true;
     try {
       if (type === "edit" && updates) {
         switch (scope) {
@@ -1165,7 +1173,7 @@ export function CalendarApp({ linkSegments: routeSegments }: CalendarAppProps = 
               // The store writes one occurrence through its own (synthetic)
               // id, or as a recurrence override on the base event it was
               // expanded from.
-              await updateEvent(client, event.id, updates, sendScheduling);
+              done = await updateEvent(client, event.id, updates, sendScheduling);
               break;
             }
             // An override outside an expanded series: override it on the master.
@@ -1174,14 +1182,15 @@ export function CalendarApp({ linkSegments: routeSegments }: CalendarAppProps = 
             const overridePatch = occurrence
               && buildFallbackOverridePatch(occurrence, withNewOverrideDetails(occurrence, updates));
             if (master && overridePatch) {
-              await updateEvent(client, master.id, overridePatch, sendScheduling);
+              done = await updateEvent(client, master.id, overridePatch, sendScheduling);
             } else {
-              await updateEvent(client, event.id, updates, sendScheduling);
+              done = await updateEvent(client, event.id, updates, sendScheduling);
             }
             break;
           }
           case "this_and_future": {
             const result = await truncateRecurrenceAtEvent(event);
+            if (result === "stopped") return;
             if (!result) {
               toast.error(t("notifications.event_error"));
               return;
@@ -1206,7 +1215,10 @@ export function CalendarApp({ linkSegments: routeSegments }: CalendarAppProps = 
             delete (newEventData as Record<string, unknown>).uid;
             delete (newEventData as Record<string, unknown>).recurrenceId;
             try {
-              await createEvent(client, newEventData, sendScheduling);
+              // null when the save failed or a plugin stopped it: either way
+              // the truncated master has to be restored.
+              const created = await createEvent(client, newEventData, sendScheduling);
+              if (!created) throw new Error("The new series was not created");
             } catch (createError) {
               debug.error("Failed to create new series, rolling back master truncation:", createError);
               try {
@@ -1226,7 +1238,7 @@ export function CalendarApp({ linkSegments: routeSegments }: CalendarAppProps = 
             }
             const allUpdates = { ...updates };
             delete (allUpdates as Record<string, unknown>).recurrenceId;
-            await updateEvent(client, master.id, allUpdates, sendScheduling);
+            done = await updateEvent(client, master.id, allUpdates, sendScheduling);
             break;
           }
           default: {
@@ -1234,6 +1246,7 @@ export function CalendarApp({ linkSegments: routeSegments }: CalendarAppProps = 
             throw new Error(`Unhandled scope: ${_exhaustive}`);
           }
         }
+        if (!done) return;
         toast.success(t("notifications.event_updated"));
       } else {
         switch (scope) {
@@ -1241,21 +1254,22 @@ export function CalendarApp({ linkSegments: routeSegments }: CalendarAppProps = 
             if (isServerRecurrenceInstance(event) || isBrowserExpandedOccurrence(event)) {
               // The store destroys a server occurrence, or excludes a
               // browser-expanded one on its base event.
-              await deleteEvent(client, event.id, sendScheduling);
+              done = await deleteEvent(client, event.id, sendScheduling);
               break;
             }
             // An override outside an expanded series: exclude it on the master.
             const delMaster = await findMasterEvent(event);
             const excludePatch = delMaster && buildFallbackExcludePatch(overrideContextOf(event, delMaster));
             if (delMaster && excludePatch) {
-              await updateEvent(client, delMaster.id, excludePatch, sendScheduling);
+              done = await updateEvent(client, delMaster.id, excludePatch, sendScheduling);
             } else {
-              await deleteEvent(client, event.id, sendScheduling);
+              done = await deleteEvent(client, event.id, sendScheduling);
             }
             break;
           }
           case "this_and_future": {
             const result = await truncateRecurrenceAtEvent(event);
+            if (result === "stopped") return;
             if (!result) {
               toast.error(t("notifications.event_error"));
               return;
@@ -1268,7 +1282,7 @@ export function CalendarApp({ linkSegments: routeSegments }: CalendarAppProps = 
               toast.error(t("notifications.event_error"));
               return;
             }
-            await deleteEvent(client, master.id, sendScheduling);
+            done = await deleteEvent(client, master.id, sendScheduling);
             break;
           }
           default: {
@@ -1276,6 +1290,7 @@ export function CalendarApp({ linkSegments: routeSegments }: CalendarAppProps = 
             throw new Error(`Unhandled scope: ${_exhaustive}`);
           }
         }
+        if (!done) return;
         toast.success(t("notifications.event_deleted"));
       }
       try {
@@ -1330,7 +1345,7 @@ export function CalendarApp({ linkSegments: routeSegments }: CalendarAppProps = 
       ? `${detailEvent.description}${separator}${note}`
       : `--- ${timestamp} ---\n${note}`;
     try {
-      await updateEvent(client, detailEvent.id, { description: newDescription });
+      if (!(await updateEvent(client, detailEvent.id, { description: newDescription }))) return;
       setDetailEvent({ ...detailEvent, description: newDescription });
       toast.success(t("detail.note_saved"));
     } catch {
@@ -1479,6 +1494,12 @@ export function CalendarApp({ linkSegments: routeSegments }: CalendarAppProps = 
     }
     return filtered;
   }, [events, selectedCalendarIds, showBirthdayCalendar, birthdayEvents]);
+
+  // The tasks the task list shows; plugin buttons in its toolbar act on them.
+  const listedTaskIds = useMemo(
+    () => filterTasksForList(taskStore.tasks, selectedCalendarIds, taskStore.filter, taskStore.showCompleted).map((task) => task.id),
+    [taskStore.tasks, selectedCalendarIds, taskStore.filter, taskStore.showCompleted],
+  );
 
   // Tasks on the month, week and day grids follow the calendar filter like
   // the events do (#1107).
@@ -1671,6 +1692,8 @@ export function CalendarApp({ linkSegments: routeSegments }: CalendarAppProps = 
                 onFilterChange={taskStore.setFilter}
                 onShowCompletedChange={taskStore.setShowCompleted}
                 onCreateTask={openCreateTaskModal}
+                taskIds={listedTaskIds}
+                compact={isMobile}
               />
               <TaskListView
                 tasks={taskStore.tasks}

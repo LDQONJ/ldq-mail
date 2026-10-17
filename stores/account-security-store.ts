@@ -6,6 +6,10 @@ import { useIdentityStore } from '@/stores/identity-store';
 import { stalwartJmap, requireResult, type JmapMethodResponse } from '@/lib/stalwart/jmap-passthrough';
 import { isStalwartJmapPassthroughEnabled } from '@/lib/stalwart/principal';
 import { currentStoreEpoch } from '@/lib/store-epoch';
+import { accountSecurityHooks } from '@/lib/plugin-hooks';
+
+// Security hooks fire only once the server confirmed the change, and carry no
+// secrets: never a password, TOTP seed or code, or an app password value.
 
 export type EncryptionType = 'Disabled' | 'Aes128' | 'Aes256';
 
@@ -193,6 +197,7 @@ async function createCredential(
   method: SetMethod,
   input: AppCredentialInput,
   fallbackError: string,
+  onCreated?: () => void,
 ): Promise<{ id: string; secret: string }> {
   set({ isSaving: true, error: null });
   try {
@@ -214,6 +219,7 @@ async function createCredential(
     if (!created?.id || !created.secret) {
       throw new Error(`Server did not return created credential`);
     }
+    onCreated?.();
 
     await get().fetchAuthInfo();
     set({ isSaving: false });
@@ -227,19 +233,28 @@ async function createCredential(
   }
 }
 
+/** The server's /set answer lists `id` as destroyed. */
+function wasDestroyed(responses: JmapMethodResponse[], method: string, id: string): boolean {
+  const match = responses.find((r) => r[0] === method);
+  const destroyed = (match?.[1] as { destroyed?: unknown } | undefined)?.destroyed;
+  return Array.isArray(destroyed) && destroyed.includes(id);
+}
+
 async function removeCredential(
   get: StoreGet,
   set: StoreSet,
   method: SetMethod,
   id: string,
   fallbackError: string,
+  onRemoved?: () => void,
 ): Promise<void> {
   set({ isSaving: true, error: null });
   try {
     const accountId = getPrimaryAccountId();
-    await stalwartJmap([
+    const responses = await stalwartJmap([
       [method, { accountId, destroy: [id] }, '0'],
     ]);
+    if (onRemoved && wasDestroyed(responses, method, id)) onRemoved();
     await get().fetchAuthInfo();
     set({ isSaving: false });
   } catch (error) {
@@ -493,6 +508,7 @@ export const useAccountSecurityStore = create<AccountSecurityState>()((set, get)
       if (notUpdated) {
         throw new Error(notUpdated.description || notUpdated.type || 'Failed to update encryption settings');
       }
+      void accountSecurityHooks.onEncryptionChange.emit({ enabled: type !== 'Disabled' });
 
       // Refresh settings after success
       await get().fetchCryptoInfo();
@@ -619,6 +635,7 @@ export const useAccountSecurityStore = create<AccountSecurityState>()((set, get)
         ],
       ]);
       requireAccountPasswordUpdate(responses, 'Failed to change password');
+      void accountSecurityHooks.onPasswordChange.emit({});
       // The session still authenticates with the old password; switch it over
       // so the next request does not bounce the user to the login page.
       try {
@@ -651,6 +668,7 @@ export const useAccountSecurityStore = create<AccountSecurityState>()((set, get)
         responses, 'x:AccountSettings/set',
       ).notUpdated?.singleton;
       if (failed) throw new Error(failed.description || failed.type || 'Failed to update display name');
+      void accountSecurityHooks.onDisplayNameChange.emit({ displayName });
       set({ displayName, isSaving: false });
 
       // 1. Immediately update account store so the sidebar avatar, switcher, and account settings update live
@@ -709,6 +727,7 @@ export const useAccountSecurityStore = create<AccountSecurityState>()((set, get)
         ],
       ]);
       requireAccountPasswordUpdate(responses, 'Failed to enable TOTP');
+      void accountSecurityHooks.onTotpChange.emit({ enabled: true });
       set({ otpEnabled: true, isSaving: false });
     } catch (error) {
       set({
@@ -739,6 +758,7 @@ export const useAccountSecurityStore = create<AccountSecurityState>()((set, get)
         ],
       ]);
       requireAccountPasswordUpdate(responses, 'Failed to disable TOTP');
+      void accountSecurityHooks.onTotpChange.emit({ enabled: false });
       set({ otpEnabled: false, isSaving: false });
     } catch (error) {
       set({
@@ -750,11 +770,13 @@ export const useAccountSecurityStore = create<AccountSecurityState>()((set, get)
   },
 
   createAppPassword: async (input) => {
-    return createCredential(get, set, 'x:AppPassword/set', input, 'Failed to create app password');
+    return createCredential(get, set, 'x:AppPassword/set', input, 'Failed to create app password',
+      () => void accountSecurityHooks.onAppPasswordChange.emit({ change: 'created' }));
   },
 
   removeAppPassword: async (id) => {
-    return removeCredential(get, set, 'x:AppPassword/set', id, 'Failed to remove app password');
+    return removeCredential(get, set, 'x:AppPassword/set', id, 'Failed to remove app password',
+      () => void accountSecurityHooks.onAppPasswordChange.emit({ change: 'removed' }));
   },
 
   createApiKey: async (input) => {

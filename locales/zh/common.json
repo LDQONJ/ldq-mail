@@ -150,6 +150,8 @@
     "nav_label": "导航",
     "add_app": "应用",
     "shared": "共享",
+    "shared_account_hidden": "已从侧边栏隐藏。可在“设置 › 布局”中重新开启。",
+    "notifications_muted": "通知已静音",
     "scheduled": "已计划",
     "unified_all_unread": "全部未读",
     "unified_all_starred": "全部加星标",
@@ -621,7 +623,9 @@
       "copied": "验证码已复制",
       "copy_failed": "无法复制验证码"
     },
-    "mv_position": "第 {index} 封，共 {total} 封"
+    "mv_position": "第 {index} 封，共 {total} 封",
+    "plugin_panel_show": "显示插件面板",
+    "plugin_panel_hide": "隐藏插件面板"
   },
   "email_composer": {
     "minimize": "最小化",
@@ -671,6 +675,7 @@
       "forward": "Fwd:",
       "reply": "Re:"
     },
+    "forward_batch_count": "{count, plural, one {1 封邮件} other {# 封邮件}}",
     "no_subject": "（无主题）",
     "unknown_sender": "未知",
     "quote": {
@@ -815,6 +820,7 @@
     },
     "send_filing_warning": "已发送，但发送后的清理失败，可能会残留旧草稿。",
     "pop_out": "在单独窗口中打开回复",
+    "send_guard_failed": "未发送 — 在发送前检查邮件的插件执行失败或未响应。",
     "read_receipt_on": "已请求已读回执（点击以关闭）",
     "read_receipt_off": "请求已读回执",
     "dsn_on": "已请求投递通知（点击禁用）",
@@ -1201,6 +1207,10 @@
         "label": "标签页图标显示未读数量",
         "description": "在浏览器标签页图标上展示收件箱未读邮件数量角标，即使标签页位于后台也能看见新邮件。禁用以隐藏标签页图标角标。"
       },
+      "show_shared_mail_accounts": {
+        "label": "显示共享邮箱账户",
+        "description": "在侧边栏“共享”下列出与您共享的邮箱文件夹。关闭以全部隐藏，或在下方单独隐藏特定账户。它们的日历与联系人仍会保留。"
+      },
       "pro_interface": {
         "label": "Pro 界面（实验性）",
         "description": "仅限桌面的高级用户布局，支持多标签消息浏览和跨账户工作流。标准界面不受影响，您可以随时切换回来。",
@@ -1455,6 +1465,10 @@
       "permanently_delete_junk": {
         "label": "永久删除垃圾邮件",
         "description": "从\"垃圾邮件\"文件夹中永久删除邮件，而不是将其移至\"已删除\""
+      },
+      "confirm_bulk_delete": {
+        "label": "批量删除邮件前确认",
+        "description": "在将多封选中的邮件移至废纸篓前提示确认。永久删除始终会提示确认。"
       },
       "mail_layout": {
         "label": "邮件布局",
@@ -2542,6 +2556,7 @@
     "not_spam": "不是垃圾邮件",
     "tag": "标签",
     "items_selected": "已选择 {count} 封邮件",
+    "forward_as_attachments": "作为附件转发",
     "edit_draft": "编辑草稿",
     "cancel_scheduled_send": "取消发送",
     "reschedule_send": "重新计划",
@@ -2582,6 +2597,12 @@
     "empty_folder_generic": "清空文件夹",
     "delete_folder": "删除文件夹",
     "refresh": "刷新",
+    "hide_shared_account": "从侧边栏隐藏",
+    "mute_notifications": "静音通知",
+    "unmute_notifications": "取消静音通知",
+    "mute_account_notifications": "静音该账户的通知",
+    "unmute_account_notifications": "取消静音该账户的通知",
+    "reset_folder_notifications": "重置文件夹通知设置",
     "mark_all_confirm_title": "将所有文件夹标记为已读",
     "mark_all_confirm_message": "将您个人账户中的所有未读邮件标记为已读？",
     "delete_confirm_title": "删除文件夹",
@@ -3285,7 +3306,16 @@
       "add": "添加提醒",
       "remove": "移除提醒",
       "amount": "提醒数量",
-      "unit": "提醒单位"
+      "unit": "提醒单位",
+      "action": "提醒类型",
+      "action_display": "通知",
+      "action_email": "邮件",
+      "by_email": "通过邮件提醒：{label}",
+      "kept": "{count, plural, one {保留了另外 # 个无法在此编辑的提醒} other {保留了另外 # 个无法在此编辑的提醒}}",
+      "other": "{count, plural, one {另外 # 个提醒} other {另外 # 个提醒}}",
+      "calendar_defaults": "日历默认设置",
+      "customize": "自定义",
+      "use_defaults": "使用日历默认设置"
     },
     "settings": {
       "limit_hours": "限制显示时段",
@@ -3455,11 +3485,21 @@
       "url_copied": "CalDAV URL 已复制到剪贴板",
       "share": "共享日历",
       "new_event_in_calendar": "在此日历中新建事件",
+      "shared_with": "已与 {names} 共享",
+      "shared_with_count": "{count, plural, one {已与 1 人共享} other {已与 # 人共享}}",
+      "move_up": "上移",
+      "move_down": "下移",
       "kind": "内容",
       "kind_events": "日程",
       "kind_tasks": "任务",
       "kind_both": "日程和任务",
-      "kind_hint": "决定通过 CalDAV 同步时哪些应用可以看到此日历。之后无法更改。"
+      "kind_hint": "决定通过 CalDAV 同步时哪些应用可以看到此日历。之后无法更改。",
+      "default_alerts": "默认提醒",
+      "default_alerts_title": "“{name}”的默认提醒",
+      "default_alerts_hint": "除非在具体日程中另行更改，否则该日历中的新建日程均采用这些默认提醒。在此更改不会影响现有日程。邮件提醒由邮件服务器自动发出。",
+      "default_alerts_timed": "设定时间的日程",
+      "default_alerts_all_day": "全天日程",
+      "default_alerts_updated": "默认提醒已更新"
     },
     "subscription": {
       "title": "iCal 订阅",
@@ -3781,6 +3821,7 @@
     "upload": "上传",
     "parent_directory": "父目录",
     "breadcrumb_root": "根目录",
+    "other_accounts": "其他账户",
     "drop_files_here": "将文件或文件夹拖放到此处进行上传",
     "toggle_favorite": "切换收藏夹",
     "properties": "属性",
@@ -3807,8 +3848,7 @@
     "settings_folder_layout_desc": "选择文件夹的显示方式：与文件列表内嵌显示，或在侧边栏树状显示",
     "settings_folder_layout_inline": "内嵌",
     "settings_folder_layout_sidebar": "侧边栏",
-    "stability_warning": "大文件上传会导致服务器不稳定。已删除的文件可能不会立即从存储中清除。谨慎使用。",
-    "other_accounts": "其他账户"
+    "stability_warning": "大文件上传会导致服务器不稳定。已删除的文件可能不会立即从存储中清除。谨慎使用。"
   },
   "smime": {
     "your_certificates": "您的证书",
@@ -3851,7 +3891,7 @@
     "processing": "处理中…",
     "close": "关闭",
     "certificate_details": "证书详情",
-    "cert_subject": "主题",
+    "cert_subject": "主体",
     "cert_issuer": "颁发者",
     "cert_email": "邮件",
     "cert_serial": "序列号",
@@ -4023,6 +4063,354 @@
       "failed_detail": "授权失败：{error}",
       "missing_params": "缺少授权码或状态。",
       "delivery_failed": "无法将授权结果传递到应用标签页。请关闭此窗口并重试。"
+    },
+    "settings": {
+      "title": "插件",
+      "description": "管理员添加的插件。可为您的账户开启或关闭。",
+      "description_uploads": "插件可为网页邮箱扩展新功能。您可以为账户开启或关闭插件，或安装自己的插件。",
+      "description_demo": "演示模式下无法使用插件。",
+      "install_button": "安装插件",
+      "install_hint": "选择插件 ZIP 压缩包。",
+      "install_hint_approval": "选择插件 ZIP 压缩包。需经管理员批准后方可启用。",
+      "install_uploads_off": "管理员未允许安装插件。",
+      "install_managed_id": "管理员已提供了同名插件，因此无法替换。",
+      "install_invalid": "该文件并非有效的可安装插件：{details}",
+      "toast_installed": "插件已安装。请在下方开启。",
+      "toast_installed_pending": "插件已安装并已提交给管理员审批。",
+      "toast_enabled": "已开启 {name}",
+      "toast_disabled": "已关闭 {name}",
+      "toast_removed": "已移除 {name}",
+      "toast_forced": "管理员已强制保持开启 {name}",
+      "toast_approval_requested": "{name} 正在等待管理员审批",
+      "empty_title": "暂无插件",
+      "empty_admin": "管理员尚未添加任何插件。",
+      "empty_uploads": "从 ZIP 文件安装插件以开始使用。",
+      "empty_demo": "插件需要真实账户，演示模式下不提供。",
+      "syncing": "正在向服务器检查插件…",
+      "status_installed": "已关闭",
+      "status_enabled": "正在启动",
+      "status_running": "运行中",
+      "status_disabled": "已关闭",
+      "status_error": "故障",
+      "badge_forced": "必需",
+      "badge_managed": "管理员提供",
+      "badge_yours": "用户安装",
+      "badge_awaiting": "等待审批",
+      "toggle_label": "开启或关闭 {name}",
+      "forced_note": "管理员要求使用此插件，因此无法关闭。",
+      "permissions": "权限与能力",
+      "permissions_managed": "权限与能力（管理员已批准）",
+      "settings": "设置",
+      "remove": "移除",
+      "remove_title": "移除 {name}？",
+      "remove_message": "该插件及其在此浏览器中存储的所有数据将被删除。您稍后可以重新安装。",
+      "remove_confirm": "确认移除",
+      "error_user_plugins_off": "管理员已停用用户自装插件，此插件无法运行。",
+      "error_approval_unavailable": "此插件在审批机制生效前安装。请移除并重新安装以提交审批。",
+      "error_approval_denied": "管理员未批准此插件。",
+      "error_approval_pending": "正在等待管理员批准此插件。",
+      "error_auto_disabled": "因多次运行故障已自动关闭。重新开启以重试。",
+      "accounts_heading": "已连接的账户",
+      "account_on": "{host} 上的 {label}",
+      "account_waiting": "{host} 上的 {label}（尚未完成登录）",
+      "disconnect": "断开连接",
+      "disconnect_failed": "无法断开连接 {label}"
+    },
+    "consent": {
+      "title": "允许 {name} 执行此操作？",
+      "intro": "该插件申请以下权限。只有在您允许的情况下才会授予这些权限。",
+      "high_risk_note": "带标记的项目会允许插件访问您的邮件内容或向外部发送数据。请仅对您信任的插件授予此权限。",
+      "revoke_hint": "您可以随时在设置中关闭或移除该插件。",
+      "deny": "不允许",
+      "allow": "允许"
+    },
+    "permissions": {
+      "none": "不需要特殊权限。",
+      "high_risk": "需谨慎",
+      "email_read": {
+        "title": "读取您的邮件",
+        "body": "查看发件人、收件人、主题、您账户中任意邮件的完整正文以及文件夹结构。"
+      },
+      "email_write": {
+        "title": "修改和整理您的邮件",
+        "body": "在邮件上添加或移除标签、星标及其他标记，在文件夹和归档之间移动邮件，以及保存草稿。"
+      },
+      "email_send": {
+        "title": "在发送前修改邮件",
+        "body": "读取并修改您撰写邮件的收件人、主题、正文和附件，或阻止邮件发送。"
+      },
+      "crypto_full": {
+        "title": "对此应用的完全访问权限",
+        "body": "以与网页邮箱本身相同的权限运行。它可以读取您的所有邮件和存储的密钥，并代表您执行操作。请仅对您完全信任的插件允许此权限。"
+      },
+      "email_raw_send": {
+        "title": "发送自主构建的邮件",
+        "body": "从您的账户发送完整的邮件（例如已签名或已加密的邮件）。"
+      },
+      "email_blob_read": {
+        "title": "读取邮件的原始内容",
+        "body": "读取您操作的邮件附件和完整源文件，以及发送前附加的所有文件。"
+      },
+      "email_blob_write": {
+        "title": "在发送前替换附件",
+        "body": "上传文件到您的邮件服务器，并在邮件发送前将附件替换为其他文件。"
+      },
+      "email_render_takeover": {
+        "title": "改变邮件显示方式",
+        "body": "替换您打开的邮件和邮件列表的文本（例如显示解密后的内容）。"
+      },
+      "calendar_read": {
+        "title": "读取您的日历",
+        "body": "查看您的日历及其日程事件。"
+      },
+      "calendar_write": {
+        "title": "修改您的日历",
+        "body": "创建、修改和删除日程事件。"
+      },
+      "contacts_read": {
+        "title": "读取您的联系人",
+        "body": "搜索并读取您的通讯录。"
+      },
+      "contacts_write": {
+        "title": "修改您的联系人",
+        "body": "创建、修改和删除联系人及通讯录。"
+      },
+      "files_read": {
+        "title": "读取您的文件",
+        "body": "浏览并打开您账户中存储的文件。"
+      },
+      "files_write": {
+        "title": "修改您的文件",
+        "body": "在您的账户中上传、重命名、移动和删除文件。"
+      },
+      "identity_read": {
+        "title": "查看您的发件人地址",
+        "body": "查看您用于发送邮件的地址及其签名。"
+      },
+      "identity_write": {
+        "title": "修改您的发件人地址",
+        "body": "创建、修改和删除发件人地址及签名。"
+      },
+      "filters_read": {
+        "title": "读取您的邮件过滤规则",
+        "body": "查看用于对收件进行分类的规则。"
+      },
+      "filters_write": {
+        "title": "修改您的邮件过滤规则",
+        "body": "在服务器端过滤器中添加规则。这些规则可移动、转发或删除传入的邮件。"
+      },
+      "tasks_read": {
+        "title": "读取您的待办任务",
+        "body": "查看您的任务列表和任务。"
+      },
+      "tasks_write": {
+        "title": "修改您的待办任务",
+        "body": "创建、修改、完成和删除任务。"
+      },
+      "templates_read": {
+        "title": "读取您的邮件模板",
+        "body": "查看您保存的邮件模板。"
+      },
+      "templates_write": {
+        "title": "修改您的邮件模板",
+        "body": "创建、修改和删除邮件模板。"
+      },
+      "smime_read": {
+        "title": "查看您的 S/MIME 状态",
+        "body": "查看您是否拥有 S/MIME 密钥和证书（无权访问密钥本身）。"
+      },
+      "vacation_read": {
+        "title": "查看外出自动回复",
+        "body": "查看自动回复是否开启及其内容。"
+      },
+      "vacation_write": {
+        "title": "修改外出自动回复",
+        "body": "开启或关闭自动回复，并更改回复内容与生效日期。"
+      },
+      "settings_read": {
+        "title": "读取您的设置",
+        "body": "查看您的首选项和标签定义。"
+      },
+      "settings_write": {
+        "title": "修改您的设置",
+        "body": "添加、重排标签并更改您的首选项。"
+      },
+      "security_read": {
+        "title": "查看您的账户安全状态",
+        "body": "查看是否启用了双重认证和加密（无权访问私密凭据）。"
+      },
+      "auth_observe": {
+        "title": "获知登录状态",
+        "body": "在您登录、切换账户或会话续期时收到通知。"
+      },
+      "auth_emit": {
+        "title": "让您退出登录",
+        "body": "退出网页邮箱。"
+      },
+      "account_read": {
+        "title": "查看您的账户",
+        "body": "查看您添加的账户及其地址和服务器。"
+      },
+      "http_post": {
+        "title": "代您使用网页邮箱服务端接口",
+        "body": "使用您的登录身份调用以下服务器端点："
+      },
+      "http_fetch": {
+        "title": "连接至外部网站",
+        "body": "向这些站点发送请求。插件能读取的所有数据均可发送至："
+      },
+      "admin_config": {
+        "title": "从管理员处读取插件配置",
+        "body": "读取管理员为此插件保存的配置设置。"
+      },
+      "ui_observe": {
+        "title": "跟踪您在应用中的位置",
+        "body": "获知当前打开的页面并响应您点击的链接。"
+      },
+      "ui_toolbar": {
+        "title": "在工具栏添加按钮",
+        "body": "在邮件工具栏、打开的邮件中及顶部栏显示自定义按钮。"
+      },
+      "ui_app_top_banner": {
+        "title": "在顶部显示通知横幅",
+        "body": "在应用顶部显示全局通知。"
+      },
+      "ui_email_banner": {
+        "title": "在邮件中显示提示横幅",
+        "body": "在打开的邮件或对话各个部分上方、内部及之间显示自定义提示与摘要。"
+      },
+      "ui_email_footer": {
+        "title": "在邮件下方添加内容",
+        "body": "在打开的邮件下方显示自定义内容。"
+      },
+      "ui_contact_cryptokeys": {
+        "title": "显示联系人的加密密钥",
+        "body": "显示并管理联系人身上的加密密钥。"
+      },
+      "ui_email_details": {
+        "title": "在邮件详情中添加面板",
+        "body": "在打开的邮件旁侧或下方显示自定义面板。"
+      },
+      "ui_download_file": {
+        "title": "保存文件到您的设备",
+        "body": "提供该插件生成的文件下载。"
+      },
+      "ui_message_list_tabs": {
+        "title": "在收件箱中添加标签页",
+        "body": "将您的收件箱分类为多标签页（如“更新”或“推广”）。"
+      },
+      "ui_composer_toolbar": {
+        "title": "在撰写器中添加功能",
+        "body": "在您撰写邮件时显示自定义按钮、菜单项和功能区。"
+      },
+      "ui_composer_sidebar": {
+        "title": "在撰写器中添加侧边栏面板",
+        "body": "在您撰写的邮件旁侧显示自定义面板。"
+      },
+      "ui_sidebar_widget": {
+        "title": "在侧边栏中添加小部件",
+        "body": "在邮件侧边栏中显示自定义卡片和模块。"
+      },
+      "ui_settings_section": {
+        "title": "添加设置页面",
+        "body": "在“设置”中显示自定义页面。"
+      },
+      "ui_context_menu": {
+        "title": "在邮件右键菜单中添加项",
+        "body": "在右键点击邮件时弹出的菜单中添加功能项。"
+      },
+      "ui_navigation_rail": {
+        "title": "在导航栏添加按钮",
+        "body": "在主导航栏中显示自定义按钮。"
+      },
+      "ui_keyboard": {
+        "title": "添加键盘快捷键",
+        "body": "响应其自定义的键盘快捷键。"
+      },
+      "ui_calendar_action": {
+        "title": "在日历中添加功能",
+        "body": "在日程事件上显示按钮和分区，在日历日期上显示简短标签和标记圆点。"
+      },
+      "ui_admin_page": {
+        "title": "添加管理页面",
+        "body": "在管理员设置中添加自定义页面。"
+      },
+      "app_lifecycle": {
+        "title": "感知应用的启动与停止",
+        "body": "在应用启动、离线或退出登录时获知通知。"
+      },
+      "compose_open": {
+        "title": "代您打开撰写窗口",
+        "body": "自动填入收件人、文本或附件并打开新邮件草稿。您仍可自行决定是否发送。"
+      },
+      "compose_read": {
+        "title": "读取正在撰写的邮件",
+        "body": "当您在撰写器中使用该插件时，读取正在编写的邮件正文文本（不包含签名或引用的旧邮件）。"
+      },
+      "compose_write": {
+        "title": "修改正在撰写的邮件",
+        "body": "当您在撰写器中使用该插件时，替换或追加邮件正文文本。您可以撤销每一步修改，且仍由您最终决定是否发送。"
+      },
+      "ui_notifications": {
+        "title": "显示通知",
+        "body": "在您的设备上显示系统通知（若未允许则在应用内显示提示）。每条通知都会注明插件名称。"
+      },
+      "ui_message_list": {
+        "title": "在邮件列表中添加内容",
+        "body": "在邮件列表上方显示自定义内容，以及在单封邮件和多选操作栏上添加按钮。"
+      },
+      "ui_contacts": {
+        "title": "在联系人中添加功能",
+        "body": "在联系人详情中显示自定义模块，以及在联系人列表中添加操作按钮。"
+      },
+      "ui_tasks": {
+        "title": "在待办任务中添加功能",
+        "body": "在任务详情中显示自定义模块，并在任务列表中添加操作按钮。"
+      },
+      "ui_files": {
+        "title": "在文件中心添加功能",
+        "body": "在文件预览中显示自定义模块，并在文件上下文菜单中添加项目。"
+      },
+      "ui_commands": {
+        "title": "添加命令",
+        "body": "在全局命令面板（Ctrl+K）中添加自定义命令。"
+      },
+      "ui_app_page": {
+        "title": "添加应用独立页面",
+        "body": "在应用中添加专属独立页面，并在导航栏显示入口按钮。"
+      },
+      "http_proxy": {
+        "title": "代您使用已连接的账户",
+        "body": "使用您或管理员配置的账户或密钥通过服务端发送请求。插件永远看不到密码，但可执行该账户在对应服务器上的所有权限。"
+      }
+    },
+    "dialog": {
+      "from_plugin": "来自插件 {name}",
+      "ok": "确定",
+      "submit": "提交",
+      "confirm": "确认",
+      "cancel": "取消",
+      "close": "关闭",
+      "turn_off": "关闭 {name}",
+      "plugin_menu": "{name} 的选项",
+      "password_note": "此表单由插件 {name} 提供，并非网页邮箱官方。请仅在您信任此插件时输入密码。",
+      "toast_auto_disabled": "{name} 因反复故障已自动关闭。"
+    },
+    "connect": {
+      "title": "连接 {label}",
+      "intro_password": "{name} 申请使用您的 {label} 账户。系统会将密码保存在服务器端并仅发送至 {host}。插件永远无法看到密码。",
+      "intro_password_any": "{name} 申请使用您的 {label} 账户。系统会将密码保存在服务器端并仅发送至您在此输入的服务器。插件永远无法看到密码。",
+      "intro_signin": "{name} 申请登录您的 {label} 账户。请在此输入服务器地址，随后在专属页面完成登录。系统会将获取的访问权限安全保存在服务器端；插件永远无法看到明文密码。",
+      "server": "服务器地址",
+      "server_hint": "cloud.example.com",
+      "username": "用户名",
+      "secret": "密码或密钥",
+      "connect": "连接",
+      "continue": "继续",
+      "cancel": "取消",
+      "saving": "正在保存…",
+      "error_server": "请输入服务器地址，例如 https://cloud.example.com",
+      "error_save": "无法保存：{error}"
     }
   },
   "global_search": {
@@ -4051,6 +4439,42 @@
     "preview_empty": "选择一个结果以预览",
     "open_full": "打开",
     "view_label": "视图"
+  },
+  "top_bar": {
+    "more": "更多选项"
+  },
+  "plugin_pages": {
+    "loading": "正在加载页面",
+    "not_available_title": "此页面不可用",
+    "not_available_description": "提供此页面的插件已关闭或已被卸载。",
+    "back_to_mail": "返回邮件",
+    "settings_group": "插件"
+  },
+  "command_palette": {
+    "title": "命令面板",
+    "open": "打开命令面板",
+    "placeholder": "输入命令...",
+    "no_results": "无匹配命令",
+    "go_to": "前往 {name}",
+    "compose": "写邮件",
+    "search": "搜索邮件",
+    "theme_dark": "切换为深色模式",
+    "theme_light": "切换为浅色模式",
+    "shortcuts": "查看键盘快捷键",
+    "group_navigation": "前往",
+    "group_actions": "操作",
+    "group_plugins": "插件"
+  },
+  "notification_center": {
+    "title": "通知中心",
+    "mark_all_read": "全部标记为已读",
+    "clear": "清空",
+    "empty": "暂无新通知",
+    "close": "关闭",
+    "unread": "未读",
+    "unread_count": "{count} 条未读",
+    "level_error": "错误",
+    "level_warning": "警告"
   },
   "register": {
     "title": "LDQ Mail",

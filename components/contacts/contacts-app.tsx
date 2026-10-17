@@ -338,21 +338,23 @@ function ContactsAppContent({ linkSegments: routeSegments }: ContactsAppProps = 
   const handleDropContactsToCategory = useCallback(async (contactIds: string[], keyword: string) => {
     if (!client && supportsSync) return;
     try {
+      // Contacts in the category afterwards; a plugin may stop some updates.
+      let added = 0;
       for (const contactId of contactIds) {
         const contact = contacts.find(c => c.id === contactId);
         if (!contact) continue;
         const existingKeywords = contact.keywords || {};
-        if (existingKeywords[keyword]) continue; // already has this keyword
+        if (existingKeywords[keyword]) { added++; continue; } // already has this keyword
         const updatedKeywords = { ...existingKeywords, [keyword]: true };
-        if (supportsSync && client) {
-          await updateContact(client, contactId, { keywords: updatedKeywords });
-        } else {
-          updateLocalContact(contactId, { keywords: updatedKeywords });
-        }
+        const updated = supportsSync && client
+          ? await updateContact(client, contactId, { keywords: updatedKeywords })
+          : await updateLocalContact(contactId, { keywords: updatedKeywords });
+        if (updated !== false) added++;
       }
-      const msg = contactIds.length === 1
+      if (added === 0) return;
+      const msg = added === 1
         ? t("category_added", { name: keyword })
-        : t("category_added_plural", { count: contactIds.length, name: keyword });
+        : t("category_added_plural", { count: added, name: keyword });
       toast.success(msg);
     } catch (error) {
       console.error('Failed to add contacts to category:', error);
@@ -427,11 +429,11 @@ function ContactsAppContent({ linkSegments: routeSegments }: ContactsAppProps = 
     if (!confirmed) return;
 
     try {
-      if (supportsSync && client) {
-        await deleteContact(client, contactId);
-      } else {
-        deleteLocalContact(contactId);
-      }
+      const deleted = supportsSync && client
+        ? await deleteContact(client, contactId)
+        : await deleteLocalContact(contactId);
+      // A plugin stopped it and has told the user why.
+      if (!deleted) return;
       toast.success(t("toast.deleted"));
       if (selectedContactId === contactId) setView("list");
     } catch (error) {
@@ -468,33 +470,27 @@ function ContactsAppContent({ linkSegments: routeSegments }: ContactsAppProps = 
     const { id: _id, uid: _uid, created: _created, updated: _updated, ...rest } = source;
     void _id; void _uid; void _created; void _updated;
     const data: Partial<ContactCard> = JSON.parse(JSON.stringify(rest));
-    if (supportsSync && client) {
-      await createContact(client, data);
-      toast.success(t("toast.created"));
-    } else {
-      const localContact: ContactCard = {
+    const created = supportsSync && client
+      ? await createContact(client, data)
+      : await addLocalContact({
         id: `local-${generateUUID()}`,
         addressBookIds: data.addressBookIds || {},
         ...data,
-      };
-      addLocalContact(localContact);
-      toast.success(t("toast.created"));
-    }
+      });
+    if (created) toast.success(t("toast.created"));
   }, [supportsSync, client, createContact, addLocalContact, t]);
 
   const handleSaveNew = useCallback(async (data: Partial<ContactCard>) => {
-    if (supportsSync && client) {
-      await createContact(client, data);
-      toast.success(t("toast.created"));
-    } else {
-      const localContact: ContactCard = {
+    const created = supportsSync && client
+      ? await createContact(client, data)
+      : await addLocalContact({
         id: `local-${generateUUID()}`,
         addressBookIds: {},
         ...data,
-      };
-      addLocalContact(localContact);
-      toast.success(t("toast.created"));
-    }
+      });
+    // A plugin stopped it: keep the form open with what was typed.
+    if (!created) return;
+    toast.success(t("toast.created"));
     setDefaultBookIdForCreate(undefined);
     setCreatePrefill(undefined);
     if (returnToEmail) {
@@ -508,13 +504,11 @@ function ContactsAppContent({ linkSegments: routeSegments }: ContactsAppProps = 
   const handleSaveEdit = useCallback(async (data: Partial<ContactCard>) => {
     if (!selectedContact) return;
 
-    if (supportsSync && client) {
-      await updateContact(client, selectedContact.id, data);
-      toast.success(t("toast.updated"));
-    } else {
-      updateLocalContact(selectedContact.id, data);
-      toast.success(t("toast.updated"));
-    }
+    const updated = supportsSync && client
+      ? await updateContact(client, selectedContact.id, data)
+      : await updateLocalContact(selectedContact.id, data);
+    if (!updated) return;
+    toast.success(t("toast.updated"));
     setView("detail");
   }, [supportsSync, client, selectedContact, updateContact, updateLocalContact, t]);
 
@@ -702,10 +696,10 @@ function ContactsAppContent({ linkSegments: routeSegments }: ContactsAppProps = 
     if (!confirmed) return;
 
     try {
-      await bulkDeleteContacts(
+      if (!(await bulkDeleteContacts(
         supportsSync && client ? client : null,
         Array.from(selectedContactIds)
-      );
+      ))) return;
       toast.success(t("bulk.deleted", { count: selectedContactIds.size }));
       setView("list");
     } catch (error) {
