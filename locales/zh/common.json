@@ -3,7 +3,7 @@
   "login": {
     "title": "网页邮箱",
     "username_label": "邮箱地址",
-    "username_placeholder": "user@example.com",
+    "username_placeholder": "请输入用户名",
     "password_label": "密码",
     "password_placeholder": "请输入密码",
     "jmap_endpoint_label": "JMAP 服务器",
