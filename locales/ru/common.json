@@ -60,6 +60,12 @@
     "demo_login_button": "Запустить демо",
     "demo_tagline": "Попробуйте полнофункциональный почтовый клиент. Аккаунт не нужен.",
     "demo_no_signup": "Регистрация не требуется - исследуйте свободно с примерными данными",
+    "mobile_handoff": {
+      "title": "Open the Bulwark mobile app?",
+      "description": "This sign-in page was opened by an app on this device. Your sign-in for {username} will be handed to the app that registered the Bulwark link. Continue only if you started this from the Bulwark mobile app.",
+      "confirm": "Hand over to the app",
+      "cancel": "Stay in the webmail"
+    },
     "oauth_completing": "Завершение входа...",
     "oauth_error": {
       "title": "Ошибка аутентификации",
@@ -70,7 +76,7 @@
       "back_to_login": "Вернуться ко входу"
     },
     "have_invite_code": "Have an invite code?",
-    "register_link": "Register Account"
+    "register_link": "Register"
   },
   "sidebar": {
     "close": "Закрыть",
@@ -144,14 +150,16 @@
     "show_all_tags": "Показать все ({count})",
     "show_fewer_tags": "Показать меньше",
     "folders": "Папки",
+    "your_folders": "Ваши папки",
+    "create_folder": "Создать папку",
     "show_more": "Ещё",
     "show_fewer": "Свернуть",
-    "mail": "Почта",
-    "nav_label": "Навигация",
-    "add_app": "Приложения",
     "shared": "Общие",
     "shared_account_hidden": "Скрыто с боковой панели. Вернуть можно в Настройки › Макет.",
     "notifications_muted": "Уведомления отключены",
+    "mail": "Почта",
+    "nav_label": "Навигация",
+    "add_app": "Приложения",
     "scheduled": "Запланировано",
     "unified_all_unread": "Все непрочитанные",
     "unified_all_starred": "Все помеченные",
@@ -238,6 +246,13 @@
     "show_on_mobile": "Показывать на мобильном"
   },
   "email_list": {
+    "columns": {
+      "from": "От",
+      "to": "Кому",
+      "subject": "Тема",
+      "date": "Дата",
+      "size": "Размер"
+    },
     "no_emails": "Сообщений не найдено",
     "no_emails_description": "Папка пуста",
     "no_search_results": "Результатов не найдено",
@@ -446,6 +461,31 @@
         "none": "Нет"
       }
     },
+    "details": {
+      "recipients_routing": "Получатели и маршрутизация",
+      "authentication_security": "Аутентификация и безопасность",
+      "identifiers_threading": "Идентификаторы и обсуждения",
+      "mailing_list": "Список рассылки",
+      "message_properties": "Свойства сообщения",
+      "sent": "Отправлено",
+      "received": "Получено",
+      "delivery_time": "Время доставки",
+      "in_reply_to": "В ответ на",
+      "references": "Ссылки",
+      "thread_id": "ID обсуждения",
+      "size": "Размер",
+      "mime_type": "MIME-тип",
+      "attachments_summary": "{count} файлов · {size}",
+      "list_id": "ID списка",
+      "list_help": "Справка списка",
+      "list_post": "Публикация в список",
+      "list_unsubscribe": "Отписаться",
+      "iprev": "Обратный DNS",
+      "spam_status": "Статус спама",
+      "ai_verdict": "Вердикт ИИ",
+      "account": "Аккаунт",
+      "no_subject": "(без темы)"
+    },
     "headers": {
       "routing": "Маршрутизация",
       "received": "Получено",
@@ -557,36 +597,11 @@
       "event_updated": "Обновление №{sequence}",
       "event_status_tentative": "Под вопросом",
       "event_status_cancelled": "Отменено",
-      "collapse": "Скрыть детали",
-      "expand": "Показать детали"
+      "expand": "Показать детали",
+      "collapse": "Скрыть детали"
     },
     "send": "Отправить",
     "more": "ещё",
-    "details": {
-      "recipients_routing": "Получатели и маршрутизация",
-      "authentication_security": "Аутентификация и безопасность",
-      "identifiers_threading": "Идентификаторы и обсуждения",
-      "mailing_list": "Список рассылки",
-      "message_properties": "Свойства сообщения",
-      "sent": "Отправлено",
-      "received": "Получено",
-      "delivery_time": "Время доставки",
-      "in_reply_to": "В ответ на",
-      "references": "Ссылки",
-      "thread_id": "ID обсуждения",
-      "size": "Размер",
-      "mime_type": "MIME-тип",
-      "attachments_summary": "{count} файлов · {size}",
-      "list_id": "ID списка",
-      "list_help": "Справка списка",
-      "list_post": "Публикация в список",
-      "list_unsubscribe": "Отписаться",
-      "iprev": "Обратный DNS",
-      "spam_status": "Статус спама",
-      "ai_verdict": "Вердикт ИИ",
-      "account": "Аккаунт",
-      "no_subject": "(без темы)"
-    },
     "scheduled_banner": "Запланировано к отправке {date}",
     "scheduled_send_created": "Письмо запланировано к отправке",
     "sending_in": "Отправка через {seconds} с",
@@ -615,7 +630,9 @@
       "not_in_contacts": "Нет в ваших контактах",
       "add_to_contacts": "Добавить в контакты",
       "copied": "Скопировано!",
-      "copy_failed": "Не удалось скопировать"
+      "copy_failed": "Не удалось скопировать",
+      "view_contact": "Открыть контакт",
+      "view_details": "Подробнее"
     },
     "send_now": "Отправить сейчас",
     "verification_code": {
@@ -628,6 +645,7 @@
     "plugin_panel_hide": "Скрыть панель плагина"
   },
   "email_composer": {
+    "select_from_directory": "Выбрать из справочника",
     "minimize": "Свернуть",
     "maximize": "Во весь экран",
     "restore": "Восстановить",
@@ -645,6 +663,7 @@
     "bcc": "Скрытая копия",
     "subject": "Тема",
     "body_placeholder": "Напишите сообщение...",
+    "formatting": "Форматирование",
     "send": "Отправить",
     "cancel": "Отмена",
     "attach": "Прикрепить",
@@ -661,6 +680,9 @@
     "discard_draft_confirm": "Есть несохранённые изменения. Удалить этот черновик?",
     "discard_draft_message": "Черновик будет удалён.",
     "saving": "Сохранение...",
+    "sending": "Отправка...",
+    "add_link": "Добавить ссылку",
+    "link_url_prompt": "Введите URL",
     "draft_saved": "Черновик сохранён",
     "save_failed": "Не удалось сохранить",
     "to_placeholder": "Адреса получателей",
@@ -710,6 +732,10 @@
     "option_dsn_hint": "Получить отчёт, когда сервер доставит письмо",
     "option_require_tls": "Требовать шифрованную доставку",
     "option_require_tls_hint": "Доставлять только через TLS, иначе вернуть",
+    "option_priority": "Важность",
+    "option_priority_high": "Высокая",
+    "option_priority_normal": "Обычная",
+    "option_priority_low": "Низкая",
     "validation": {
       "recipient_required": "Укажите получателя для отправки",
       "body_required": "Напишите сообщение или прикрепите файл",
@@ -725,9 +751,8 @@
     "drop_files": "Перетащите файлы для прикрепления",
     "show_less": "Свернуть",
     "send_failed": "Не удалось отправить письмо",
-    "send_timeout": "Сервер перестал отвечать. Прежде чем отправлять снова, проверьте папку «Отправленные» — письмо могло уже уйти.",
     "send_offline": "Похоже, вы не в сети. Сообщение сохранено, отправьте его снова, когда подключение восстановится.",
-    "formatting": "Форматирование",
+    "send_timeout": "Сервер перестал отвечать. Прежде чем отправлять снова, проверьте папку «Отправленные» — письмо могло уже уйти.",
     "send_recipients_rejected": "Не отправлено — сервер отклонил всех получателей.",
     "send_plugin_failed": "Не отправлено: плагин, который отвечает за отправку, завершился с ошибкой или работал слишком долго. Проверьте папку «Отправленные», прежде чем отправлять снова.",
     "send_some_recipients_rejected": "Отправлено, но не этим получателям — сервер их отклонил.",
@@ -756,9 +781,6 @@
       "send_anyway": "Отправить всё равно",
       "back": "Вернуться к редактированию"
     },
-    "add_link": "Добавить ссылку",
-    "link_url_prompt": "Введите URL",
-    "sending": "Отправка...",
     "schedule_send": "Запланировать отправку",
     "schedule_send_description": "Выберите, когда сервер должен отправить это сообщение.",
     "schedule_preset": {
@@ -782,6 +804,9 @@
     "autocomplete_search_server": "Искать на сервере",
     "autocomplete_searching": "Поиск...",
     "mention_recipients": "Получатели",
+    "mention_card_not_recipient": "Нет в полях «Кому» и «Копия», поэтому письмо не получит.",
+    "mention_card_add": "Добавить в {field}",
+    "mention_card_remove": "Убрать упоминание",
     "toolbar": {
       "bold": "Жирный",
       "italic": "Курсив",
@@ -821,15 +846,6 @@
     "send_filing_warning": "Отправлено - но последующая очистка не удалась, может остаться устаревший черновик.",
     "pop_out": "Открыть ответ в отдельном окне",
     "send_guard_failed": "Не отправлено: плагин, проверяющий письма перед отправкой, завершился с ошибкой или не ответил.",
-    "read_receipt_on": "Запрошено уведомление о прочтении (нажмите, чтобы отключить)",
-    "read_receipt_off": "Запросить уведомление о прочтении",
-    "dsn_on": "Запрошено уведомление о доставке (нажмите, чтобы отключить)",
-    "dsn_off": "Запросить уведомление о доставке",
-    "format_plain_text": "Переключить на простой текст",
-    "format_rich_text": "Переключить на форматированный текст (HTML)",
-    "require_tls_on": "Требуется зашифрованная доставка (нажмите, чтобы отключить)",
-    "require_tls_off": "Требовать зашифрованную доставку (TLS)",
-    "use_template": "Шаблон",
     "use_oracle_relay": "Send via Oracle Relay"
   },
   "confirm_dialog": {
@@ -887,6 +903,8 @@
     "emails_moved": "{count} писем перемещено",
     "moved_to_mailbox": "Перемещено в {mailbox}",
     "move_failed": "Ошибка перемещения",
+    "removed_from_folder": "Убрано из папки {mailbox}",
+    "remove_from_folder_failed": "Не удалось убрать из этой папки",
     "emails_copied": "{count} писем скопировано",
     "copy_failed": "Ошибка копирования",
     "move_error": "Не удалось переместить письма в выбранную папку",
@@ -1003,37 +1021,27 @@
     "discard_changes": "Отменить несохранённые изменения?",
     "discard": "Отменить",
     "keep_editing": "Продолжить редактирование",
+    "search_placeholder": "Поиск настроек",
+    "search_clear": "Очистить поиск",
+    "search_no_results": "Нет подходящих настроек",
     "tabs": {
       "appearance": "Внешний вид",
-      "language": "Язык, регион и время",
-      "email": "Поведение почты",
-      "composer": "Редактор",
-      "privacy": "Конфиденциальность и безопасность",
       "account": "Аккаунт",
-      "identities": "Удостоверения",
       "vacation": "Отсутствие",
-      "advanced": "Дополнительно",
       "calendar": "Календарь",
       "filters": "Фильтры",
-      "templates": "Шаблоны",
       "folders": "Папки",
-      "keywords": "Теги",
       "security": "Безопасность",
       "files": "Файлы",
       "contacts": "Контакты",
-      "encryption": "Шифрование",
-      "protocol_handlers": "Приложения по умолчанию",
-      "sidebar_apps": "Приложения боковой панели",
       "notifications": "Уведомления",
-      "layout": "Макет",
-      "themes": "Темы",
       "reading": "Чтение",
       "composing": "Написание",
-      "downloads": "Загрузки",
-      "content_senders": "Содержимое и отправители",
-      "about_data": "О программе и данные",
-      "debug": "Отладка",
-      "plugins": "Plugins"
+      "message_list": "Список писем",
+      "general": "Общие",
+      "organize": "Папки и метки",
+      "addons": "Дополнения",
+      "backup": "Резервная копия и сброс"
     },
     "themes": {
       "title": "Темы",
@@ -1046,21 +1054,12 @@
       "default_name": "По умолчанию",
       "default_badge": "По умолчанию",
       "admin_enforced": "Задано администратором",
-      "locked_by_admin": "Theme selection is locked by an administrator.",
-      "default_theme": "Default",
-      "author_bulwark": "Bulwark",
-      "forced_notice": "Theme \"{name}\" is forced by admin and cannot be changed"
+      "show_all": "Показать все темы ({count})",
+      "show_fewer": "Показать меньше"
     },
     "tab_groups": {
-      "general": "Общие",
-      "account": "Аккаунт и удостоверение",
-      "organization": "Организация почты",
       "apps": "Приложения",
-      "system": "Система",
-      "appearance": "Внешний вид",
-      "mail": "Почта",
-      "privacy": "Конфиденциальность и безопасность",
-      "advanced": "Дополнительно"
+      "mail": "Почта"
     },
     "appearance": {
       "message_list_order": {
@@ -1195,10 +1194,6 @@
         "label": "Tint List Rows by Tag Color",
         "description": "Shade each message row with its first tag color. Disable to keep rows plain; tag dots and chips still show the color."
       },
-      "tint_list_rows_by_account": {
-        "label": "Tint List Rows by Account Color",
-        "description": "In the unified view, shade each row with its account color instead of showing the account dot. Takes precedence over the tag tint; tags keep their color on their chips."
-      },
       "show_folder_total_count": {
         "label": "Показывать общее количество сообщений",
         "description": "Показывает общее количество сообщений рядом с папками и метками, наряду с количеством непрочитанных. Отключите, чтобы показывать только непрочитанные."
@@ -1228,6 +1223,21 @@
       "cross_all": {
         "label": "Все аккаунты: Вся почта",
         "description": "Показывает в разделе «Все аккаунты» запись со всеми письмами из всех аккаунтов, по всем папкам, кроме спама, отправленных, архива, корзины и черновиков."
+      },
+      "sections": {
+        "text": "Текст и анимация",
+        "layout": "Расположение",
+        "sidebar": "Боковая панель",
+        "accounts": "Несколько учётных записей",
+        "accounts_description": "Как ваши учётные записи и общие ящики отображаются вместе.",
+        "experimental": "Экспериментальное"
+      },
+      "account_marker": {
+        "label": "Различать учётные записи",
+        "description": "В объединённых представлениях отмечать каждое письмо цветом учётной записи, из которой оно пришло.",
+        "dot": "Цветная точка",
+        "tint": "Подкрашенная строка",
+        "none": "Ничего"
       }
     },
     "keywords": {
@@ -1247,6 +1257,7 @@
       "cancel": "Отмена",
       "migrating": "Обновление тега в существующих письмах…",
       "migration_error": "Не удалось обновить тег в существующих письмах",
+      "filters_migration_error": "Некоторые правила фильтров всё ещё используют старый тег — обновите их вручную",
       "nesting": {
         "label": "Вложенные теги",
         "description": "Вкладывайте теги в другие теги и показывайте их в боковой панели в виде дерева."
@@ -1284,6 +1295,42 @@
         "swift": "Быстрый жест",
         "relax": "Релакс"
       },
+      "push": {
+        "title": "Фоновые уведомления",
+        "description": "Получайте системные уведомления о новых письмах, когда этот сайт закрыт. Доставляется через push-релей Bulwark; релей никогда не видит содержимое писем.",
+        "relay_label": "Push-релей",
+        "relay_desc": "По умолчанию используется размещённый релей Bulwark. Меняйте только если хостите самостоятельно.",
+        "relay_locked": "Установлено администратором",
+        "relay_locked_desc": "URL push-релея установлен вашим администратором и не может быть изменён.",
+        "status_active": "Активно на этом устройстве",
+        "status_inactive": "Не включено на этом устройстве",
+        "status_unsupported": "Этот браузер не поддерживает Web Push",
+        "status_lite": "Web Push is not available in Bulwark Lite; it needs the Bulwark server.",
+        "status_busy": "Выполняется…",
+        "enable": "Включить",
+        "reenable": "Перерегистрировать",
+        "disable": "Отключить",
+        "confirm_disable_title": "Отключить фоновые уведомления?",
+        "confirm_disable_message": "Это устройство перестанет получать оповещения, когда сайт закрыт.",
+        "dismiss_aria": "Закрыть запрос на уведомления",
+        "ios_hint": "В iOS сначала установите сайт на главный экран – Safari доставляет Web Push только установленным PWA.",
+        "devices_title": "Зарегистрированные устройства",
+        "devices_desc": "Все устройства, зарегистрированные для получения фоновых уведомлений этой учётной записи. После отзыва устройство сразу перестаёт их получать.",
+        "devices_loading": "Загрузка зарегистрированных устройств…",
+        "devices_empty": "Для фоновых уведомлений не зарегистрировано ни одного устройства.",
+        "devices_error": "Не удалось загрузить зарегистрированные устройства.",
+        "devices_refresh": "Обновить",
+        "device_this": "Это устройство",
+        "device_other": "Другое устройство",
+        "device_status_active": "Доставляет уведомления",
+        "device_status_inactive": "Ни разу не доставляло уведомлений",
+        "device_status_unknown": "Неизвестно этому ретранслятору",
+        "device_expires": "Истекает {date}",
+        "revoke": "Отозвать",
+        "confirm_revoke_title": "Отозвать это устройство?",
+        "confirm_revoke_message": "Оно сразу перестанет получать фоновые уведомления. Если снова включить push на этом устройстве, оно зарегистрируется заново.",
+        "confirm_revoke_message_this": "Это устройство сразу перестанет получать фоновые уведомления."
+      },
       "push_all": {
         "title": "All accounts",
         "description": "Turn push on or off for several accounts at once. One browser subscription serves them all.",
@@ -1318,45 +1365,7 @@
         "enabled": "Уведомления о событиях",
         "enabled_desc": "Показывать оповещения о предстоящих событиях календаря",
         "sound": "Звук уведомления",
-        "sound_desc": "Воспроизводить звуковой сигнал для напоминаний календаря",
-        "invitation_parsing": "Распознавать приглашения по почте",
-        "invitation_parsing_desc": "Обнаруживать приглашения календаря во вложениях писем и показывать действия календаря"
-      },
-      "push": {
-        "confirm_disable_message": "Это устройство перестанет получать оповещения, когда сайт закрыт.",
-        "confirm_disable_title": "Отключить фоновые уведомления?",
-        "description": "Получайте системные уведомления о новых письмах, когда этот сайт закрыт. Доставляется через push-релей Bulwark; релей никогда не видит содержимое писем.",
-        "disable": "Отключить",
-        "enable": "Включить",
-        "dismiss_aria": "Закрыть запрос на уведомления",
-        "ios_hint": "В iOS сначала установите сайт на главный экран – Safari доставляет Web Push только установленным PWA.",
-        "reenable": "Перерегистрировать",
-        "relay_desc": "По умолчанию используется размещённый релей Bulwark. Меняйте только если хостите самостоятельно.",
-        "relay_label": "Push-релей",
-        "relay_locked": "Установлено администратором",
-        "relay_locked_desc": "URL push-релея установлен вашим администратором и не может быть изменён.",
-        "status_active": "Активно на этом устройстве",
-        "status_busy": "Выполняется…",
-        "status_inactive": "Не включено на этом устройстве",
-        "status_unsupported": "Этот браузер не поддерживает Web Push",
-        "status_lite": "Web Push is not available in Bulwark Lite; it needs the Bulwark server.",
-        "title": "Фоновые уведомления",
-        "devices_title": "Зарегистрированные устройства",
-        "devices_desc": "Все устройства, зарегистрированные для получения фоновых уведомлений этой учётной записи. После отзыва устройство сразу перестаёт их получать.",
-        "devices_loading": "Загрузка зарегистрированных устройств…",
-        "devices_empty": "Для фоновых уведомлений не зарегистрировано ни одного устройства.",
-        "devices_error": "Не удалось загрузить зарегистрированные устройства.",
-        "devices_refresh": "Обновить",
-        "device_this": "Это устройство",
-        "device_other": "Другое устройство",
-        "device_status_active": "Доставляет уведомления",
-        "device_status_inactive": "Ни разу не доставляло уведомлений",
-        "device_status_unknown": "Неизвестно этому ретранслятору",
-        "device_expires": "Истекает {date}",
-        "revoke": "Отозвать",
-        "confirm_revoke_title": "Отозвать это устройство?",
-        "confirm_revoke_message": "Оно сразу перестанет получать фоновые уведомления. Если снова включить push на этом устройстве, оно зарегистрируется заново.",
-        "confirm_revoke_message_this": "Это устройство сразу перестанет получать фоновые уведомления."
+        "sound_desc": "Воспроизводить звуковой сигнал для напоминаний календаря"
       }
     },
     "language_region": {
@@ -1480,9 +1489,18 @@
         "horizontal": "Область чтения снизу",
         "horizontal_description": "Показывать список сообщений сверху и открывать выбранное сообщение в области чтения под ним."
       },
-      "disable_threading": {
-        "label": "Отключить группировку по беседам",
-        "description": "Отображать письма как отдельные сообщения, а не сгруппированные по беседам"
+      "list_columns": {
+        "label": "Показывать список в виде столбцов",
+        "description": "Показывает однострочные строки в виде таблицы со столбцами «От», «Тема», «Дата» и «Размер» под заголовком."
+      },
+      "show_preview": {
+        "label": "Показывать текст предпросмотра",
+        "description": "Отображать предпросмотр письма в списке",
+        "focus_description": "Отображать встроенный текст предпросмотра в сфокусированном однострочном списке сообщений"
+      },
+      "show_verification_codes": {
+        "label": "Показывать коды подтверждения",
+        "description": "Предлагать код из писем для входа и подтверждения для копирования в один клик: в списке в течение суток и в самом письме"
       },
       "plain_text_mode": {
         "label": "Только простой текст",
@@ -1514,15 +1532,6 @@
         "option": "{delimiter}  (user{delimiter}tag@domain.com)",
         "custom": "Свой…",
         "custom_input_label": "Свой символ-разделитель"
-      },
-      "show_preview": {
-        "label": "Показывать текст предпросмотра",
-        "description": "Отображать предпросмотр письма в списке",
-        "focus_description": "Отображать встроенный текст предпросмотра в сфокусированном однострочном списке сообщений"
-      },
-      "show_verification_codes": {
-        "label": "Показывать коды подтверждения",
-        "description": "Предлагать код из писем для входа и подтверждения для копирования в один клик: в списке в течение суток и в самом письме"
       },
       "attachment_click_action": {
         "label": "Действие при нажатии на вложение",
@@ -1621,6 +1630,13 @@
         "label": "Упоминать получателей через @",
         "description": "При вводе @ в тексте письма предлагаются его получатели, и вставляется имя выбранного. Enter или Tab выбирает выделенное имя."
       },
+      "mention_adds_recipient": {
+        "label": "Контакты в упоминаниях через @",
+        "description": "При вводе @ также предлагаются ваши контакты и люди из каталога. Если выбрать того, кого ещё нет среди получателей, он будет добавлен в письмо.",
+        "to": "Добавить в «Кому»",
+        "cc": "Добавить в «Копия»",
+        "off": "Только получатели"
+      },
       "hide_inline_image_attachments": {
         "label": "Скрывать встроенные изображения из вложений",
         "description": "Изображения, встроенные в тело сообщения, не отображаются как отдельные вложения"
@@ -1659,51 +1675,15 @@
       "rtl_editing": {
         "label": "Поддержка редактирования справа налево",
         "description": "Добавляет кнопку направления текста на панель инструментов редактора, позволяя задавать абзацам направление слева направо или справа налево"
-      }
-    },
-    "composer": {
-      "title": "Редактор",
-      "description": "Настройте параметры написания писем",
-      "autosave": {
-        "label": "Интервал автосохранения",
-        "description": "Как часто автоматически сохранять черновики",
-        "30s": "Каждые 30 секунд",
-        "1m": "Каждую минуту",
-        "2m": "Каждые 2 минуты",
-        "5m": "Каждые 5 минут"
       },
-      "send_confirmation": {
-        "label": "Подтверждение отправки",
-        "description": "Запрашивать подтверждение перед отправкой писем"
+      "group_conversations": {
+        "label": "Группировать письма по беседам",
+        "description": "Показывать ответы вместе как одну беседу, а не отдельными письмами."
       },
-      "default_reply": {
-        "label": "Режим ответа по умолчанию",
-        "description": "Действие по умолчанию при нажатии «Ответить»",
-        "reply": "Ответить",
-        "reply_all": "Ответить всем"
-      }
-    },
-    "privacy": {
-      "title": "Конфиденциальность и безопасность",
-      "description": "Управляйте настройками конфиденциальности и безопасности",
-      "external_images": {
-        "label": "Блокировать внешние изображения",
-        "description": "Предотвращать отслеживание через внешние изображения"
-      },
-      "session_timeout": {
-        "label": "Тайм-аут сессии",
-        "description": "Автоматически выходить после бездействия",
-        "never": "Никогда",
-        "30m": "30 минут",
-        "1h": "1 час",
-        "4h": "4 часа"
-      },
-      "clear_cache": {
-        "label": "Очистить кэш",
-        "description": "Удалить кэшированные данные и временные файлы",
-        "button": "Очистить кэш",
-        "confirm": "Вы уверены, что хотите очистить кэш?",
-        "success": "Кэш успешно очищен"
+      "signatures_link": {
+        "label": "Подписи",
+        "description": "У каждого адреса своя подпись. Редактируйте их вместе с адресами.",
+        "button": "Адреса электронной почты"
       }
     },
     "account": {
@@ -1749,6 +1729,7 @@
       "backup": {
         "title": "Account list backup",
         "description": "Keep the list of accounts in this browser on the server, encrypted with a password only you know, and bring it back on another device. Mailbox passwords are not saved: you sign in to each restored account yourself.",
+        "description_passwords": "Keep the list of accounts in this browser on the server, encrypted with a password only you know, and bring it back on another device. You can include the mailbox passwords, so the restored accounts sign in by themselves.",
         "status_none": "No list is saved for {account}.",
         "status_saved": "A list is saved for {account}.",
         "save": "Save list",
@@ -1760,9 +1741,15 @@
         "password_hint": "At least 10 characters. It cannot be recovered: if you forget it, save the list again with a new one.",
         "restore_hint": "The password chosen when the list was saved.",
         "confirm": "Confirm password",
+        "include_passwords": "Include mailbox passwords",
+        "include_passwords_hint": "Accounts signed in here with a password will sign in by themselves after a restore. Anyone who knows the backup password gets into every mailbox in the list.",
         "saved": "List saved ({count, plural, one {# account} other {# accounts}}).",
         "restored": "Accounts added: {added}. Accounts already here and updated: {updated}. Open each new account from the account list to sign in.",
+        "restored_signed_in": "Accounts added: {added}. Accounts already here and updated: {updated}.",
         "skipped": "{count, plural, one {# account was} other {# accounts were}} not added: the account limit is reached.",
+        "saved_passwords": "Passwords included for {count, plural, one {# account} other {# accounts}}.",
+        "signed_in": "Signed in to {count, plural, one {# account} other {# accounts}} with the saved password.",
+        "sign_in_failed": "{count, plural, one {# saved password was} other {# saved passwords were}} refused: sign in to those accounts from the account list.",
         "deleted": "Saved list deleted.",
         "errors": {
           "mismatch": "The passwords do not match.",
@@ -1777,7 +1764,14 @@
         "title": "Доступные мне",
         "description": "Групповые и общие учётные записи, которыми вы можете управлять. Выберите одну, чтобы изменить её фильтры, автоответчик, календари и контакты.",
         "shared_label": "Общая учётная запись"
+      },
+      "sections": {
+        "addresses": "Адреса электронной почты"
       }
+    },
+    "scoped": {
+      "back": "Назад к моей учётной записи",
+      "managing": "Управление: {name}"
     },
     "security": {
       "title": "Безопасность аккаунта",
@@ -1829,22 +1823,22 @@
         "add": "Добавить",
         "create": "Создать",
         "cancel": "Отмена",
+        "done": "Готово",
         "generate": "Сгенерировать",
         "name_label": "Название приложения",
         "name_placeholder": "напр., Thunderbird, iPhone Mail",
+        "expires_label": "Срок действия (необязательно)",
+        "allowed_ips_label": "Разрешённые IP (необязательно)",
+        "allowed_ips_placeholder": "10.0.0.5, 192.168.1.0/24",
+        "allowed_ips_hint": "Через запятую или пробел. Оставьте пустым, чтобы разрешить любой IP.",
         "password_label": "Пароль (оставьте пустым для автогенерации)",
         "password_placeholder": "Автогенерация, если пусто",
+        "copy_now_warning": "Скопируйте этот пароль сейчас - он больше не будет показан.",
         "added": "Пароль приложения создан",
         "removed": "Пароль приложения удалён",
         "add_error": "Не удалось создать пароль приложения",
         "remove_error": "Не удалось удалить пароль приложения",
-        "none": "Пароли приложений не настроены",
-        "done": "Готово",
-        "expires_label": "Срок действия (необязательно)",
-        "copy_now_warning": "Скопируйте этот пароль сейчас - он больше не будет показан.",
-        "allowed_ips_label": "Разрешённые IP (необязательно)",
-        "allowed_ips_placeholder": "10.0.0.5, 192.168.1.0/24",
-        "allowed_ips_hint": "Через запятую или пробел. Оставьте пустым, чтобы разрешить любой IP."
+        "none": "Пароли приложений не настроены"
       },
       "api_keys": {
         "title": "API-ключи",
@@ -1876,6 +1870,13 @@
         "enable_button": "Включить",
         "disable_tooltip": "Отключить шифрование",
         "enabled_success": "Шифрование хранилища включено"
+      },
+      "public_keys": {
+        "name_label": "Название открытого ключа",
+        "name_placeholder": "напр., Мой ключ",
+        "key_label": "Открытый ключ (S/MIME или PGP в формате ASCII)",
+        "key_placeholder": "Вставьте сюда свой открытый ключ",
+        "none": "Открытые ключи не настроены"
       },
       "email_client": {
         "title": "Настройка почтового клиента",
@@ -1916,19 +1917,15 @@
         "success_body": "Эту страницу можно закрыть. Чтобы привязать ещё одно устройство, покажите новый код.",
         "link_another": "Привязать ещё одно устройство",
         "use_sso": "Использовать единый вход",
-        "error_insecure_server": "Мобильное приложение подключается к почтовым серверам только по https, а этот сервер использует http.",
-        "generating": "Создание…"
+        "error_insecure_server": "Мобильное приложение подключается к почтовым серверам только по https, а этот сервер использует http."
       },
-      "public_keys": {
-        "name_label": "Название открытого ключа",
-        "name_placeholder": "напр., Мой ключ",
-        "key_label": "Открытый ключ (S/MIME или PGP в формате ASCII)",
-        "key_placeholder": "Вставьте сюда свой открытый ключ",
-        "none": "Открытые ключи не настроены"
+      "sections": {
+        "devices": "Другие приложения и устройства",
+        "devices_description": "Используйте почту за пределами этого браузера.",
+        "encryption": "Шифрование"
       }
     },
     "identities": {
-      "title": "Удостоверения отправителя",
       "description": "Управляйте email-адресами, с которых можно отправлять письма",
       "identities_count": {
         "label": "Ваши удостоверения",
@@ -1960,9 +1957,7 @@
         "start": "Дата начала",
         "start_description": "Оставьте пустым для без ограничения",
         "end": "Дата окончания",
-        "end_description": "Оставьте пустым для без ограничения",
-        "title": "Диапазон дат",
-        "description": "Ограничьте автоответ определённым периодом (необязательно)"
+        "end_description": "Оставьте пустым для без ограничения"
       },
       "message": {
         "subject_label": "Тема",
@@ -1973,9 +1968,7 @@
         "body_placeholder": "Спасибо за ваше письмо. Я сейчас вне офиса и отвечу, когда вернусь.",
         "html_label": "Форматированное сообщение (HTML)",
         "html_description": "Добавьте форматированную версию со ссылками и оформлением. Получатели, чей почтовый клиент не может её отобразить, увидят обычный текст выше.",
-        "html_placeholder": "Напишите форматированный ответ об отсутствии…",
-        "title": "Сообщение автоответа",
-        "description": "Сообщение, которое будет отправляться в качестве ответа"
+        "html_placeholder": "Напишите форматированный ответ об отсутствии…"
       },
       "preview": {
         "title": "Предпросмотр",
@@ -2050,6 +2043,11 @@
       "new_folder_name": "Название папки",
       "rename": "Переименовать",
       "change_icon": "Изменить значок",
+      "count_mode": "Счётчик для {name}",
+      "count_mode_default": "Счётчик: по умолчанию",
+      "count_mode_unread": "Только непрочитанные",
+      "count_mode_all": "Непрочитанные и всего",
+      "count_mode_none": "Без счётчика",
       "delete": "Удалить",
       "confirm_delete": "Вы уверены, что хотите удалить \"{name}\"? Письма в этой папке будут перемещены в корзину.",
       "create": "Создать",
@@ -2068,8 +2066,6 @@
       "error_role": "Не удалось обновить роль папки"
     },
     "advanced": {
-      "title": "Дополнительно",
-      "description": "Расширенные параметры и настройки разработчика",
       "debug_mode": {
         "label": "Режим отладки",
         "description": "Включить подробное журналирование для диагностики"
@@ -2099,7 +2095,11 @@
       },
       "sender_favicons": {
         "label": "Фавиконы отправителей",
-        "description": "Показывать иконки сайтов как аватары для корпоративных отправителей"
+        "description": "Показывать иконки сайтов как аватары для корпоративных отправителей",
+        "refresh_label": "Обновить значки отправителей",
+        "refresh_description": "Заново загрузить значки сайтов, например если отправитель сменил свой",
+        "refresh_button": "Обновить",
+        "refresh_done": "Значки отправителей будут загружены заново"
       },
       "show_avatars_in_junk": {
         "label": "Показывать аватары в папке «Спам»",
@@ -2159,6 +2159,12 @@
           "delivered": "Доставлено",
           "mistakes": "Ошибки"
         }
+      },
+      "sections": {
+        "backup": "Резервная копия настроек",
+        "backup_description": "Сохраняйте настройки в разных браузерах и на разных устройствах.",
+        "fix": "Устранение проблем",
+        "fix_description": "Если данные выглядят устаревшими или неверными, или вы хотите начать заново."
       }
     },
     "sidebar_apps": {
@@ -2174,6 +2180,10 @@
     "contacts": {
       "title": "Контакты",
       "description": "Импортируйте и экспортируйте ваши контакты",
+      "group_by_letter_label": "Группировать по первой букве",
+      "group_by_letter_description": "Показывать алфавитные заголовки разделов в списке контактов",
+      "sort_by_last_name_label": "Сортировать по фамилии",
+      "sort_by_last_name_description": "Упорядочить список контактов по фамилии, чтобы члены семьи шли подряд",
       "import_label": "Импорт контактов",
       "import_description": "Импортировать контакты из файла vCard (.vcf)",
       "export_label": "Экспорт контактов",
@@ -2183,11 +2193,7 @@
       "no_address_books": "Адресные книги не найдены",
       "categories_title": "Категории",
       "categories_description": "Переименование категорий контактов",
-      "no_categories": "Категории не найдены",
-      "group_by_letter_description": "Показывать алфавитные заголовки разделов в списке контактов",
-      "group_by_letter_label": "Группировать по первой букве",
-      "sort_by_last_name_label": "Сортировать по фамилии",
-      "sort_by_last_name_description": "Упорядочить список контактов по фамилии, чтобы члены семьи шли подряд"
+      "no_categories": "Категории не найдены"
     },
     "downloads": {
       "title": "Загрузки",
@@ -2238,10 +2244,10 @@
       "description": "Создавайте правила для автоматической сортировки, маркировки и управления входящими письмами",
       "add_rule": "Добавить правило",
       "no_rules": "Нет правил фильтрации",
+      "no_rules_description": "Создайте правила для автоматической организации входящей почты",
       "vacation_active": "Автоответ отпуска активен",
       "vacation_active_description": "Автоматический ответ включён для входящих сообщений",
       "vacation_configure": "Настроить",
-      "no_rules_description": "Создайте правила для автоматической организации входящей почты",
       "edit_rule": "Редактировать правило",
       "new_rule": "Новое правило",
       "delete_rule": "Удалить правило",
@@ -2487,38 +2493,42 @@
       },
       "preview": {
         "label": "Предпросмотр"
-      },
-      "folder_layout": {
-        "label": "Навигация по папкам",
-        "description": "Выберите, как отображать папки: встроенно с файлами или в боковом дереве",
-        "inline": "Встроенно",
-        "sidebar": "Боковая панель"
       }
     },
-    "search_placeholder": "Поиск настроек",
-    "search_clear": "Очистить поиск",
-    "search_no_results": "Нет подходящих настроек",
-    "scoped": {
-      "back": "Назад к моей учётной записи",
-      "managing": "Управление: {name}"
+    "advanced_switch": {
+      "label": "Показывать расширенные настройки",
+      "badge": "Расширенное",
+      "hidden_count": "{count, plural, one {# расширенная настройка скрыта на этой странице.} few {# расширенные настройки скрыты на этой странице.} many {# расширенных настроек скрыто на этой странице.} other {# расширенной настройки скрыто на этой странице.}}",
+      "show": "Показать расширенные настройки"
     },
-    "plugins": {
-      "title": "Plugins",
-      "description": "Plugins deployed by your administrator. Toggle to enable or disable for your account.",
-      "no_plugins": "No plugins available",
-      "no_plugins_desc": "Your administrator has not deployed any plugins",
-      "syncing": "Syncing plugin policy and managed state...",
-      "forced_by_admin": "Plugin \"{name}\" is forced by admin and cannot be disabled",
-      "requires_approval": "Plugin \"{name}\" requires admin approval before it can be enabled",
-      "enabled_toast": "Plugin \"{name}\" enabled",
-      "disabled_toast": "Plugin \"{name}\" disabled",
-      "forced_badge": "Forced",
-      "managed_badge": "Managed",
-      "awaiting_approval": "Awaiting approval",
-      "forced_desc": "This plugin is forced by an administrator and cannot be disabled.",
-      "awaiting_approval_desc": "This plugin is awaiting admin approval and cannot be enabled until an administrator approves it.",
-      "permissions": "Permissions:",
-      "settings_label": "Settings:"
+    "message_list": {
+      "title": "Список писем",
+      "description": "Что показывает список и что делает щелчок или свайп.",
+      "sections": {
+        "senders": "Изображения отправителей",
+        "actions": "Быстрые действия",
+        "delete": "Удаление и архивация",
+        "loading": "Загрузка и поиск"
+      }
+    },
+    "reading_page": {
+      "title": "Чтение",
+      "description": "Открытое письмо.",
+      "sections": {
+        "display": "Отображение письма",
+        "images": "Изображения и внешнее содержимое",
+        "images_description": "Удалённые изображения могут сообщить отправителю, что вы открыли письмо.",
+        "attachments": "Вложения"
+      }
+    },
+    "composing_page": {
+      "title": "Написание",
+      "description": "Написание, ответы и отправка.",
+      "sections": {
+        "replying": "Ответы",
+        "sending": "Перед отправкой",
+        "receipts": "Уведомления о прочтении"
+      }
     }
   },
   "errors": {
@@ -2550,6 +2560,7 @@
     "unpin": "Открепить",
     "move_to": "Переместить в...",
     "copy_to_account": "Копировать в аккаунт...",
+    "remove_from_folder": "Убрать из этой папки",
     "archive": "В архив",
     "delete": "Удалить",
     "mark_as_spam": "Отметить как спам",
@@ -2610,6 +2621,9 @@
     "prompt_new_subfolder": "Введите имя для новой вложенной папки.",
     "prompt_new_folder": "Введите имя для новой папки.",
     "prompt_rename": "Введите новое имя для этой папки.",
+    "placeholder_folder_name": "Имя папки",
+    "create": "Создать",
+    "rename_confirm": "Переименовать",
     "toast_marked_read": "Папка отмечена как прочитанная",
     "toast_marked_read_count": "Отмечено {count, plural, one {1 сообщение} few {# сообщения} other {# сообщений}} как прочитанные",
     "toast_already_read": "Нет непрочитанных сообщений",
@@ -2627,10 +2641,7 @@
     "toast_error_delete_has_email": "Папка не пуста. Сначала очистите её.",
     "delete_with_contents_title": "Папка не пуста",
     "delete_with_contents_message": "Папка «{name}» всё ещё содержит {count, plural, one {# сообщение} few {# сообщения} other {# сообщений}}. Удалить папку вместе со всеми сообщениями? Это действие нельзя отменить.",
-    "delete_with_contents_confirm": "Удалить папку и сообщения",
-    "placeholder_folder_name": "Имя папки",
-    "create": "Создать",
-    "rename_confirm": "Переименовать"
+    "delete_with_contents_confirm": "Удалить папку и сообщения"
   },
   "shortcuts": {
     "title": "Сочетания клавиш",
@@ -2647,7 +2658,9 @@
       "previous_email": "Предыдущее письмо",
       "open_email": "Открыть письмо",
       "close_email": "Закрыть / Отменить выбор",
-      "go_to_folder": "Перейти к папке"
+      "go_to_folder": "Перейти к папке",
+      "next_unread": "Следующее непрочитанное письмо",
+      "no_more_unread": "Ниже в списке больше нет непрочитанных писем"
     },
     "actions": {
       "reply": "Ответить",
@@ -2666,7 +2679,8 @@
       "help": "Показать сочетания клавиш",
       "refresh": "Обновить письма",
       "select_all": "Выбрать все",
-      "global_search": "Искать везде"
+      "global_search": "Искать везде",
+      "extend_selection": "Расширить выделение вниз / вверх"
     },
     "threads": {
       "expand_collapse": "Развернуть/свернуть цепочку",
@@ -2780,11 +2794,57 @@
       "recipient_name": "Имя получателя",
       "company": "Название компании",
       "date": "Текущая дата",
+      "short_date": "Дата цифрами",
+      "day": "День (две цифры)",
+      "month": "Месяц (две цифры)",
+      "year": "Год",
       "day_of_week": "День недели",
       "sender_name": "Ваше имя"
     }
   },
   "contacts": {
+    "directory": {
+      "title": "Справочник",
+      "search_placeholder": "Поиск по имени или адресу",
+      "refresh": "Обновить справочник",
+      "retry": "Повторить",
+      "loading": "Загрузка справочника…",
+      "unavailable_title": "Нет справочника",
+      "unavailable_hint": "Ваш почтовый сервер не предоставляет справочник учётных записей.",
+      "forbidden_title": "Справочник недоступен",
+      "forbidden_hint": "Ваш почтовый сервер не разрешает этой учётной записи просматривать справочник. Обратитесь к администратору.",
+      "error_title": "Не удалось загрузить справочник",
+      "error_hint": "Проверьте подключение и повторите попытку.",
+      "empty_title": "Справочник пуст",
+      "empty_hint": "Ваш почтовый сервер не возвращает учётных записей с адресом электронной почты.",
+      "no_match": "В справочнике никто не соответствует запросу",
+      "refresh_failed": "Не удалось обновить справочник. Показан последний загруженный список.",
+      "select_page": "Выбрать всех на этой странице",
+      "deselect_page": "Снять выбор на этой странице",
+      "select_entry": "Выбрать {name}",
+      "range": "{from}–{to} из {total}",
+      "page": "Страница {page} из {count}",
+      "previous_page": "Предыдущая страница",
+      "next_page": "Следующая страница",
+      "picker_title": "Выбрать из справочника",
+      "cancel": "Отмена",
+      "selected_count": "Выбрано: {count}",
+      "add_to": "Добавить в «Кому»",
+      "add_cc": "Добавить в «Копия»",
+      "add_bcc": "Добавить в «Скрытая копия»",
+      "select_hint": "Выберите человека, чтобы увидеть подробности",
+      "write_email": "Написать письмо",
+      "add_to_contacts": "Добавить в контакты",
+      "email": "Эл. почта",
+      "read_only_note": "Записи справочника приходят с вашего почтового сервера, здесь их нельзя изменить.",
+      "type": {
+        "individual": "Человек",
+        "group": "Группа",
+        "resource": "Ресурс",
+        "location": "Место",
+        "other": "Другое"
+      }
+    },
     "title": "Контакты",
     "search_placeholder": "Поиск контактов...",
     "create_new": "Новый контакт",
@@ -2809,6 +2869,7 @@
     "local_mode": "Контакты хранятся локально (сервер не поддерживает JMAP Contacts)",
     "back_to_contacts": "Вернуться к контактам",
     "back_to_email": "Вернуться к письму",
+    "open_categories": "Открыть категории",
     "tabs": {
       "all": "Все",
       "groups": "Группы"
@@ -3122,8 +3183,7 @@
       "sort_by": "Сортировать по",
       "sort_first_name": "Имя",
       "sort_last_name": "Фамилия"
-    },
-    "open_categories": "Открыть категории"
+    }
   },
   "calendar": {
     "title": "Календарь",
@@ -3171,10 +3231,10 @@
       "export_ics": "Экспорт в .ics",
       "copy_title": "Скопировать название",
       "copy_link": "Скопировать ссылку встречи",
-      "go_to_today": "Перейти к сегодня",
-      "new_all_day_event": "Новое событие на весь день",
       "new_event": "Новое событие",
-      "new_task": "Новая задача"
+      "new_all_day_event": "Новое событие на весь день",
+      "new_task": "Новая задача",
+      "go_to_today": "Перейти к сегодня"
     },
     "detail": {
       "add_note": "Добавить заметку...",
@@ -3379,6 +3439,32 @@
       "sat": "Сб",
       "sun": "Вс"
     },
+    "months": {
+      "jan": "янв.",
+      "feb": "февр.",
+      "mar": "март",
+      "apr": "апр.",
+      "may": "май",
+      "jun": "июнь",
+      "jul": "июль",
+      "aug": "авг.",
+      "sep": "сент.",
+      "oct": "окт.",
+      "nov": "нояб.",
+      "dec": "дек.",
+      "far": "Farvardin",
+      "ord": "Ordibehesht",
+      "kho": "Khordad",
+      "tir": "Tir",
+      "mor": "Mordad",
+      "sha": "Shahrivar",
+      "meh": "Mehr",
+      "aba": "Aban",
+      "aza": "Azar",
+      "dey": "Dey",
+      "bah": "Bahman",
+      "esf": "Esfand"
+    },
     "notifications": {
       "event_created": "Событие создано",
       "event_updated": "Событие обновлено",
@@ -3415,6 +3501,7 @@
     },
     "nav_prev": "Предыдущий",
     "nav_next": "Следующий",
+    "nav_open_menu": "Открыть меню",
     "import": {
       "title": "Импорт календаря",
       "tab_file": "Файл",
@@ -3580,39 +3667,54 @@
       "due_tomorrow": "Завтра",
       "overdue": "Просрочено"
     },
-    "months": {
-      "jan": "янв.",
-      "feb": "февр.",
-      "mar": "март",
-      "apr": "апр.",
-      "may": "май",
-      "jun": "июнь",
-      "jul": "июль",
-      "aug": "авг.",
-      "sep": "сент.",
-      "oct": "окт.",
-      "nov": "нояб.",
-      "dec": "дек.",
-      "far": "Farvardin",
-      "ord": "Ordibehesht",
-      "kho": "Khordad",
-      "tir": "Tir",
-      "mor": "Mordad",
-      "sha": "Shahrivar",
-      "meh": "Mehr",
-      "aba": "Aban",
-      "aza": "Azar",
-      "dey": "Dey",
-      "bah": "Bahman",
-      "esf": "Esfand"
-    },
-    "nav_open_menu": "Открыть меню",
     "toolbar": {
       "more": "Другие действия",
       "select_view": "Сменить вид, сейчас {view}"
     },
     "other_calendars": "Другие календари",
     "calendar_options": "Параметры: {name}"
+  },
+  "calendar_event_notifications": {
+    "someone": "Кто-то",
+    "invited": "{name} пригласил(а) вас на «{title}»",
+    "updated": "{name} обновил(а) «{title}»",
+    "cancelled": "{name} отменил(а) «{title}»",
+    "untitled": "Событие без названия"
+  },
+  "share_notifications": {
+    "someone": "Кто-то",
+    "shared": "{name} поделился(ась) с вами {kind} «{object}»",
+    "changed": "{name} изменил(а) ваш доступ к {kind} «{object}»",
+    "revoked": "{name} отозвал(а) ваш доступ к {kind} «{object}»",
+    "object": {
+      "folder": "папкой",
+      "calendar": "календарём",
+      "address_book": "адресной книгой",
+      "files": "папкой файлов"
+    }
+  },
+  "sharing": {
+    "title": "Поделиться «{name}»",
+    "description": "Предоставьте доступ другим пользователям или группам на этом сервере. Изменения вступают в силу немедленно.",
+    "no_shares": "Пока никому не предоставлен доступ.",
+    "add_person": "Добавить пользователя или группу",
+    "search_placeholder": "Искать по имени или email…",
+    "loading_principals": "Загрузка пользователей…",
+    "no_principals": "Других пользователей или групп не найдено.",
+    "no_match": "Нет совпадений.",
+    "remove": "Отозвать доступ",
+    "group": "Группа",
+    "share_added": "Доступ предоставлен",
+    "share_updated": "Доступ обновлён",
+    "share_removed": "Доступ отозван",
+    "share_failed": "Не удалось обновить общий доступ",
+    "preset": {
+      "freeBusy": "Только занятость",
+      "read": "Только чтение",
+      "readWrite": "Чтение и запись",
+      "manager": "Управляющий",
+      "custom": "Пользовательский"
+    }
   },
   "advanced_search": {
     "title": "Расширенный поиск",
@@ -3707,6 +3809,7 @@
     "type": "Тип",
     "folder": "Папка",
     "file": "Файл",
+    "no_accounts": "Нет подключённых учётных записей.",
     "uploading": "Загрузка...",
     "upload_success": "{count, plural, one {1 файл загружен} other {# файлов загружено}}",
     "upload_canceled": "Загрузка отменена",
@@ -3762,14 +3865,13 @@
     "undo_success": "Действие отменено",
     "undo_error": "Не удалось отменить",
     "toolbar": "Действия с файлами",
+    "open_folder_tree": "Открыть дерево папок",
     "file_list": "Файлы и папки",
     "context_menu": "Действия",
     "settings_ascending": "По возрастанию",
     "settings_descending": "По убыванию",
     "disabled_title": "Функция файлов отключена вашим администратором",
     "disabled_description": "Загрузка больших файлов через WebDAV может вызвать нестабильность Stalwart/RocksDB, включая ошибки нехватки памяти и невосстановимое использование диска. Удалённые файлы могут не быть немедленно удалены из хранилища. Эта функция не рекомендуется для рабочих сред.",
-    "no_accounts": "Нет подключённых учётных записей.",
-    "open_folder_tree": "Открыть дерево папок",
     "migration_title": "Обновление ваших файлов…",
     "migration_description": "Папки и файлы упорядочиваются в правильную структуру. Это происходит только один раз.",
     "new": "Создать",
@@ -3816,39 +3918,7 @@
     "zoom_out": "Уменьшить",
     "zoom_reset": "По размеру экрана",
     "rotate": "Повернуть",
-    "close_preview": "Закрыть",
-    "empty_state_description": "Загрузите файлы или создайте папки для начала",
-    "upload": "Загрузить",
-    "parent_directory": "Родительский каталог",
-    "breadcrumb_root": "Главная",
-    "other_accounts": "Другие учётные записи",
-    "drop_files_here": "Перетащите файлы или папки сюда для загрузки",
-    "toggle_favorite": "Переключить избранное",
-    "properties": "Свойства",
-    "open_folder": "Открыть папку",
-    "settings_title": "Настройки файлов",
-    "settings_display": "Отображение",
-    "settings_default_view": "Вид по умолчанию",
-    "settings_default_view_desc": "Выберите между сеткой и списком",
-    "settings_default_sort": "Сортировка по умолчанию",
-    "settings_default_sort_desc": "Выберите способ сортировки файлов по умолчанию",
-    "settings_sort_direction": "Направление сортировки",
-    "settings_sort_direction_desc": "Выберите порядок: по возрастанию или убыванию",
-    "settings_icons": "Иконки",
-    "settings_show_icons": "Показывать иконки файлов",
-    "settings_show_icons_desc": "Отображать иконки рядом с файлами и папками",
-    "settings_colored_icons": "Цветные иконки",
-    "settings_colored_icons_desc": "Использовать цветные иконки вместо монохромных",
-    "settings_show_thumbnails": "Показывать миниатюры",
-    "settings_show_thumbnails_desc": "Отображать предпросмотр изображений вместо иконок",
-    "settings_behavior": "Поведение",
-    "settings_show_hidden": "Показывать скрытые файлы",
-    "settings_show_hidden_desc": "Отображать файлы и папки, начинающиеся с точки",
-    "settings_folder_layout": "Навигация по папкам",
-    "settings_folder_layout_desc": "Выберите, как отображать папки: встроенно с файлами или в боковом дереве",
-    "settings_folder_layout_inline": "Встроенно",
-    "settings_folder_layout_sidebar": "Боковая панель",
-    "stability_warning": "Загрузка больших файлов может вызвать нестабильность сервера. Удалённые файлы могут не быть немедленно удалены из хранилища. Используйте с осторожностью."
+    "close_preview": "Закрыть"
   },
   "smime": {
     "your_certificates": "Ваши сертификаты",
@@ -3977,52 +4047,11 @@
     "demo_banner_title": "Элементы управления демо",
     "demo_banner_desc": "Вы в демо-режиме - всё остаётся в вашем браузере. Нажмите «Сбросить демо» в любое время, чтобы начать заново с чистыми данными.",
     "quota_title": "Использование хранилища",
-    "quota_desc": "Отслеживайте размер вашего почтового ящика здесь. Круг заполняется по мере использования пространства."
+    "quota_desc": "Отслеживайте размер вашего почтового ящика здесь. Круг заполняется по мере использования пространства.",
+    "settings_section": "Начало работы"
   },
   "unified_mailbox": {
     "search_unavailable": "Поиск недоступен в объединённом представлении"
-  },
-  "calendar_event_notifications": {
-    "someone": "Кто-то",
-    "invited": "{name} пригласил(а) вас на «{title}»",
-    "updated": "{name} обновил(а) «{title}»",
-    "cancelled": "{name} отменил(а) «{title}»",
-    "untitled": "Событие без названия"
-  },
-  "share_notifications": {
-    "someone": "Кто-то",
-    "shared": "{name} поделился(ась) с вами {kind} «{object}»",
-    "changed": "{name} изменил(а) ваш доступ к {kind} «{object}»",
-    "revoked": "{name} отозвал(а) ваш доступ к {kind} «{object}»",
-    "object": {
-      "folder": "папкой",
-      "calendar": "календарём",
-      "address_book": "адресной книгой",
-      "files": "папкой файлов"
-    }
-  },
-  "sharing": {
-    "title": "Поделиться «{name}»",
-    "description": "Предоставьте доступ другим пользователям или группам на этом сервере. Изменения вступают в силу немедленно.",
-    "no_shares": "Пока никому не предоставлен доступ.",
-    "add_person": "Добавить пользователя или группу",
-    "search_placeholder": "Искать по имени или email…",
-    "loading_principals": "Загрузка пользователей…",
-    "no_principals": "Других пользователей или групп не найдено.",
-    "no_match": "Нет совпадений.",
-    "remove": "Отозвать доступ",
-    "group": "Группа",
-    "share_added": "Доступ предоставлен",
-    "share_updated": "Доступ обновлён",
-    "share_removed": "Доступ отозван",
-    "share_failed": "Не удалось обновить общий доступ",
-    "preset": {
-      "freeBusy": "Только занятость",
-      "read": "Только чтение",
-      "readWrite": "Чтение и запись",
-      "manager": "Управляющий",
-      "custom": "Пользовательский"
-    }
   },
   "quote_header": {
     "reply_line": "{date}, {from} написал:",
@@ -4339,22 +4368,6 @@
         "title": "Узнавать о запуске и остановке приложения",
         "body": "Получать уведомления, когда приложение запускается, теряет связь или вы выходите."
       },
-      "compose_open": {
-        "title": "Открывать редактор письма",
-        "body": "Открывать новое письмо с уже заполненными получателями, текстом или вложениями. Отправлять ли его, по-прежнему решаете вы."
-      },
-      "compose_read": {
-        "title": "Читать письмо, которое вы пишете",
-        "body": "Читать текст письма, пока вы его пишете, когда вы используете плагин в редакторе. Без подписи и цитируемого письма."
-      },
-      "compose_write": {
-        "title": "Изменять письмо, которое вы пишете",
-        "body": "Заменять или добавлять текст в письме, пока вы его пишете, когда вы используете плагин в редакторе. Каждое изменение можно отменить, а отправлять ли письмо, решаете вы."
-      },
-      "ui_notifications": {
-        "title": "Показывать уведомления",
-        "body": "Показывать уведомления на вашем устройстве или в приложении, если вы их не разрешили. В каждом указано название плагина."
-      },
       "ui_message_list": {
         "title": "Добавлять элементы в список сообщений",
         "body": "Показывать своё содержимое над списком сообщений, а также кнопки на письмах и на панели выбранных писем."
@@ -4382,6 +4395,22 @@
       "http_proxy": {
         "title": "Использовать подключённые вами аккаунты",
         "body": "Отправлять запросы через сервер Bulwark с аккаунтом или ключом, который настроили вы или ваш администратор. Плагин никогда не видит пароль, но может делать на этом сервере всё, что может этот аккаунт."
+      },
+      "compose_open": {
+        "title": "Открывать редактор письма",
+        "body": "Открывать новое письмо с уже заполненными получателями, текстом или вложениями. Отправлять ли его, по-прежнему решаете вы."
+      },
+      "compose_read": {
+        "title": "Читать письмо, которое вы пишете",
+        "body": "Читать текст письма, пока вы его пишете, когда вы используете плагин в редакторе. Без подписи и цитируемого письма."
+      },
+      "compose_write": {
+        "title": "Изменять письмо, которое вы пишете",
+        "body": "Заменять или добавлять текст в письме, пока вы его пишете, когда вы используете плагин в редакторе. Каждое изменение можно отменить, а отправлять ли письмо, решаете вы."
+      },
+      "ui_notifications": {
+        "title": "Показывать уведомления",
+        "body": "Показывать уведомления на вашем устройстве или в приложении, если вы их не разрешили. В каждом указано название плагина."
       }
     },
     "dialog": {
@@ -4447,8 +4476,7 @@
     "loading": "Загрузка страницы",
     "not_available_title": "Эта страница недоступна",
     "not_available_description": "Плагин, который её добавил, выключен или больше не установлен.",
-    "back_to_mail": "Вернуться к почте",
-    "settings_group": "Плагины"
+    "back_to_mail": "Вернуться к почте"
   },
   "command_palette": {
     "title": "Палитра команд",

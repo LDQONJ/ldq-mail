@@ -19,11 +19,15 @@ interface RowDraft {
   oauthClientId: string;
   oauthIssuerUrl: string;
   oauthClientSecret: string;
+  /** The server holds a secret the dashboard is not shown; an empty field keeps it. */
+  hasClientSecret: boolean;
   oauthButtonLabel: string;
+  oauthEndSessionUrl: string;
   oauthExpanded: boolean;
 }
 
 function entryToDraft(e: JmapServerEntry): RowDraft {
+  const hasClientSecret = !!(e.oauth?.hasClientSecret || e.oauth?.clientSecret);
   return {
     id: e.id,
     label: e.label,
@@ -31,9 +35,11 @@ function entryToDraft(e: JmapServerEntry): RowDraft {
     domains: (e.domains ?? []).join(', '),
     oauthClientId: e.oauth?.clientId ?? '',
     oauthIssuerUrl: e.oauth?.issuerUrl ?? '',
-    oauthClientSecret: e.oauth?.clientSecret ?? '',
+    oauthClientSecret: '',
+    hasClientSecret,
     oauthButtonLabel: e.oauth?.buttonLabel ?? '',
-    oauthExpanded: !!(e.oauth && (e.oauth.clientId || e.oauth.issuerUrl || e.oauth.clientSecret)),
+    oauthEndSessionUrl: e.oauth?.endSessionUrl ?? '',
+    oauthExpanded: !!(e.oauth && (e.oauth.clientId || e.oauth.issuerUrl || hasClientSecret || e.oauth.endSessionUrl)),
   };
 }
 
@@ -49,12 +55,17 @@ function draftToEntry(d: RowDraft): JmapServerEntry | null {
   const issuerUrl = d.oauthIssuerUrl.trim().replace(/\/+$/, '');
   const clientSecret = d.oauthClientSecret;
   const buttonLabel = d.oauthButtonLabel.trim();
-  const oauth = clientId || issuerUrl || clientSecret
+  const endSessionUrl = d.oauthEndSessionUrl.trim();
+  // A typed secret replaces the stored one; an empty field keeps it (the
+  // server fills it back in), and the flag keeps the block alive so the
+  // server knows there is still an OAuth client here.
+  const oauth = clientId || issuerUrl || clientSecret || endSessionUrl || d.hasClientSecret
     ? {
         ...(clientId ? { clientId } : {}),
         ...(issuerUrl ? { issuerUrl } : {}),
-        ...(clientSecret ? { clientSecret } : {}),
+        ...(clientSecret ? { clientSecret } : d.hasClientSecret ? { hasClientSecret: true } : {}),
         ...(buttonLabel ? { buttonLabel } : {}),
+        ...(endSessionUrl ? { endSessionUrl } : {}),
       }
     : undefined;
   return {
@@ -75,7 +86,9 @@ function emptyDraft(): RowDraft {
     oauthClientId: '',
     oauthIssuerUrl: '',
     oauthClientSecret: '',
+    hasClientSecret: false,
     oauthButtonLabel: '',
+    oauthEndSessionUrl: '',
     oauthExpanded: false,
   };
 }
@@ -251,6 +264,7 @@ export function JmapServersSection({ value, source, onChange, onRevert }: Props)
                     type="password"
                     value={d.oauthClientSecret}
                     onChange={(e) => update(i, { oauthClientSecret: e.target.value })}
+                    placeholder={d.hasClientSecret ? '••••••••  (saved - type to replace)' : undefined}
                     className="h-8 w-full rounded-md border border-input bg-background px-2 text-sm text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                   />
                 </div>
@@ -266,6 +280,19 @@ export function JmapServersSection({ value, source, onChange, onRevert }: Props)
                   />
                   <p className="mt-1 text-[11px] text-muted-foreground">
                     With a client ID, this label gives the server its own sign-in button on the login page, whichever server is selected and even while OAuth is off globally.
+                  </p>
+                </div>
+                <div className="sm:col-span-3">
+                  <label className="block text-[11px] font-medium text-muted-foreground mb-1">Provider logout URL</label>
+                  <input
+                    type="url"
+                    value={d.oauthEndSessionUrl}
+                    onChange={(e) => update(i, { oauthEndSessionUrl: e.target.value })}
+                    placeholder="https://auth.example.com/logout"
+                    className="h-8 w-full rounded-md border border-input bg-background px-2 text-sm text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                  />
+                  <p className="mt-1 text-[11px] text-muted-foreground">
+                    Where signing out sends the browser to end the provider&apos;s session, instead of the end_session_endpoint from discovery. Set it for providers that advertise none, such as Stalwart. Must be https.
                   </p>
                 </div>
               </div>

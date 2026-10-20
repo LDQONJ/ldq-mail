@@ -22,10 +22,10 @@
       "cors_blocked": "Serveris ir pieejams, bet bloķē pieprasījumus no citiem avotiem. Pārbaudiet JMAP servera CORS iestatījumus.",
       "server_error": "Serveris īslaicīgi nav pieejams. Mēģiniet vēlāk.",
       "generic": "Notikusi neparedzēta kļūda. Ja tā atkārtojas, sazinieties ar administratoru.",
+      "totp_required": "Nepieciešams divu faktoru autentifikācijas kods. Lūdzu, ievadiet kodu zemāk.",
       "totp_invalid": "Nepareizs autentifikācijas kods. Pārbaudiet lietotni un mēģiniet vēlreiz.",
       "oauth_discovery_failed": "SSO ir iespējots, bet autentifikācijas pakalpojums nav pieejams. Pārbaudiet OAuth iestatījumus.",
-      "token_exchange_failed": "Parole un kods tika pieņemti, taču pasta serveris atteicās sākt sesiju šai lietotnei. Lūdziet administratoram pārbaudīt OAuth klienta iestatījumus.",
-      "totp_required": "Nepieciešams divu faktoru autentifikācijas kods. Lūdzu, ievadiet kodu zemāk."
+      "token_exchange_failed": "Parole un kods tika pieņemti, taču pasta serveris atteicās sākt sesiju šai lietotnei. Lūdziet administratoram pārbaudīt OAuth klienta iestatījumus."
     },
     "show_password": "Rādīt paroli",
     "hide_password": "Slēpt paroli",
@@ -60,6 +60,12 @@
     "demo_login_button": "Palaist demo",
     "demo_tagline": "Izmēģiniet pilnvērtīgu e-pasta klientu bez konta izveides.",
     "demo_no_signup": "Reģistrācija nav nepieciešama - brīvi pētiet paraugdatus",
+    "mobile_handoff": {
+      "title": "Open the Bulwark mobile app?",
+      "description": "This sign-in page was opened by an app on this device. Your sign-in for {username} will be handed to the app that registered the Bulwark link. Continue only if you started this from the Bulwark mobile app.",
+      "confirm": "Hand over to the app",
+      "cancel": "Stay in the webmail"
+    },
     "oauth_completing": "Pabeidz pierakstīšanos...",
     "oauth_error": {
       "title": "Autentifikācijas kļūda",
@@ -70,7 +76,7 @@
       "back_to_login": "Atgriezties pie pierakstīšanās"
     },
     "have_invite_code": "Have an invite code?",
-    "register_link": "Register Account"
+    "register_link": "Register"
   },
   "sidebar": {
     "close": "Aizvērt",
@@ -144,14 +150,16 @@
     "show_all_tags": "Rādīt visus ({count})",
     "show_fewer_tags": "Rādīt mazāk",
     "folders": "Mapes",
+    "your_folders": "Jūsu mapes",
+    "create_folder": "Izveidot mapi",
     "show_more": "Vairāk",
     "show_fewer": "Mazāk",
-    "mail": "Pasts",
-    "nav_label": "Navigācija",
-    "add_app": "Lietotnes",
     "shared": "Koplietots",
     "shared_account_hidden": "Paslēpts no sānjoslas. Atkal parādiet sadaļā Iestatījumi › Izkārtojums.",
     "notifications_muted": "Paziņojumi izslēgti",
+    "mail": "Pasts",
+    "nav_label": "Navigācija",
+    "add_app": "Lietotnes",
     "scheduled": "Ieplānots",
     "unified_all_unread": "Visi nelasītie",
     "unified_all_starred": "Visi ar zvaigzni",
@@ -238,6 +246,13 @@
     "show_on_mobile": "Rādīt mobilajā ierīcē"
   },
   "email_list": {
+    "columns": {
+      "from": "No",
+      "to": "Kam",
+      "subject": "Temats",
+      "date": "Datums",
+      "size": "Izmērs"
+    },
     "no_emails": "Vēstules nav atrastas",
     "no_emails_description": "Mape ir tukša",
     "no_search_results": "Nekas netika atrasts",
@@ -446,6 +461,31 @@
         "none": "Nav"
       }
     },
+    "details": {
+      "recipients_routing": "Adresāti un maršrutēšana",
+      "authentication_security": "Autentifikācija un drošība",
+      "identifiers_threading": "Identifikatori un sarakste",
+      "mailing_list": "Adresātu saraksts",
+      "message_properties": "Vēstules īpašības",
+      "sent": "Nosūtīts",
+      "received": "Saņemts",
+      "delivery_time": "Piegādes laiks",
+      "in_reply_to": "Atbildot uz",
+      "references": "Atsauces",
+      "thread_id": "Sarakstes ID",
+      "size": "Lielums",
+      "mime_type": "MIME tips",
+      "attachments_summary": "{count} faili · {size}",
+      "list_id": "Saraksta ID",
+      "list_help": "Saraksta palīdzība",
+      "list_post": "Sūtīšana sarakstam",
+      "list_unsubscribe": "Atteikties",
+      "iprev": "Apgrieztais DNS",
+      "spam_status": "Mēstuļu statuss",
+      "ai_verdict": "AI vērtējums",
+      "account": "Konts",
+      "no_subject": "(bez temata)"
+    },
     "headers": {
       "routing": "Maršrutēšana",
       "received": "Saņemts",
@@ -557,36 +597,11 @@
       "event_updated": "Atjauninājums Nr. {sequence}",
       "event_status_tentative": "Pagaidām",
       "event_status_cancelled": "Atcelts",
-      "collapse": "Paslēpt detaļas",
-      "expand": "Rādīt detaļas"
+      "expand": "Rādīt detaļas",
+      "collapse": "Paslēpt detaļas"
     },
     "send": "Sūtīt",
     "more": "vairāk",
-    "details": {
-      "recipients_routing": "Adresāti un maršrutēšana",
-      "authentication_security": "Autentifikācija un drošība",
-      "identifiers_threading": "Identifikatori un sarakste",
-      "mailing_list": "Adresātu saraksts",
-      "message_properties": "Vēstules īpašības",
-      "sent": "Nosūtīts",
-      "received": "Saņemts",
-      "delivery_time": "Piegādes laiks",
-      "in_reply_to": "Atbildot uz",
-      "references": "Atsauces",
-      "thread_id": "Sarakstes ID",
-      "size": "Lielums",
-      "mime_type": "MIME tips",
-      "attachments_summary": "{count} faili · {size}",
-      "list_id": "Saraksta ID",
-      "list_help": "Saraksta palīdzība",
-      "list_post": "Sūtīšana sarakstam",
-      "list_unsubscribe": "Atteikties",
-      "iprev": "Apgrieztais DNS",
-      "spam_status": "Mēstuļu statuss",
-      "ai_verdict": "AI vērtējums",
-      "account": "Konts",
-      "no_subject": "(bez temata)"
-    },
     "scheduled_banner": "Ieplānots nosūtīšanai {date}",
     "scheduled_send_created": "E-pasts ieplānots nosūtīšanai",
     "sending_in": "Sūtīšana pēc {seconds} s",
@@ -615,7 +630,9 @@
       "not_in_contacts": "Nav jūsu kontaktpersonās",
       "add_to_contacts": "Pievienot kontaktpersonām",
       "copied": "Nokopēts!",
-      "copy_failed": "Neizdevās nokopēt"
+      "copy_failed": "Neizdevās nokopēt",
+      "view_contact": "Skatīt kontaktu",
+      "view_details": "Skatīt informāciju"
     },
     "send_now": "Sūtīt tagad",
     "verification_code": {
@@ -628,6 +645,7 @@
     "plugin_panel_hide": "Slēpt spraudņa paneli"
   },
   "email_composer": {
+    "select_from_directory": "Izvēlēties no kataloga",
     "minimize": "Minimizēt",
     "maximize": "Pilnekrāns",
     "restore": "Atjaunot",
@@ -645,6 +663,7 @@
     "bcc": "Slepenā kopija",
     "subject": "Temats",
     "body_placeholder": "Rakstiet ziņojumu...",
+    "formatting": "Formatējums",
     "send": "Sūtīt",
     "cancel": "Atcelt",
     "attach": "Pievienot",
@@ -661,6 +680,9 @@
     "discard_draft_confirm": "Ir nesaglabātas izmaiņas. Vai tiešām vēlaties atmest šo melnrakstu?",
     "discard_draft_message": "Melnraksts tiks dzēsts.",
     "saving": "Saglabā...",
+    "sending": "Sūta...",
+    "add_link": "Pievienot saiti",
+    "link_url_prompt": "Ievadiet URL",
     "draft_saved": "Melnraksts saglabāts",
     "save_failed": "Neizdevās saglabāt",
     "to_placeholder": "Saņēmēji",
@@ -710,6 +732,10 @@
     "option_dsn_hint": "Saņemt atskaiti, kad serveris to piegādā",
     "option_require_tls": "Pieprasīt šifrētu piegādi",
     "option_require_tls_hint": "Piegādāt tikai caur TLS, citādi atgriezt",
+    "option_priority": "Prioritāte",
+    "option_priority_high": "Augsta",
+    "option_priority_normal": "Parasta",
+    "option_priority_low": "Zema",
     "validation": {
       "recipient_required": "Norādiet vismaz vienu saņēmēju",
       "body_required": "Ierakstiet ziņojumu vai pievienojiet failu",
@@ -725,9 +751,8 @@
     "drop_files": "Velciet failus šeit, lai pievienotu",
     "show_less": "Rādīt mazāk",
     "send_failed": "Neizdevās nosūtīt vēstuli",
-    "send_timeout": "Serveris pārstāja atbildēt. Pirms sūtīt vēlreiz, pārbaudiet mapi Nosūtītie — ziņojums, iespējams, jau ir aizsūtīts.",
     "send_offline": "Šķiet, esat bezsaistē. Ziņojums joprojām ir šeit, nosūtiet to vēlreiz, kad būsiet tiešsaistē.",
-    "formatting": "Formatējums",
+    "send_timeout": "Serveris pārstāja atbildēt. Pirms sūtīt vēlreiz, pārbaudiet mapi Nosūtītie — ziņojums, iespējams, jau ir aizsūtīts.",
     "send_recipients_rejected": "Nav nosūtīts — serveris noraidīja visus adresātus.",
     "send_plugin_failed": "Nav nosūtīts – spraudnis, kas veic sūtīšanu, kļūdījās vai strādāja pārāk ilgi. Pirms sūtīt vēlreiz, pārbaudiet mapi Nosūtītie.",
     "send_some_recipients_rejected": "Nosūtīts, taču ne šiem adresātiem — serveris tos noraidīja.",
@@ -756,9 +781,6 @@
       "send_anyway": "Sūtīt tik un tā",
       "back": "Atpakaļ pie rediģēšanas"
     },
-    "add_link": "Pievienot saiti",
-    "link_url_prompt": "Ievadiet URL",
-    "sending": "Sūta...",
     "schedule_send": "Ieplānot sūtīšanu",
     "schedule_send_description": "Izvēlieties, kad serverim jānosūta šis ziņojums.",
     "schedule_preset": {
@@ -782,6 +804,9 @@
     "autocomplete_search_server": "Meklēt serverī",
     "autocomplete_searching": "Meklē...",
     "mention_recipients": "Adresāti",
+    "mention_card_not_recipient": "Nav laukā Kam vai Kopija, tāpēc šo vēstuli nesaņems.",
+    "mention_card_add": "Pievienot laukam {field}",
+    "mention_card_remove": "Noņemt pieminējumu",
     "toolbar": {
       "bold": "Treknraksts",
       "italic": "Kursīvs",
@@ -821,15 +846,6 @@
     "send_filing_warning": "Nosūtīts - bet pēcapstrāde neizdevās, var palikt novecojis melnraksts.",
     "pop_out": "Atvērt atbildi atsevišķā logā",
     "send_guard_failed": "Nav nosūtīts - spraudnis, kas pārbauda ziņojumus pirms sūtīšanas, neizdevās vai neatbildēja.",
-    "read_receipt_on": "Pieprasīts lasīšanas apstiprinājums (noklikšķiniet, lai atspējotu)",
-    "read_receipt_off": "Pieprasīt lasīšanas apstiprinājumu",
-    "dsn_on": "Piegādes paziņojums pieprasīts (noklikšķiniet, lai atspējotu)",
-    "dsn_off": "Pieprasīt piegādes paziņojumu",
-    "format_plain_text": "Pārslēgt uz vienkāršu tekstu",
-    "format_rich_text": "Pārslēgt uz formatētu tekstu (HTML)",
-    "require_tls_on": "Nepieciešama šifrēta piegāde (noklikšķiniet, lai atspējotu)",
-    "require_tls_off": "Pieprasīt šifrētu piegādi (TLS)",
-    "use_template": "Veidne",
     "use_oracle_relay": "Send via Oracle Relay"
   },
   "confirm_dialog": {
@@ -887,6 +903,8 @@
     "emails_moved": "{count} vēstules pārvietotas",
     "moved_to_mailbox": "Pārvietots uz {mailbox}",
     "move_failed": "Pārvietošanas kļūda",
+    "removed_from_folder": "Noņemts no {mailbox}",
+    "remove_from_folder_failed": "Neizdevās noņemt no šīs mapes",
     "emails_copied": "{count} vēstules nokopētas",
     "copy_failed": "Kopēšanas kļūda",
     "move_error": "Neizdevās pārvietot vēstules uz izvēlēto mapi",
@@ -1003,37 +1021,27 @@
     "discard_changes": "Atmest nesaglabātās izmaiņas?",
     "discard": "Atmest",
     "keep_editing": "Turpināt rediģēšanu",
+    "search_placeholder": "Meklēt iestatījumos",
+    "search_clear": "Notīrīt meklēšanu",
+    "search_no_results": "Nav atbilstošu iestatījumu",
     "tabs": {
       "appearance": "Izskats",
-      "language": "Valoda, reģions un laiks",
-      "email": "Pasta darbība",
-      "composer": "Redaktors",
-      "privacy": "Privātums un drošība",
       "account": "Konts",
-      "identities": "Identitātes",
       "vacation": "Prombūtne",
-      "advanced": "Papildu",
       "calendar": "Kalendārs",
       "filters": "Filtri",
-      "templates": "Veidnes",
       "folders": "Mapes",
-      "keywords": "Tagi",
       "security": "Drošība",
       "files": "Faili",
       "contacts": "Kontakti",
-      "encryption": "Šifrēšana",
-      "protocol_handlers": "Noklusējuma lietotnes",
-      "sidebar_apps": "Sānu joslas lietotnes",
       "notifications": "Paziņojumi",
-      "layout": "Izkārtojums",
-      "themes": "Tēmas",
       "reading": "Lasīšana",
       "composing": "Rakstīšana",
-      "downloads": "Lejupielādes",
-      "content_senders": "Saturs un sūtītāji",
-      "about_data": "Par un dati",
-      "debug": "Atkļūdošana",
-      "plugins": "Plugins"
+      "message_list": "Ziņu saraksts",
+      "general": "Vispārīgi",
+      "organize": "Mapes un tagi",
+      "addons": "Papildinājumi",
+      "backup": "Dublēšana un atiestatīšana"
     },
     "themes": {
       "title": "Tēmas",
@@ -1046,21 +1054,12 @@
       "default_name": "Noklusējuma",
       "default_badge": "Noklusējuma",
       "admin_enforced": "Noteicis administrators",
-      "locked_by_admin": "Theme selection is locked by an administrator.",
-      "default_theme": "Default",
-      "author_bulwark": "Bulwark",
-      "forced_notice": "Theme \"{name}\" is forced by admin and cannot be changed"
+      "show_all": "Rādīt visas {count} tēmas",
+      "show_fewer": "Rādīt mazāk"
     },
     "tab_groups": {
-      "general": "Vispārīgi",
-      "account": "Konts un identitāte",
-      "organization": "Pasta organizēšana",
       "apps": "Lietotnes",
-      "system": "Sistēma",
-      "appearance": "Izskats",
-      "mail": "Pasts",
-      "privacy": "Privātums un drošība",
-      "advanced": "Papildu"
+      "mail": "Pasts"
     },
     "appearance": {
       "message_list_order": {
@@ -1195,10 +1194,6 @@
         "label": "Tint List Rows by Tag Color",
         "description": "Shade each message row with its first tag color. Disable to keep rows plain; tag dots and chips still show the color."
       },
-      "tint_list_rows_by_account": {
-        "label": "Tint List Rows by Account Color",
-        "description": "In the unified view, shade each row with its account color instead of showing the account dot. Takes precedence over the tag tint; tags keep their color on their chips."
-      },
       "show_folder_total_count": {
         "label": "Rādīt kopējo ziņojumu skaitu",
         "description": "Rāda kopējo ziņojumu skaitu blakus mapēm un tagiem, kā arī nelasīto ziņojumu skaitu. Atspējojiet, lai rādītu tikai nelasītos."
@@ -1228,6 +1223,21 @@
       "cross_all": {
         "label": "Visi konti: Visas vēstules",
         "description": "Rāda ierakstu sadaļā “Visi konti”, kas uzskaita visas vēstules no visiem kontiem, aptverot visas mapes, izņemot mēstules, nosūtītās, arhīvu, miskasti un melnrakstus."
+      },
+      "sections": {
+        "text": "Teksts un animācija",
+        "layout": "Izkārtojums",
+        "sidebar": "Sānjosla",
+        "accounts": "Vairāki konti",
+        "accounts_description": "Kā jūsu konti un koplietotās pastkastes tiek rādītas kopā.",
+        "experimental": "Eksperimentāli"
+      },
+      "account_marker": {
+        "label": "Kontu atšķiršana",
+        "description": "Apvienotajos skatos atzīmēt katru ziņu ar tā konta krāsu, no kura tā nākusi.",
+        "dot": "Krāsains punkts",
+        "tint": "Tonēta rinda",
+        "none": "Nekas"
       }
     },
     "keywords": {
@@ -1247,6 +1257,7 @@
       "cancel": "Atcelt",
       "migrating": "Taga atjaunināšana esošajos e-pastos…",
       "migration_error": "Neizdevās atjaunināt tagu esošajos e-pastos",
+      "filters_migration_error": "Dažas filtru kārtulas joprojām izmanto veco tagu — atjauniniet tās manuāli",
       "nesting": {
         "label": "Ligzdoti tagi",
         "description": "Ligzdojiet tagus zem citiem tagiem un rādiet tos sānjoslā kā koku."
@@ -1284,6 +1295,42 @@
         "swift": "Ātrs",
         "relax": "Relaksējošs"
       },
+      "push": {
+        "title": "Fona paziņojumi",
+        "description": "Saņem sistēmas paziņojumus par jaunu pastu, kad šī vietne ir aizvērta. Piegādāts caur Bulwark push releju; relejs nekad neredz pasta saturu.",
+        "relay_label": "Push relejs",
+        "relay_desc": "Pēc noklusējuma izmanto izmitināto Bulwark releju. Mainiet tikai tad, ja izmitināt pats.",
+        "relay_locked": "Iestatījis administrators",
+        "relay_locked_desc": "Push releja URL ir iestatījis administrators, un to nevar mainīt.",
+        "status_active": "Aktīvs šajā ierīcē",
+        "status_inactive": "Nav iespējots šajā ierīcē",
+        "status_unsupported": "Šī pārlūkprogramma neatbalsta Web Push",
+        "status_lite": "Web Push is not available in Bulwark Lite; it needs the Bulwark server.",
+        "status_busy": "Notiek darbs…",
+        "enable": "Iespējot",
+        "reenable": "Reģistrēt vēlreiz",
+        "disable": "Atspējot",
+        "confirm_disable_title": "Atspējot fona paziņojumus?",
+        "confirm_disable_message": "Šī ierīce vairs nesaņems brīdinājumus, kad vietne būs aizvērta.",
+        "dismiss_aria": "Aizvērt paziņojumu uzaicinājumu",
+        "ios_hint": "Operētājsistēmā iOS vispirms instalējiet vietni sākuma ekrānā – Safari piegādā Web Push tikai instalētajām PWA.",
+        "devices_title": "Reģistrētās ierīces",
+        "devices_desc": "Visas ierīces, kas reģistrētas šī konta fona paziņojumu saņemšanai. Atsaucot ierīci, tā nekavējoties pārstāj tās saņemt.",
+        "devices_loading": "Notiek reģistrēto ierīču ielāde…",
+        "devices_empty": "Fona paziņojumiem nav reģistrēta neviena ierīce.",
+        "devices_error": "Neizdevās ielādēt reģistrētās ierīces.",
+        "devices_refresh": "Atsvaidzināt",
+        "device_this": "Šī ierīce",
+        "device_other": "Cita ierīce",
+        "device_status_active": "Piegādā paziņojumus",
+        "device_status_inactive": "Nekad nav piegādājusi paziņojumu",
+        "device_status_unknown": "Šim retranslatoram nezināma",
+        "device_expires": "Beidzas {date}",
+        "revoke": "Atsaukt",
+        "confirm_revoke_title": "Atsaukt šo ierīci?",
+        "confirm_revoke_message": "Tā nekavējoties pārstās saņemt fona paziņojumus. Atkārtoti ieslēdzot push šajā ierīcē, tā tiks reģistrēta no jauna.",
+        "confirm_revoke_message_this": "Šī ierīce nekavējoties pārstās saņemt fona paziņojumus."
+      },
       "push_all": {
         "title": "All accounts",
         "description": "Turn push on or off for several accounts at once. One browser subscription serves them all.",
@@ -1318,45 +1365,7 @@
         "enabled": "Pasākumu paziņojumi",
         "enabled_desc": "Rādīt brīdinājumus par gaidāmajiem kalendāra pasākumiem",
         "sound": "Paziņojuma skaņa",
-        "sound_desc": "Atskaņot skaņas signālu kalendāra atgādinājumiem",
-        "invitation_parsing": "Atpazīt uzaicinājumus e-pastā",
-        "invitation_parsing_desc": "Noteikt kalendāra uzaicinājumus pielikumos un rādīt kalendāra darbības"
-      },
-      "push": {
-        "confirm_disable_message": "Šī ierīce vairs nesaņems brīdinājumus, kad vietne būs aizvērta.",
-        "confirm_disable_title": "Atspējot fona paziņojumus?",
-        "description": "Saņem sistēmas paziņojumus par jaunu pastu, kad šī vietne ir aizvērta. Piegādāts caur Bulwark push releju; relejs nekad neredz pasta saturu.",
-        "disable": "Atspējot",
-        "enable": "Iespējot",
-        "dismiss_aria": "Aizvērt paziņojumu uzaicinājumu",
-        "ios_hint": "Operētājsistēmā iOS vispirms instalējiet vietni sākuma ekrānā – Safari piegādā Web Push tikai instalētajām PWA.",
-        "reenable": "Reģistrēt vēlreiz",
-        "relay_desc": "Pēc noklusējuma izmanto izmitināto Bulwark releju. Mainiet tikai tad, ja izmitināt pats.",
-        "relay_label": "Push relejs",
-        "relay_locked": "Iestatījis administrators",
-        "relay_locked_desc": "Push releja URL ir iestatījis administrators, un to nevar mainīt.",
-        "status_active": "Aktīvs šajā ierīcē",
-        "status_busy": "Notiek darbs…",
-        "status_inactive": "Nav iespējots šajā ierīcē",
-        "status_unsupported": "Šī pārlūkprogramma neatbalsta Web Push",
-        "status_lite": "Web Push is not available in Bulwark Lite; it needs the Bulwark server.",
-        "title": "Fona paziņojumi",
-        "devices_title": "Reģistrētās ierīces",
-        "devices_desc": "Visas ierīces, kas reģistrētas šī konta fona paziņojumu saņemšanai. Atsaucot ierīci, tā nekavējoties pārstāj tās saņemt.",
-        "devices_loading": "Notiek reģistrēto ierīču ielāde…",
-        "devices_empty": "Fona paziņojumiem nav reģistrēta neviena ierīce.",
-        "devices_error": "Neizdevās ielādēt reģistrētās ierīces.",
-        "devices_refresh": "Atsvaidzināt",
-        "device_this": "Šī ierīce",
-        "device_other": "Cita ierīce",
-        "device_status_active": "Piegādā paziņojumus",
-        "device_status_inactive": "Nekad nav piegādājusi paziņojumu",
-        "device_status_unknown": "Šim retranslatoram nezināma",
-        "device_expires": "Beidzas {date}",
-        "revoke": "Atsaukt",
-        "confirm_revoke_title": "Atsaukt šo ierīci?",
-        "confirm_revoke_message": "Tā nekavējoties pārstās saņemt fona paziņojumus. Atkārtoti ieslēdzot push šajā ierīcē, tā tiks reģistrēta no jauna.",
-        "confirm_revoke_message_this": "Šī ierīce nekavējoties pārstās saņemt fona paziņojumus."
+        "sound_desc": "Atskaņot skaņas signālu kalendāra atgādinājumiem"
       }
     },
     "language_region": {
@@ -1480,9 +1489,18 @@
         "horizontal": "Lasīšanas rūts apakšā",
         "horizontal_description": "Rādīt ziņojumu sarakstu augšā un atvērt atlasīto ziņojumu lasīšanas rūtī zem tā."
       },
-      "disable_threading": {
-        "label": "Izslēgt sarunu grupēšanu",
-        "description": "Rādīt vēstules kā atsevišķus ziņojumus, nevis sērijveidā"
+      "list_columns": {
+        "label": "Rādīt sarakstu kolonnās",
+        "description": "Rāda vienas rindas ierakstus kā tabulu ar kolonnām No, Temats, Datums un Izmērs zem galvenes."
+      },
+      "show_preview": {
+        "label": "Rādīt priekšskatījuma tekstu",
+        "description": "Rādīt vēstules fragmentu sarakstā",
+        "focus_description": "Rādīt priekšskatījuma tekstu sarakstā"
+      },
+      "show_verification_codes": {
+        "label": "Rādīt verifikācijas kodus",
+        "description": "Piedāvāt kodu no pieteikšanās un apstiprinājuma e-pastiem kopēšanai ar vienu klikšķi, sarakstā vienu dienu un ziņojumā"
       },
       "plain_text_mode": {
         "label": "Tikai parasts teksts",
@@ -1514,15 +1532,6 @@
         "option": "{delimiter}  (lietotajs{delimiter}tags@domens.lv)",
         "custom": "Pielāgots…",
         "custom_input_label": "Pielāgota atdalītāja zīme"
-      },
-      "show_preview": {
-        "label": "Rādīt priekšskatījuma tekstu",
-        "description": "Rādīt vēstules fragmentu sarakstā",
-        "focus_description": "Rādīt priekšskatījuma tekstu sarakstā"
-      },
-      "show_verification_codes": {
-        "label": "Rādīt verifikācijas kodus",
-        "description": "Piedāvāt kodu no pieteikšanās un apstiprinājuma e-pastiem kopēšanai ar vienu klikšķi, sarakstā vienu dienu un ziņojumā"
       },
       "attachment_click_action": {
         "label": "Darbība, noklikšķinot uz pielikuma",
@@ -1621,6 +1630,13 @@
         "label": "Pieminēt saņēmējus ar @",
         "description": "Ierakstot @ ziņojumā, tiek piedāvāti tā saņēmēji un ievietots izvēlētā vārds. Enter vai Tab izvēlas iezīmēto vārdu."
       },
+      "mention_adds_recipient": {
+        "label": "Kontakti @ pieminējumos",
+        "description": "Ierakstot @, tiek piedāvāti arī tavi kontakti un cilvēki no direktorija. Ja izvēlies kādu, kas vēl nav adresāts, viņš tiek pievienots vēstulei.",
+        "to": "Pievienot laukam Kam",
+        "cc": "Pievienot laukam Kopija",
+        "off": "Piedāvāt tikai adresātus"
+      },
       "hide_inline_image_attachments": {
         "label": "Slēpt iegultos attēlus no pielikumu saraksta",
         "description": "Ziņojuma pamattekstā iegultie attēli netiek rādīti kā atsevišķi pielikumi"
@@ -1659,51 +1675,15 @@
       "rtl_editing": {
         "label": "Rakstīšanas no labās uz kreiso atbalsts",
         "description": "Pievieno redaktora rīkjoslai virziena pogu, ar kuru rindkopas var iestatīt no kreisās uz labo vai no labās uz kreiso"
-      }
-    },
-    "composer": {
-      "title": "Redaktors",
-      "description": "Pielāgojiet vēstuļu rakstīšanas parametrus",
-      "autosave": {
-        "label": "Automātiskās saglabāšanas intervāls",
-        "description": "Cik bieži automātiski saglabāt melnrakstus",
-        "30s": "Ik pēc 30 sekundēm",
-        "1m": "Katru minūti",
-        "2m": "Ik pēc 2 minūtēm",
-        "5m": "Ik pēc 5 minūtēm"
       },
-      "send_confirmation": {
-        "label": "Sūtīšanas apstiprinājums",
-        "description": "Jautāt apstiprinājumu pirms vēstules sūtīšanas"
+      "group_conversations": {
+        "label": "Grupēt ziņas pēc sarunas",
+        "description": "Rādīt atbildes kopā kā vienu sarunu, nevis kā atsevišķas ziņas."
       },
-      "default_reply": {
-        "label": "Noklusējuma atbildes režīms",
-        "description": "Darbība, nospiežot \"Atbildēt\"",
-        "reply": "Atbildēt",
-        "reply_all": "Atbildēt visiem"
-      }
-    },
-    "privacy": {
-      "title": "Privātums un drošība",
-      "description": "Pārvaldiet privātuma un drošības iestatījumus",
-      "external_images": {
-        "label": "Bloķēt ārējos attēlus",
-        "description": "Novērst izsekošanu caur ārējiem attēliem"
-      },
-      "session_timeout": {
-        "label": "Sesijas noildze",
-        "description": "Automātiski izrakstīties pēc dīkstāves",
-        "never": "Nekad",
-        "30m": "30 minūtes",
-        "1h": "1 stunda",
-        "4h": "4 stundas"
-      },
-      "clear_cache": {
-        "label": "Notīrīt kešatmiņu",
-        "description": "Dzēst kešotos datus un pagaidu failus",
-        "button": "Notīrīt kešatmiņu",
-        "confirm": "Vai tiešām vēlaties notīrīt kešatmiņu?",
-        "success": "Kešatmiņa veiksmīgi notīrīta"
+      "signatures_link": {
+        "label": "Paraksti",
+        "description": "Katrai e-pasta adresei ir savs paraksts. Rediģējiet tos kopā ar adresēm.",
+        "button": "E-pasta adreses"
       }
     },
     "account": {
@@ -1749,6 +1729,7 @@
       "backup": {
         "title": "Account list backup",
         "description": "Keep the list of accounts in this browser on the server, encrypted with a password only you know, and bring it back on another device. Mailbox passwords are not saved: you sign in to each restored account yourself.",
+        "description_passwords": "Keep the list of accounts in this browser on the server, encrypted with a password only you know, and bring it back on another device. You can include the mailbox passwords, so the restored accounts sign in by themselves.",
         "status_none": "No list is saved for {account}.",
         "status_saved": "A list is saved for {account}.",
         "save": "Save list",
@@ -1760,9 +1741,15 @@
         "password_hint": "At least 10 characters. It cannot be recovered: if you forget it, save the list again with a new one.",
         "restore_hint": "The password chosen when the list was saved.",
         "confirm": "Confirm password",
+        "include_passwords": "Include mailbox passwords",
+        "include_passwords_hint": "Accounts signed in here with a password will sign in by themselves after a restore. Anyone who knows the backup password gets into every mailbox in the list.",
         "saved": "List saved ({count, plural, one {# account} other {# accounts}}).",
         "restored": "Accounts added: {added}. Accounts already here and updated: {updated}. Open each new account from the account list to sign in.",
+        "restored_signed_in": "Accounts added: {added}. Accounts already here and updated: {updated}.",
         "skipped": "{count, plural, one {# account was} other {# accounts were}} not added: the account limit is reached.",
+        "saved_passwords": "Passwords included for {count, plural, one {# account} other {# accounts}}.",
+        "signed_in": "Signed in to {count, plural, one {# account} other {# accounts}} with the saved password.",
+        "sign_in_failed": "{count, plural, one {# saved password was} other {# saved passwords were}} refused: sign in to those accounts from the account list.",
         "deleted": "Saved list deleted.",
         "errors": {
           "mismatch": "The passwords do not match.",
@@ -1777,7 +1764,14 @@
         "title": "Kopīgots ar mani",
         "description": "Grupas un kopīgotie konti, kurus varat pārvaldīt. Atlasiet vienu, lai rediģētu tā filtrus, prombūtnes atbildētāju, kalendārus un kontaktus.",
         "shared_label": "Kopīgots konts"
+      },
+      "sections": {
+        "addresses": "E-pasta adreses"
       }
+    },
+    "scoped": {
+      "back": "Atpakaļ uz manu kontu",
+      "managing": "Pārvalda: {name}"
     },
     "security": {
       "title": "Konta drošība",
@@ -1799,10 +1793,10 @@
       "display_name": {
         "label": "Redzamais vārds",
         "description": "Jūsu vārds, kāds tas redzams serverī",
+        "placeholder": "Ievadiet savu parādāmo vārdu",
         "save": "Saglabāt",
         "success": "Redzamais vārds atjaunināts",
-        "error": "Neizdevās atjaunināt redzamo vārdu",
-        "placeholder": "Ievadiet savu parādāmo vārdu"
+        "error": "Neizdevās atjaunināt redzamo vārdu"
       },
       "totp": {
         "section_title": "Divfaktoru autentifikācija",
@@ -1829,22 +1823,22 @@
         "add": "Pievienot",
         "create": "Izveidot",
         "cancel": "Atcelt",
+        "done": "Gatavs",
         "generate": "Ģenerēt",
         "name_label": "Lietotnes nosaukums",
         "name_placeholder": "piem., Thunderbird, iPhone Mail",
+        "expires_label": "Derīguma termiņš (pēc izvēles)",
+        "allowed_ips_label": "Atļautās IP (neobligāti)",
+        "allowed_ips_placeholder": "10.0.0.5, 192.168.1.0/24",
+        "allowed_ips_hint": "Atdalītas ar komatu vai atstarpi. Atstājiet tukšu, lai atļautu jebkuru IP.",
         "password_label": "Parole (atstājiet tukšu automātiskai ģenerēšanai)",
         "password_placeholder": "Automātiska ģenerēšana, ja tukšs",
+        "copy_now_warning": "Kopējiet šo paroli tagad - tā vairs netiks rādīta.",
         "added": "Lietotnes parole izveidota",
         "removed": "Lietotnes parole izdzēsta",
         "add_error": "Neizdevās izveidot lietotnes paroli",
         "remove_error": "Neizdevās izdzēst lietotnes paroli",
-        "none": "Lietotņu paroles nav iestatītas",
-        "done": "Gatavs",
-        "expires_label": "Derīguma termiņš (pēc izvēles)",
-        "copy_now_warning": "Kopējiet šo paroli tagad - tā vairs netiks rādīta.",
-        "allowed_ips_label": "Atļautās IP (neobligāti)",
-        "allowed_ips_placeholder": "10.0.0.5, 192.168.1.0/24",
-        "allowed_ips_hint": "Atdalītas ar komatu vai atstarpi. Atstājiet tukšu, lai atļautu jebkuru IP."
+        "none": "Lietotņu paroles nav iestatītas"
       },
       "api_keys": {
         "title": "API atslēgas",
@@ -1876,6 +1870,13 @@
         "enable_button": "Ieslēgt",
         "disable_tooltip": "Izslēgt šifrēšanu",
         "enabled_success": "Krātuves šifrēšana ir iespējota"
+      },
+      "public_keys": {
+        "name_label": "Publiskās atslēgas nosaukums",
+        "name_placeholder": "piem., Mana atslēga",
+        "key_label": "Publiskā atslēga (S/MIME vai PGP ASCII formātā)",
+        "key_placeholder": "Ielīmējiet šeit savu publisko atslēgu",
+        "none": "Nav konfigurēta neviena publiskā atslēga"
       },
       "email_client": {
         "title": "Pasta klienta iestatīšana",
@@ -1916,19 +1917,15 @@
         "success_body": "Varat aizvērt šo lapu. Lai saistītu citu ierīci, parādiet jaunu kodu.",
         "link_another": "Saistīt citu ierīci",
         "use_sso": "Tā vietā izmantot vienoto pieteikšanos",
-        "error_insecure_server": "Mobilā lietotne ar pasta serveriem savienojas tikai caur https, bet šis izmanto http.",
-        "generating": "Ģenerē…"
+        "error_insecure_server": "Mobilā lietotne ar pasta serveriem savienojas tikai caur https, bet šis izmanto http."
       },
-      "public_keys": {
-        "name_label": "Publiskās atslēgas nosaukums",
-        "name_placeholder": "piem., Mana atslēga",
-        "key_label": "Publiskā atslēga (S/MIME vai PGP ASCII formātā)",
-        "key_placeholder": "Ielīmējiet šeit savu publisko atslēgu",
-        "none": "Nav konfigurēta neviena publiskā atslēga"
+      "sections": {
+        "devices": "Citas lietotnes un ierīces",
+        "devices_description": "Izmantojiet savu pastu ārpus šīs pārlūkprogrammas.",
+        "encryption": "Šifrēšana"
       }
     },
     "identities": {
-      "title": "Sūtītāja identitātes",
       "description": "Pārvaldiet e-pasta adreses, no kurām varat sūtīt vēstules",
       "identities_count": {
         "label": "Jūsu identitātes",
@@ -1960,9 +1957,7 @@
         "start": "Sākuma datums",
         "start_description": "Atstājiet tukšu, lai nebūtu ierobežojuma",
         "end": "Beigu datums",
-        "end_description": "Atstājiet tukšu, lai nebūtu ierobežojuma",
-        "title": "Datumu diapazons",
-        "description": "Ierobežojiet atbildi noteiktā periodā (pēc izvēles)"
+        "end_description": "Atstājiet tukšu, lai nebūtu ierobežojuma"
       },
       "message": {
         "subject_label": "Temats",
@@ -1973,9 +1968,7 @@
         "body_placeholder": "Paldies par e-pastu. Pašlaik esmu prombūtnē un atbildēšu, kad atgriezīšos.",
         "html_label": "Formatēts ziņojums (HTML)",
         "html_description": "Pievienojiet formatētu versiju ar saitēm un noformējumu. Saņēmēji, kuru e-pasta programma to nevar parādīt, redzēs iepriekš redzamo vienkāršo tekstu.",
-        "html_placeholder": "Rakstiet formatētu prombūtnes atbildi…",
-        "title": "Atbildes ziņojums",
-        "description": "Ziņojums, kas tiks nosūtīts kā atbilde"
+        "html_placeholder": "Rakstiet formatētu prombūtnes atbildi…"
       },
       "preview": {
         "title": "Priekšskatījums",
@@ -2050,6 +2043,11 @@
       "new_folder_name": "Mapes nosaukums",
       "rename": "Pārdēvēt",
       "change_icon": "Mainīt ikonu",
+      "count_mode": "Skaitītājs mapei {name}",
+      "count_mode_default": "Skaitītājs: noklusējums",
+      "count_mode_unread": "Tikai nelasītie",
+      "count_mode_all": "Nelasītie un kopā",
+      "count_mode_none": "Bez skaitītāja",
       "delete": "Dzēst",
       "confirm_delete": "Vai tiešām vēlaties dzēst \"{name}\"? Vēstules tiks pārvietotas uz atkritni.",
       "create": "Izveidot",
@@ -2063,16 +2061,33 @@
       "error_create": "Neizdevās izveidot mapi",
       "error_rename": "Neizdevās pārdēvēt mapi",
       "error_delete": "Neizdevās izdzēst mapi",
-      "error_role": "Neizdevās atjaunināt mapes lomu",
       "error_delete_has_children": "Nevar dzēst mapi: tajā joprojām ir apakšmapes. Vispirms tās dzēsiet vai pārvietojiet.",
-      "error_delete_has_email": "Nevar dzēst mapi: tajā joprojām ir e-pasti. Vispirms tos pārvietojiet vai dzēsiet."
+      "error_delete_has_email": "Nevar dzēst mapi: tajā joprojām ir e-pasti. Vispirms tos pārvietojiet vai dzēsiet.",
+      "error_role": "Neizdevās atjaunināt mapes lomu"
     },
     "advanced": {
-      "title": "Papildu",
-      "description": "Paplašinātie iestatījumi un izstrādātāja rīki",
       "debug_mode": {
         "label": "Atkļūdošanas režīms",
         "description": "Iespējot detalizētu žurnālēšanu diagnostikai"
+      },
+      "debug_categories": {
+        "description": "Izvēlieties, kuras kategorijas žurnalēt. Atspējojiet nevajadzīgās kategorijas, lai samazinātu konsoles troksni.",
+        "jmap": "JMAP klients",
+        "jmap_description": "Pastkastes darbības, e-pastu ielāde un JMAP protokola pieprasījumi",
+        "calendar": "Kalendārs",
+        "calendar_description": "Kalendāra notikumi, importi un plānošanas ziņas",
+        "tasks": "Uzdevumi",
+        "tasks_description": "Kalendāra uzdevumu izveide, ielāde un atjaunināšana",
+        "auth": "Autentifikācija",
+        "auth_description": "Pieteikšanās, TOTP, tokenu apmaiņa un sesiju pārvaldība",
+        "filters": "Filtri",
+        "filters_description": "Sieve filtru noteikumi un prombūtnes skripti",
+        "email": "E-pasta skatīšana",
+        "email_description": "E-pasta renderēšana, TNEF apstrāde un atzīmēšana kā lasīts",
+        "push": "Push paziņojumi",
+        "push_description": "Push paziņojumu iestatīšana un piegāde",
+        "contacts": "Kontakti un adrešu grāmatas",
+        "contacts_description": "Kontaktu sinhronizācija, adrešu grāmatu darbības un uzticamie sūtītāji"
       },
       "settings_sync": {
         "label": "Iestatījumu sinhronizācija",
@@ -2080,7 +2095,11 @@
       },
       "sender_favicons": {
         "label": "Sūtītāju ikonas",
-        "description": "Rādīt vietņu ikonas kā sūtītāju avatarus"
+        "description": "Rādīt vietņu ikonas kā sūtītāju avatarus",
+        "refresh_label": "Atsvaidzināt sūtītāju ikonas",
+        "refresh_description": "Vēlreiz ielādēt vietņu ikonas, piemēram, ja sūtītājs ir nomainījis savu ikonu",
+        "refresh_button": "Atsvaidzināt",
+        "refresh_done": "Sūtītāju ikonas tiks ielādētas vēlreiz"
       },
       "show_avatars_in_junk": {
         "label": "Rādīt avatarus mēstuļu mapē",
@@ -2111,25 +2130,6 @@
         "description": "Augšupielādēt iestatījumus no JSON faila",
         "button": "Importēt"
       },
-      "debug_categories": {
-        "description": "Izvēlieties, kuras kategorijas žurnalēt. Atspējojiet nevajadzīgās kategorijas, lai samazinātu konsoles troksni.",
-        "jmap": "JMAP klients",
-        "jmap_description": "Pastkastes darbības, e-pastu ielāde un JMAP protokola pieprasījumi",
-        "calendar": "Kalendārs",
-        "calendar_description": "Kalendāra notikumi, importi un plānošanas ziņas",
-        "tasks": "Uzdevumi",
-        "tasks_description": "Kalendāra uzdevumu izveide, ielāde un atjaunināšana",
-        "auth": "Autentifikācija",
-        "auth_description": "Pieteikšanās, TOTP, tokenu apmaiņa un sesiju pārvaldība",
-        "filters": "Filtri",
-        "filters_description": "Sieve filtru noteikumi un prombūtnes skripti",
-        "email": "E-pasta skatīšana",
-        "email_description": "E-pasta renderēšana, TNEF apstrāde un atzīmēšana kā lasīts",
-        "push": "Push paziņojumi",
-        "push_description": "Push paziņojumu iestatīšana un piegāde",
-        "contacts": "Kontakti un adrešu grāmatas",
-        "contacts_description": "Kontaktu sinhronizācija, adrešu grāmatu darbības un uzticamie sūtītāji"
-      },
       "about": {
         "title": "Bulwark Webmail",
         "source_code": "Pirmkods"
@@ -2159,6 +2159,12 @@
           "delivered": "Piegādātas",
           "mistakes": "Kļūdas"
         }
+      },
+      "sections": {
+        "backup": "Iestatījumu dublējums",
+        "backup_description": "Saglabājiet iestatījumus dažādās pārlūkprogrammās un ierīcēs.",
+        "fix": "Problēmu novēršana",
+        "fix_description": "Ja skats izskatās novecojis vai nepareizs, vai vēlaties sākt no jauna."
       }
     },
     "sidebar_apps": {
@@ -2174,6 +2180,10 @@
     "contacts": {
       "title": "Kontakti",
       "description": "Importējiet un eksportējiet savus kontaktus",
+      "group_by_letter_label": "Grupēt pēc pirmā burta",
+      "group_by_letter_description": "Rādīt alfabētiskos sadaļu virsrakstus kontaktu sarakstā",
+      "sort_by_last_name_label": "Kārtot pēc uzvārda",
+      "sort_by_last_name_description": "Kārtot kontaktu sarakstu pēc uzvārda, lai ģimenes locekļi būtu kopā",
       "import_label": "Kontaktu imports",
       "import_description": "Importēt kontaktus no vCard faila (.vcf)",
       "export_label": "Kontaktu eksports",
@@ -2183,11 +2193,7 @@
       "no_address_books": "Adrešu grāmatas nav atrastas",
       "categories_title": "Kategorijas",
       "categories_description": "Pārdēvēt kontaktu kategorijas",
-      "no_categories": "Kategorijas nav atrastas",
-      "group_by_letter_description": "Rādīt alfabētiskos sadaļu virsrakstus kontaktu sarakstā",
-      "group_by_letter_label": "Grupēt pēc pirmā burta",
-      "sort_by_last_name_label": "Kārtot pēc uzvārda",
-      "sort_by_last_name_description": "Kārtot kontaktu sarakstu pēc uzvārda, lai ģimenes locekļi būtu kopā"
+      "no_categories": "Kategorijas nav atrastas"
     },
     "downloads": {
       "title": "Lejupielādes",
@@ -2238,10 +2244,10 @@
       "description": "Izveidojiet noteikumus automātiskai vēstuļu šķirošanai un pārvaldībai",
       "add_rule": "Pievienot noteikumu",
       "no_rules": "Nav filtra noteikumu",
+      "no_rules_description": "Izveidojiet noteikumus automātiskai ienākošā pasta organizēšanai",
       "vacation_active": "Atvaļinājuma atbilde ir aktīva",
       "vacation_active_description": "Automātiska atbilde ir ieslēgta ienākošajām vēstulēm",
       "vacation_configure": "Konfigurēt",
-      "no_rules_description": "Izveidojiet noteikumus automātiskai ienākošā pasta organizēšanai",
       "edit_rule": "Rediģēt noteikumu",
       "new_rule": "Jauns noteikums",
       "delete_rule": "Dzēst noteikumu",
@@ -2487,38 +2493,42 @@
       },
       "preview": {
         "label": "Priekšskatījums"
-      },
-      "folder_layout": {
-        "label": "Mapju navigācija",
-        "description": "Izvēlieties, kā rādīt mapes: kopā ar failiem vai sānu joslā",
-        "inline": "Kopā ar failiem",
-        "sidebar": "Sānu josla"
       }
     },
-    "search_placeholder": "Meklēt iestatījumos",
-    "search_clear": "Notīrīt meklēšanu",
-    "search_no_results": "Nav atbilstošu iestatījumu",
-    "scoped": {
-      "back": "Atpakaļ uz manu kontu",
-      "managing": "Pārvalda: {name}"
+    "advanced_switch": {
+      "label": "Rādīt papildu iestatījumus",
+      "badge": "Papildu",
+      "hidden_count": "{count, plural, zero {Šajā lapā nav paslēptu papildu iestatījumu.} one {Šajā lapā ir paslēpts # papildu iestatījums.} other {Šajā lapā ir paslēpti # papildu iestatījumi.}}",
+      "show": "Rādīt papildu iestatījumus"
     },
-    "plugins": {
-      "title": "Plugins",
-      "description": "Plugins deployed by your administrator. Toggle to enable or disable for your account.",
-      "no_plugins": "No plugins available",
-      "no_plugins_desc": "Your administrator has not deployed any plugins",
-      "syncing": "Syncing plugin policy and managed state...",
-      "forced_by_admin": "Plugin \"{name}\" is forced by admin and cannot be disabled",
-      "requires_approval": "Plugin \"{name}\" requires admin approval before it can be enabled",
-      "enabled_toast": "Plugin \"{name}\" enabled",
-      "disabled_toast": "Plugin \"{name}\" disabled",
-      "forced_badge": "Forced",
-      "managed_badge": "Managed",
-      "awaiting_approval": "Awaiting approval",
-      "forced_desc": "This plugin is forced by an administrator and cannot be disabled.",
-      "awaiting_approval_desc": "This plugin is awaiting admin approval and cannot be enabled until an administrator approves it.",
-      "permissions": "Permissions:",
-      "settings_label": "Settings:"
+    "message_list": {
+      "title": "Ziņu saraksts",
+      "description": "Ko rāda saraksts un ko dara klikšķis vai vilkšana.",
+      "sections": {
+        "senders": "Sūtītāju attēli",
+        "actions": "Ātrās darbības",
+        "delete": "Dzēšana un arhivēšana",
+        "loading": "Ielāde un meklēšana"
+      }
+    },
+    "reading_page": {
+      "title": "Lasīšana",
+      "description": "Atvērtā ziņa.",
+      "sections": {
+        "display": "Ziņas attēlojums",
+        "images": "Attēli un ārējs saturs",
+        "images_description": "Attālie attēli var atklāt sūtītājam, ka esat atvēris ziņu.",
+        "attachments": "Pielikumi"
+      }
+    },
+    "composing_page": {
+      "title": "Rakstīšana",
+      "description": "Rakstīšana, atbildēšana un sūtīšana.",
+      "sections": {
+        "replying": "Atbildēšana",
+        "sending": "Pirms sūtīšanas",
+        "receipts": "Lasīšanas apstiprinājumi"
+      }
     }
   },
   "errors": {
@@ -2550,6 +2560,7 @@
     "unpin": "Atspraust",
     "move_to": "Pārvietot uz...",
     "copy_to_account": "Kopēt uz kontu...",
+    "remove_from_folder": "Noņemt no šīs mapes",
     "archive": "Arhivēt",
     "delete": "Dzēst",
     "mark_as_spam": "Atzīmēt kā mēstuli",
@@ -2610,6 +2621,9 @@
     "prompt_new_subfolder": "Ievadiet nosaukumu jaunajai apakšmapei.",
     "prompt_new_folder": "Ievadiet nosaukumu jaunajai mapei.",
     "prompt_rename": "Ievadiet jaunu nosaukumu šai mapei.",
+    "placeholder_folder_name": "Mapes nosaukums",
+    "create": "Izveidot",
+    "rename_confirm": "Pārsaukt",
     "toast_marked_read": "Mape atzīmēta kā lasīta",
     "toast_marked_read_count": "{count, plural, one {1 ziņa atzīmēta} other {# ziņas atzīmētas}} kā lasītas",
     "toast_already_read": "Nav nelasītu ziņu",
@@ -2627,10 +2641,7 @@
     "toast_error_delete_has_email": "Mape nav tukša. Vispirms iztukšojiet to.",
     "delete_with_contents_title": "Mape nav tukša",
     "delete_with_contents_message": "Mapē “{name}” joprojām ir {count, plural, one {1 ziņa} other {# ziņas}}. Dzēst mapi un visas tās ziņas? To nevar atsaukt.",
-    "delete_with_contents_confirm": "Dzēst mapi un ziņas",
-    "placeholder_folder_name": "Mapes nosaukums",
-    "create": "Izveidot",
-    "rename_confirm": "Pārsaukt"
+    "delete_with_contents_confirm": "Dzēst mapi un ziņas"
   },
   "shortcuts": {
     "title": "Īsinājumtaustiņi",
@@ -2647,7 +2658,9 @@
       "previous_email": "Iepriekšējā vēstule",
       "open_email": "Atvērt vēstuli",
       "close_email": "Aizvērt / Noņemt atlasi",
-      "go_to_folder": "Pāriet uz mapi"
+      "go_to_folder": "Pāriet uz mapi",
+      "next_unread": "Nākamais nelasītais e-pasts",
+      "no_more_unread": "Sarakstā zemāk vairs nav nelasītu e-pastu"
     },
     "actions": {
       "reply": "Atbildēt",
@@ -2666,7 +2679,8 @@
       "help": "Rādīt īsinājumtaustiņus",
       "refresh": "Atsvaidzināt vēstules",
       "select_all": "Atlasīt visas",
-      "global_search": "Meklēt visā"
+      "global_search": "Meklēt visā",
+      "extend_selection": "Paplašināt atlasi uz leju / uz augšu"
     },
     "threads": {
       "expand_collapse": "Izvērst/sairt sarunu",
@@ -2780,15 +2794,65 @@
       "recipient_name": "Saņēmēja vārds",
       "company": "Uzņēmuma nosaukums",
       "date": "Pašreizējais datums",
+      "short_date": "Datums cipariem",
+      "day": "Diena (divi cipari)",
+      "month": "Mēnesis (divi cipari)",
+      "year": "Gads",
       "day_of_week": "Nedēļas diena",
       "sender_name": "Jūsu vārds"
     }
   },
   "contacts": {
+    "directory": {
+      "title": "Katalogs",
+      "search_placeholder": "Meklēt vārdu vai e-pasta adresi",
+      "refresh": "Atsvaidzināt katalogu",
+      "retry": "Mēģināt vēlreiz",
+      "loading": "Ielādē katalogu…",
+      "unavailable_title": "Nav kataloga",
+      "unavailable_hint": "Jūsu pasta serveris nepiedāvā kontu katalogu.",
+      "forbidden_title": "Katalogs nav pieejams",
+      "forbidden_hint": "Jūsu pasta serveris neļauj šim kontam pārlūkot katalogu. Jautājiet administratoram.",
+      "error_title": "Neizdevās ielādēt katalogu",
+      "error_hint": "Pārbaudiet savienojumu un mēģiniet vēlreiz.",
+      "empty_title": "Katalogs ir tukšs",
+      "empty_hint": "Jūsu pasta serveris nerāda nevienu kontu ar e-pasta adresi.",
+      "no_match": "Neviens katalogā neatbilst meklējumam",
+      "refresh_failed": "Neizdevās atsvaidzināt katalogu. Tiek rādīts pēdējais ielādētais saraksts.",
+      "select_page": "Atlasīt visus šajā lapā",
+      "deselect_page": "Noņemt atlasi šajā lapā",
+      "select_entry": "Atlasīt {name}",
+      "range": "{from}–{to} no {total}",
+      "page": "{page}. lapa no {count}",
+      "previous_page": "Iepriekšējā lapa",
+      "next_page": "Nākamā lapa",
+      "picker_title": "Izvēlēties no kataloga",
+      "cancel": "Atcelt",
+      "selected_count": "Atlasīti: {count}",
+      "add_to": "Pievienot laukam Kam",
+      "add_cc": "Pievienot laukam Kopija",
+      "add_bcc": "Pievienot laukam Slēptā kopija",
+      "select_hint": "Atlasiet personu, lai redzētu informāciju",
+      "write_email": "Rakstīt e-pastu",
+      "add_to_contacts": "Pievienot kontaktiem",
+      "email": "E-pasts",
+      "read_only_note": "Kataloga ieraksti nāk no jūsu pasta servera, un tos šeit nevar rediģēt.",
+      "type": {
+        "individual": "Persona",
+        "group": "Grupa",
+        "resource": "Resurss",
+        "location": "Vieta",
+        "other": "Cits"
+      }
+    },
     "title": "Kontakti",
     "search_placeholder": "Meklēt kontaktus...",
     "create_new": "Jauns kontakts",
     "no_category": "Bez kategorijas",
+    "rename_category": "Pārdēvēt kategoriju",
+    "category_name_label": "Kategorijas nosaukums",
+    "category_renamed": "Kategorija pārdēvēta",
+    "category_rename_failed": "Neizdevās pārdēvēt kategoriju",
     "category_added": "Kontakts pievienots {name}",
     "category_added_plural": "{count} kontakti pievienoti {name}",
     "empty_state": "Kontaktu vēl nav",
@@ -2805,6 +2869,7 @@
     "local_mode": "Kontakti tiek glabāti lokāli (serveris neatbalsta JMAP Contacts)",
     "back_to_contacts": "Atpakaļ pie kontaktiem",
     "back_to_email": "Atpakaļ pie e-pasta",
+    "open_categories": "Atvērt kategorijas",
     "tabs": {
       "all": "Visi",
       "groups": "Grupas"
@@ -3085,10 +3150,6 @@
       "error_update": "Neizdevās atjaunināt kontaktu",
       "error_delete": "Neizdevās izdzēst kontaktu"
     },
-    "rename_category": "Pārdēvēt kategoriju",
-    "category_name_label": "Kategorijas nosaukums",
-    "category_renamed": "Kategorija pārdēvēta",
-    "category_rename_failed": "Neizdevās pārdēvēt kategoriju",
     "context_menu": {
       "open": "Atvērt",
       "edit": "Rediģēt",
@@ -3122,14 +3183,14 @@
       "sort_by": "Kārtot pēc",
       "sort_first_name": "Vārds",
       "sort_last_name": "Uzvārds"
-    },
-    "open_categories": "Atvērt kategorijas"
+    }
   },
   "calendar": {
     "title": "Kalendārs",
     "back_to_email": "Atgriezties pie pasta",
     "back_to_month": "Atpakaļ uz mēneša skatu",
     "my_calendars": "Kalendāri",
+    "birthday_calendar": "Dzimšanas dienas",
     "mini_calendar_change": "Noklikšķiniet, lai mainītu mēnesi",
     "views": {
       "month": "Mēnesis",
@@ -3170,10 +3231,10 @@
       "export_ics": "Eksportēt kā .ics",
       "copy_title": "Kopēt nosaukumu",
       "copy_link": "Kopēt sapulces saiti",
-      "go_to_today": "Pāriet uz šodienu",
-      "new_all_day_event": "Jauns visas dienas notikums",
       "new_event": "Jauns notikums",
-      "new_task": "Jauns uzdevums"
+      "new_all_day_event": "Jauns visas dienas notikums",
+      "new_task": "Jauns uzdevums",
+      "go_to_today": "Pāriet uz šodienu"
     },
     "detail": {
       "add_note": "Pievienot piezīmi...",
@@ -3378,6 +3439,32 @@
       "sat": "Se",
       "sun": "Sv"
     },
+    "months": {
+      "jan": "janv.",
+      "feb": "febr.",
+      "mar": "marts",
+      "apr": "apr.",
+      "may": "maijs",
+      "jun": "jūn.",
+      "jul": "jūl.",
+      "aug": "aug.",
+      "sep": "sept.",
+      "oct": "okt.",
+      "nov": "nov.",
+      "dec": "dec.",
+      "far": "Farvardin",
+      "ord": "Ordibehesht",
+      "kho": "Khordad",
+      "tir": "Tir",
+      "mor": "Mordad",
+      "sha": "Shahrivar",
+      "meh": "Mehr",
+      "aba": "Aban",
+      "aza": "Azar",
+      "dey": "Dey",
+      "bah": "Bahman",
+      "esf": "Esfand"
+    },
     "notifications": {
       "event_created": "Pasākums izveidots",
       "event_updated": "Pasākums atjaunināts",
@@ -3414,6 +3501,7 @@
     },
     "nav_prev": "Iepriekšējais",
     "nav_next": "Nākamais",
+    "nav_open_menu": "Atvērt izvēlni",
     "import": {
       "title": "Kalendāra imports",
       "tab_file": "Fails",
@@ -3517,6 +3605,12 @@
       "interval_1440": "Katru dienu",
       "subscribe": "Abonēt",
       "subscribing": "Abonē...",
+      "save": "Saglabāt izmaiņas",
+      "saving": "Saglabā...",
+      "edit": "Rediģēt",
+      "edit_title": "Rediģēt abonementu",
+      "updated": "Atjaunināts \"{name}\"",
+      "update_error": "Neizdevās atjaunināt abonementu",
       "invalid_url": "Ievadiet derīgu URL",
       "success": "Pieteikts abonements «{name}»",
       "error": "Neizdevās pievienot abonementu",
@@ -3527,13 +3621,7 @@
       "confirm_delete": "Atteikties no «{name}»? Kalendārs un tā pasākumi tiks dzēsti.",
       "deleted": "Abonements dzēsts",
       "delete_error": "Neizdevās dzēst abonementu",
-      "last_refreshed": "Pēdējo reizi atjaunināts: {time}",
-      "save": "Saglabāt izmaiņas",
-      "saving": "Saglabā...",
-      "edit": "Rediģēt",
-      "edit_title": "Rediģēt abonementu",
-      "updated": "Atjaunināts \"{name}\"",
-      "update_error": "Neizdevās atjaunināt abonementu"
+      "last_refreshed": "Pēdējo reizi atjaunināts: {time}"
     },
     "tasks": {
       "label": "Uzdevumi",
@@ -3579,40 +3667,54 @@
       "due_tomorrow": "Rīt",
       "overdue": "Kavēts"
     },
-    "birthday_calendar": "Dzimšanas dienas",
-    "months": {
-      "jan": "janv.",
-      "feb": "febr.",
-      "mar": "marts",
-      "apr": "apr.",
-      "may": "maijs",
-      "jun": "jūn.",
-      "jul": "jūl.",
-      "aug": "aug.",
-      "sep": "sept.",
-      "oct": "okt.",
-      "nov": "nov.",
-      "dec": "dec.",
-      "far": "Farvardin",
-      "ord": "Ordibehesht",
-      "kho": "Khordad",
-      "tir": "Tir",
-      "mor": "Mordad",
-      "sha": "Shahrivar",
-      "meh": "Mehr",
-      "aba": "Aban",
-      "aza": "Azar",
-      "dey": "Dey",
-      "bah": "Bahman",
-      "esf": "Esfand"
-    },
-    "nav_open_menu": "Atvērt izvēlni",
     "toolbar": {
       "more": "Citas darbības",
       "select_view": "Mainīt skatu, pašlaik {view}"
     },
     "other_calendars": "Citi kalendāri",
     "calendar_options": "{name} opcijas"
+  },
+  "calendar_event_notifications": {
+    "someone": "Kāds",
+    "invited": "{name} uzaicināja jūs uz “{title}”",
+    "updated": "{name} atjaunināja “{title}”",
+    "cancelled": "{name} atcēla “{title}”",
+    "untitled": "Notikums bez nosaukuma"
+  },
+  "share_notifications": {
+    "someone": "Kāds",
+    "shared": "{name} kopīgoja ar jums {kind} “{object}”",
+    "changed": "{name} mainīja jūsu piekļuvi {kind} “{object}”",
+    "revoked": "{name} noņēma jūsu piekļuvi {kind} “{object}”",
+    "object": {
+      "folder": "mapi",
+      "calendar": "kalendāru",
+      "address_book": "adrešu grāmatu",
+      "files": "failu mapi"
+    }
+  },
+  "sharing": {
+    "title": "Kopīgot \"{name}\"",
+    "description": "Piešķiriet piekļuvi citiem lietotājiem vai grupām šajā serverī. Izmaiņas stājas spēkā nekavējoties.",
+    "no_shares": "Vēl nav kopīgots.",
+    "add_person": "Pievienot personu vai grupu",
+    "search_placeholder": "Meklēt pēc vārda vai e-pasta…",
+    "loading_principals": "Ielādē lietotājus…",
+    "no_principals": "Citi lietotāji vai grupas nav atrastas.",
+    "no_match": "Nav atbilstību.",
+    "remove": "Noņemt piekļuvi",
+    "group": "Grupa",
+    "share_added": "Piekļuve piešķirta",
+    "share_updated": "Piekļuve atjaunināta",
+    "share_removed": "Piekļuve noņemta",
+    "share_failed": "Neizdevās atjaunināt kopīgošanu",
+    "preset": {
+      "freeBusy": "Tikai brīvs/aizņemts",
+      "read": "Tikai lasīšana",
+      "readWrite": "Lasīšana un rakstīšana",
+      "manager": "Pārvaldnieks",
+      "custom": "Pielāgots"
+    }
   },
   "advanced_search": {
     "title": "Izvērstā meklēšana",
@@ -3707,6 +3809,7 @@
     "type": "Veids",
     "folder": "Mape",
     "file": "Fails",
+    "no_accounts": "Nav pievienotu kontu.",
     "uploading": "Augšupielādē...",
     "upload_success": "Augšupielādēts {count, plural, one {1 fails} other {# faili}}",
     "upload_canceled": "Augšupielāde atcelta",
@@ -3762,14 +3865,13 @@
     "undo_success": "Darbība atsaukta",
     "undo_error": "Neizdevās atsaukt",
     "toolbar": "Failu rīkjosla",
+    "open_folder_tree": "Atvērt mapju koku",
     "file_list": "Failu un mapju saraksts",
     "context_menu": "Darbības",
     "settings_ascending": "Augošā",
     "settings_descending": "Dilstošā",
     "disabled_title": "Failu funkciju ir atspējojis administrators",
     "disabled_description": "Lielu failu augšupielāde, izmantojot WebDAV, var radīt Stalwart/RocksDB nestabilitāti, tostarp atmiņas izsīkumu un neatkopjamu diska izmantojumu. Dzēstie faili var netikt nekavējoties izņemti no blob glabātuves. Šī funkcija nav ieteicama produkcijas vidēm.",
-    "no_accounts": "Nav pievienotu kontu.",
-    "open_folder_tree": "Atvērt mapju koku",
     "migration_title": "Notiek jūsu failu atjaunināšana…",
     "migration_description": "Mapes un faili tiek sakārtoti pareizajā struktūrā. Tas notiek tikai vienu reizi.",
     "new": "Jauns",
@@ -3816,39 +3918,7 @@
     "zoom_out": "Tālināt",
     "zoom_reset": "Ietilpināt ekrānā",
     "rotate": "Pagriezt",
-    "close_preview": "Aizvērt",
-    "empty_state_description": "Augšupielādējiet failus vai izveidojiet mapes, lai sāktu",
-    "upload": "Augšupielādēt",
-    "parent_directory": "Augstāka līmeņa mape",
-    "breadcrumb_root": "Sākums",
-    "other_accounts": "Citi konti",
-    "drop_files_here": "Velciet failus vai mapes šeit, lai augšupielādētu",
-    "toggle_favorite": "Pārslēgt izlasi",
-    "properties": "Īpašības",
-    "open_folder": "Atvērt mapi",
-    "settings_title": "Failu iestatījumi",
-    "settings_display": "Attēlošana",
-    "settings_default_view": "Noklusējuma skats",
-    "settings_default_view_desc": "Izvēlieties starp režģi un sarakstu",
-    "settings_default_sort": "Noklusējuma kārtošana",
-    "settings_default_sort_desc": "Kā kārtot failus pēc noklusējuma",
-    "settings_sort_direction": "Kārtošanas virziens",
-    "settings_sort_direction_desc": "Augošā vai dilstošā secībā",
-    "settings_icons": "Ikonas",
-    "settings_show_icons": "Rādīt failu ikonas",
-    "settings_show_icons_desc": "Rādīt ikonas blakus nosaukumiem",
-    "settings_colored_icons": "Krāsainas ikonas",
-    "settings_colored_icons_desc": "Izmantot krāsainas ikonas melnbalto vietā",
-    "settings_show_thumbnails": "Rādīt sīktēlus",
-    "settings_show_thumbnails_desc": "Rādīt attēlu priekšskatījumus",
-    "settings_behavior": "Darbība",
-    "settings_show_hidden": "Rādīt slēptos failus",
-    "settings_show_hidden_desc": "Rādīt failus, kas sākas ar punktu",
-    "settings_folder_layout": "Mapju izkārtojums",
-    "settings_folder_layout_desc": "Kā attēlot mapes navigācijā",
-    "settings_folder_layout_inline": "Kopā ar failiem",
-    "settings_folder_layout_sidebar": "Sānu josla",
-    "stability_warning": "Lielu failu augšupielāde var radīt servera nestabilitāti. Dzēstie faili var netikt nekavējoties izņemti no glabātuves. Lietojiet piesardzīgi."
+    "close_preview": "Aizvērt"
   },
   "smime": {
     "your_certificates": "Jūsu sertifikāti",
@@ -3917,6 +3987,7 @@
     "status_signed_valid": "Paraksts ir pārbaudīts",
     "status_signed_invalid": "Paraksta pārbaude neizdevās",
     "status_signed_expired_cert": "Parakstīts ar sertifikātu, kura termiņš beidzies",
+    "status_signed_self_signed": "Paraksts ir derīgs, bet sertifikāts ir pašparakstīts (nav uzticams)",
     "status_signed_mismatch": "Paraksts ir derīgs, bet parakstītājs nesakrīt ar sūtītāju",
     "status_unsupported": "Neatbalstīts S/MIME formāts",
     "auto_import_signer_certs": "Automātiski importēt parakstītāju sertifikātus",
@@ -3925,8 +3996,7 @@
     "enter_export_passphrase": "Iestatiet eksporta paroli",
     "export_passphrase_desc": "Izvēlieties paroli eksportējamajam PKCS#12 failam",
     "export_storage_desc": "Ievadiet krātuves paroli atslēgas atšifrēšanai pirms eksporta",
-    "incorrect_passphrase": "Nepareiza parole",
-    "status_signed_self_signed": "Paraksts ir derīgs, bet sertifikāts ir pašparakstīts (nav uzticams)"
+    "incorrect_passphrase": "Nepareiza parole"
   },
   "tour": {
     "step_counter": "{current}. solis no {total}",
@@ -3977,52 +4047,11 @@
     "demo_banner_title": "Demo vadība",
     "demo_banner_desc": "Jūs esat demo režīmā - visi dati paliek jūsu pārlūkā. Nospiediet «Atiestatīt demo», lai sāktu no jauna.",
     "quota_title": "Krātuves izmantošana",
-    "quota_desc": "Sekojiet līdzi savas pastkastes aizpildījumam šeit."
+    "quota_desc": "Sekojiet līdzi savas pastkastes aizpildījumam šeit.",
+    "settings_section": "Darba sākšana"
   },
   "unified_mailbox": {
     "search_unavailable": "Meklēšana nav pieejama apvienotajā skatā"
-  },
-  "calendar_event_notifications": {
-    "someone": "Kāds",
-    "invited": "{name} uzaicināja jūs uz “{title}”",
-    "updated": "{name} atjaunināja “{title}”",
-    "cancelled": "{name} atcēla “{title}”",
-    "untitled": "Notikums bez nosaukuma"
-  },
-  "share_notifications": {
-    "someone": "Kāds",
-    "shared": "{name} kopīgoja ar jums {kind} “{object}”",
-    "changed": "{name} mainīja jūsu piekļuvi {kind} “{object}”",
-    "revoked": "{name} noņēma jūsu piekļuvi {kind} “{object}”",
-    "object": {
-      "folder": "mapi",
-      "calendar": "kalendāru",
-      "address_book": "adrešu grāmatu",
-      "files": "failu mapi"
-    }
-  },
-  "sharing": {
-    "title": "Kopīgot \"{name}\"",
-    "description": "Piešķiriet piekļuvi citiem lietotājiem vai grupām šajā serverī. Izmaiņas stājas spēkā nekavējoties.",
-    "no_shares": "Vēl nav kopīgots.",
-    "add_person": "Pievienot personu vai grupu",
-    "search_placeholder": "Meklēt pēc vārda vai e-pasta…",
-    "loading_principals": "Ielādē lietotājus…",
-    "no_principals": "Citi lietotāji vai grupas nav atrastas.",
-    "no_match": "Nav atbilstību.",
-    "remove": "Noņemt piekļuvi",
-    "group": "Grupa",
-    "share_added": "Piekļuve piešķirta",
-    "share_updated": "Piekļuve atjaunināta",
-    "share_removed": "Piekļuve noņemta",
-    "share_failed": "Neizdevās atjaunināt kopīgošanu",
-    "preset": {
-      "freeBusy": "Tikai brīvs/aizņemts",
-      "read": "Tikai lasīšana",
-      "readWrite": "Lasīšana un rakstīšana",
-      "manager": "Pārvaldnieks",
-      "custom": "Pielāgots"
-    }
   },
   "quote_header": {
     "reply_line": "{date} {from} rakstīja:",
@@ -4339,22 +4368,6 @@
         "title": "Zināt, kad lietotne startē un apstājas",
         "body": "Saņemt ziņu, kad lietotne startē, pāriet bezsaistē vai jūs izrakstāties."
       },
-      "compose_open": {
-        "title": "Atvērt redaktoru jūsu vietā",
-        "body": "Atvērt jaunu vēstuli ar jau aizpildītiem adresātiem, tekstu vai pielikumiem. Vai to nosūtīt, joprojām izlemjat jūs."
-      },
-      "compose_read": {
-        "title": "Lasīt ziņojumu, ko rakstāt",
-        "body": "Lasīt ziņojuma tekstu rakstīšanas laikā, kad izmantojat spraudni redaktorā. Ne parakstu, ne citēto ziņojumu."
-      },
-      "compose_write": {
-        "title": "Mainīt ziņojumu, ko rakstāt",
-        "body": "Aizstāt vai pievienot tekstu ziņojumā rakstīšanas laikā, kad izmantojat spraudni redaktorā. Katru izmaiņu var atsaukt, un jūs joprojām izlemjat, vai sūtīt."
-      },
-      "ui_notifications": {
-        "title": "Rādīt paziņojumus",
-        "body": "Rādīt paziņojumus jūsu ierīcē vai lietotnē, ja neesat tos atļāvis. Katrā ir spraudņa nosaukums."
-      },
       "ui_message_list": {
         "title": "Papildināt vēstuļu sarakstu",
         "body": "Rādīt savu saturu virs vēstuļu saraksta un pogas pie vēstulēm un atlasīto vēstuļu rīkjoslā."
@@ -4382,6 +4395,22 @@
       "http_proxy": {
         "title": "Izmantot jūsu savienotos kontus",
         "body": "Sūtīt pieprasījumus caur Bulwark serveri ar kontu vai atslēgu, ko iestatījāt jūs vai jūsu administrators. Spraudnis nekad neredz paroli, taču tas var darīt visu, ko šis konts var darīt savā serverī."
+      },
+      "compose_open": {
+        "title": "Atvērt redaktoru jūsu vietā",
+        "body": "Atvērt jaunu vēstuli ar jau aizpildītiem adresātiem, tekstu vai pielikumiem. Vai to nosūtīt, joprojām izlemjat jūs."
+      },
+      "compose_read": {
+        "title": "Lasīt ziņojumu, ko rakstāt",
+        "body": "Lasīt ziņojuma tekstu rakstīšanas laikā, kad izmantojat spraudni redaktorā. Ne parakstu, ne citēto ziņojumu."
+      },
+      "compose_write": {
+        "title": "Mainīt ziņojumu, ko rakstāt",
+        "body": "Aizstāt vai pievienot tekstu ziņojumā rakstīšanas laikā, kad izmantojat spraudni redaktorā. Katru izmaiņu var atsaukt, un jūs joprojām izlemjat, vai sūtīt."
+      },
+      "ui_notifications": {
+        "title": "Rādīt paziņojumus",
+        "body": "Rādīt paziņojumus jūsu ierīcē vai lietotnē, ja neesat tos atļāvis. Katrā ir spraudņa nosaukums."
       }
     },
     "dialog": {
@@ -4447,8 +4476,7 @@
     "loading": "Ielādē lapu",
     "not_available_title": "Šī lapa nav pieejama",
     "not_available_description": "Spraudnis, kas to pievienoja, ir izslēgts vai vairs nav instalēts.",
-    "back_to_mail": "Atpakaļ uz pastu",
-    "settings_group": "Spraudņi"
+    "back_to_mail": "Atpakaļ uz pastu"
   },
   "command_palette": {
     "title": "Komandu palete",

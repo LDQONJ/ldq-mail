@@ -3,6 +3,9 @@ import { NextRequest, NextResponse } from 'next/server';
 // In-memory LRU cache: domain -> { data, contentType, fetchedAt }
 const CACHE_MAX_SIZE = 1000;
 const CACHE_TTL_MS = 14 * 24 * 60 * 60 * 1000; // 2 weeks
+/** Concurrent upstream icon fetches across all callers (see GET). */
+const MAX_UPSTREAM_IN_FLIGHT = 16;
+let upstreamInFlight = 0;
 
 interface CacheEntry {
   data: ArrayBuffer;
@@ -18,6 +21,9 @@ const cache = new Map<string, CacheEntry>();
 const negativeCache = new Map<string, NegativeCacheEntry>();
 const NEGATIVE_CACHE_TTL_MS = 24 * 60 * 60 * 1000; // 1 day
 const NEGATIVE_CACHE_MAX_SIZE = 2000;
+// A refresh request (?v=<ms>) refetches a domain at most this often, so the
+// unauthenticated route can't be used to hammer the upstream icon service.
+const MIN_REFRESH_INTERVAL_MS = 60 * 1000;
 
 // Set of specified domains that prioritize direct fetching mail.{rootDomain} favicon
 const PRIORITY_DIRECT_DOMAINS = new Set<string>([
@@ -460,6 +466,7 @@ function faviconHeaders(contentType: string, cacheHeader?: string): Record<strin
     'Content-Security-Policy': "default-src 'none'; sandbox",
   };
 }
+
 function evictNegativeOldest() {
   if (negativeCache.size < NEGATIVE_CACHE_MAX_SIZE) return;
   let oldestKey: string | null = null;
@@ -471,6 +478,22 @@ function evictNegativeOldest() {
     }
   }
   if (oldestKey) negativeCache.delete(oldestKey);
+}
+
+/**
+ * The time from a ?v= refresh stamp, or null. Avatars send the moment the
+ * user asked for fresh sender icons (#960); a stamp in the future is clamped
+ * to now so it can't keep a domain permanently uncached.
+ */
+function parseRefreshAfter(value: string | null): number | null {
+  if (!value || !/^\d{1,15}$/.test(value)) return null;
+  return Math.min(Number(value), Date.now());
+}
+
+/** Whether a cache entry predates the refresh the client asked for. */
+function isStale(fetchedAt: number, refreshAfter: number | null): boolean {
+  if (refreshAfter === null || fetchedAt >= refreshAfter) return false;
+  return Date.now() - fetchedAt >= MIN_REFRESH_INTERVAL_MS;
 }
 
 // 1. Direct fetch from target server (preserves 32-bit RGBA transparent background!)
@@ -506,8 +529,12 @@ async function fetchDirectFavicon(targetDomain: string): Promise<{ data: ArrayBu
   return null;
 }
 
-// 2. DuckDuckGo fetch
+// 2. DuckDuckGo fetch with in-flight concurrency limiter
 async function fetchDuckDuckGoFavicon(targetDomain: string): Promise<{ data: ArrayBuffer; contentType: string } | null> {
+  if (upstreamInFlight >= MAX_UPSTREAM_IN_FLIGHT) {
+    return null;
+  }
+  upstreamInFlight++;
   try {
     const upstream = await fetch(
       `https://icons.duckduckgo.com/ip3/${encodeURIComponent(targetDomain)}.ico`,
@@ -525,6 +552,8 @@ async function fetchDuckDuckGoFavicon(targetDomain: string): Promise<{ data: Arr
     return { data, contentType };
   } catch {
     return null;
+  } finally {
+    upstreamInFlight--;
   }
 }
 
@@ -541,11 +570,10 @@ export async function GET(request: NextRequest) {
 
   const rawDomain = domain.trim().toLowerCase();
   const rootDomain = getRootDomain(rawDomain);
-
+  const refreshAfter = parseRefreshAfter(request.nextUrl.searchParams.get('v'));
   const isPriorityDirectDomain = PRIORITY_DIRECT_DOMAINS.has(rootDomain) || PRIORITY_DIRECT_DOMAINS.has(rawDomain);
 
   if (forceRefresh) {
-    // Purge in-memory caches
     cache.delete(rawDomain);
     cache.delete(rootDomain);
     negativeCache.delete(rawDomain);
@@ -554,7 +582,7 @@ export async function GET(request: NextRequest) {
     // Check in-memory cache first
     for (const cand of [rawDomain, rootDomain]) {
       const cached = cache.get(cand);
-      if (cached && Date.now() - cached.fetchedAt < CACHE_TTL_MS) {
+      if (cached && Date.now() - cached.fetchedAt < CACHE_TTL_MS && !isStale(cached.fetchedAt, refreshAfter)) {
         return new NextResponse(cached.data, {
           headers: faviconHeaders(cached.contentType),
         });
@@ -563,17 +591,16 @@ export async function GET(request: NextRequest) {
 
     // Check negative cache
     const neg = negativeCache.get(rootDomain) || negativeCache.get(rawDomain);
-    if (neg && Date.now() - neg.fetchedAt < NEGATIVE_CACHE_TTL_MS) {
+    if (neg && Date.now() - neg.fetchedAt < NEGATIVE_CACHE_TTL_MS && !isStale(neg.fetchedAt, refreshAfter)) {
       return new NextResponse(TRANSPARENT_PNG, { headers: MISSING_FAVICON_HEADERS });
     }
   }
 
   const cacheHeader = forceRefresh
     ? 'no-cache, no-store, must-revalidate'
-    : 'public, max-age=1209600';
+    : undefined;
 
   // SCENARIO 1: Specified priority domain (e.g. lidaqian.com)
-  // Prioritize direct fetch mail.{rootDomain} -> {rootDomain} -> DuckDuckGo fallback
   if (isPriorityDirectDomain) {
     const mailDomain = rootDomain.startsWith('mail.') ? rootDomain : `mail.${rootDomain}`;
     const directCandidates = [mailDomain, rootDomain];
@@ -582,6 +609,9 @@ export async function GET(request: NextRequest) {
     for (const cand of directCandidates) {
       const directResult = await fetchDirectFavicon(cand);
       if (directResult) {
+        negativeCache.delete(cand);
+        negativeCache.delete(rawDomain);
+        negativeCache.delete(rootDomain);
         evictOldest();
         cache.set(cand, { data: directResult.data, contentType: directResult.contentType, fetchedAt: Date.now() });
         cache.set(rawDomain, { data: directResult.data, contentType: directResult.contentType, fetchedAt: Date.now() });
@@ -597,6 +627,9 @@ export async function GET(request: NextRequest) {
     for (const cand of directCandidates) {
       const ddgResult = await fetchDuckDuckGoFavicon(cand);
       if (ddgResult) {
+        negativeCache.delete(cand);
+        negativeCache.delete(rawDomain);
+        negativeCache.delete(rootDomain);
         evictOldest();
         cache.set(cand, { data: ddgResult.data, contentType: ddgResult.contentType, fetchedAt: Date.now() });
         cache.set(rawDomain, { data: ddgResult.data, contentType: ddgResult.contentType, fetchedAt: Date.now() });
@@ -609,9 +642,10 @@ export async function GET(request: NextRequest) {
     }
   } else {
     // SCENARIO 2: Default general domain (e.g. google.com, github.com, etc.)
-    // Standard default behavior: fetch root domain favicon directly via DuckDuckGo
     const ddgResult = await fetchDuckDuckGoFavicon(rootDomain);
     if (ddgResult) {
+      negativeCache.delete(rawDomain);
+      negativeCache.delete(rootDomain);
       evictOldest();
       cache.set(rawDomain, { data: ddgResult.data, contentType: ddgResult.contentType, fetchedAt: Date.now() });
       cache.set(rootDomain, { data: ddgResult.data, contentType: ddgResult.contentType, fetchedAt: Date.now() });
@@ -620,6 +654,12 @@ export async function GET(request: NextRequest) {
         headers: faviconHeaders(ddgResult.contentType, cacheHeader),
       });
     }
+  }
+
+  // A refresh that can't reach upstream keeps showing the icon we have
+  const existingCached = cache.get(rawDomain) || cache.get(rootDomain);
+  if (existingCached) {
+    return new NextResponse(existingCached.data, { headers: faviconHeaders(existingCached.contentType) });
   }
 
   // If no favicon could be resolved

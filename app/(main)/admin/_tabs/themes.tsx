@@ -1,10 +1,12 @@
 'use client';
 
 import { useEffect, useState, useRef } from 'react';
-import { Upload, Trash2, Power, PowerOff, Loader2, Palette, Save, Shield, Lock, LockOpen } from '@/components/icons';
-import type { SettingsPolicy } from '@/lib/admin/types';
+import Link from 'next/link';
+import { Upload, Trash2, Power, PowerOff, Loader2, Palette, Save, Shield, Lock, LockOpen, RotateCcw, Store } from '@/components/icons';
+import type { ColorMode, SettingsPolicy, ThemePolicy } from '@/lib/admin/types';
 import { DEFAULT_POLICY, DEFAULT_THEME_POLICY } from '@/lib/admin/types';
 import { apiFetch } from '@/lib/browser-navigation';
+import { useAdminUnsavedChanges } from '@/stores/admin-unsaved-store';
 import { BUILTIN_THEMES } from '@/lib/builtin-themes';
 
 // Derive from the single source of truth so newly added built-in themes show
@@ -22,6 +24,9 @@ interface ThemeEntry {
   forceEnabled?: boolean;
   installedAt: string;
   updatedAt: string;
+  source?: { kind: 'marketplace'; slug: string; directoryUrl: string } | { kind: 'upload' };
+  /** Versions kept on this server for a rollback, most recently replaced first. */
+  previousVersions?: string[];
 }
 
 export function ThemesTab() {
@@ -112,6 +117,19 @@ export function ThemesTab() {
         ...DEFAULT_THEME_POLICY,
         ...prev.themePolicy,
         defaultThemeId: themeId,
+      },
+    }));
+    setPolicyDirty(true);
+    setMessage(null);
+  }
+
+  function setColorModePolicy(patch: Partial<Pick<ThemePolicy, 'defaultColorMode' | 'lockColorMode'>>) {
+    setPolicy(prev => ({
+      ...prev,
+      themePolicy: {
+        ...DEFAULT_THEME_POLICY,
+        ...prev.themePolicy,
+        ...patch,
       },
     }));
     setPolicyDirty(true);
@@ -278,6 +296,26 @@ export function ThemesTab() {
     }
   }
 
+  async function rollbackTheme(theme: ThemeEntry) {
+    const version = theme.previousVersions?.[0];
+    if (!version) return;
+    if (!confirm(`Put v${version} of "${theme.name}" back in place of v${theme.version}? The copy kept on this server is used.`)) return;
+
+    setMessage(null);
+    const res = await apiFetch(`/api/admin/extensions/theme/${encodeURIComponent(theme.id)}/rollback`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ version }),
+    });
+    const data = await res.json().catch(() => ({}));
+    if (res.ok) {
+      setMessage({ type: 'success', text: `"${theme.name}" rolled back to v${version}` });
+      await fetchThemes();
+    } else {
+      setMessage({ type: 'error', text: data.error || 'Rollback failed' });
+    }
+  }
+
   async function deleteTheme(id: string, name: string) {
     if (!confirm(`Remove theme "${name}"? This cannot be undone.`)) return;
 
@@ -297,12 +335,15 @@ export function ThemesTab() {
     }
   }
 
+  useAdminUnsavedChanges('themes', policyDirty);
+
   if (loading) {
     return <div className="flex items-center justify-center py-12 text-muted-foreground text-sm">Loading...</div>;
   }
 
   const themesEnabled = policy.features.themesEnabled ?? true;
   const userThemesEnabled = policy.features.userThemesEnabled ?? true;
+  const lockColorMode = policy.themePolicy?.lockColorMode === true;
 
   return (
     <div className="space-y-6">
@@ -434,6 +475,34 @@ export function ThemesTab() {
             </div>
           </div>
 
+          <div className="px-4 py-3 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
+            <div className="min-w-0">
+              <span className="text-sm text-foreground">Default Color Mode</span>
+              <p className="text-xs text-muted-foreground mt-0.5">Light, dark or system for users who have not picked one</p>
+            </div>
+            <select
+              value={policy.themePolicy?.defaultColorMode || 'system'}
+              onChange={(e) => setColorModePolicy({ defaultColorMode: e.target.value === 'system' ? null : e.target.value as ColorMode })}
+              className="h-8 px-2 w-full sm:w-auto shrink-0 rounded-md border border-input bg-background text-sm text-foreground"
+            >
+              <option value="system">System</option>
+              <option value="light">Light</option>
+              <option value="dark">Dark</option>
+            </select>
+          </div>
+
+          <div className="px-4 py-3 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
+            <div className="min-w-0">
+              <span className="text-sm text-foreground">Lock Color Mode</span>
+              <p className="text-xs text-muted-foreground mt-0.5">Everyone gets the default color mode and cannot switch it in settings, on the login page or in the command palette</p>
+            </div>
+            <button type="button" role="switch" aria-checked={lockColorMode} aria-label="Lock Color Mode"
+              onClick={() => setColorModePolicy({ lockColorMode: !lockColorMode })}
+              className={`shrink-0 relative inline-flex h-5 w-9 items-center rounded-full transition-colors ${lockColorMode ? 'bg-primary' : 'bg-muted-foreground/25 dark:bg-muted-foreground/50'}`}>
+              <span className={`inline-block h-3.5 w-3.5 transform rounded-full bg-background shadow transition-transform ${lockColorMode ? 'translate-x-[18px]' : 'translate-x-[3px]'}`} />
+            </button>
+          </div>
+
           <div className="px-4 py-3">
             <span className="text-xs font-medium uppercase tracking-wider text-muted-foreground">Built-in Themes</span>
             <div className="mt-2 space-y-2">
@@ -510,12 +579,27 @@ export function ThemesTab() {
                   {theme.description && (
                     <p className="text-xs text-muted-foreground mt-0.5 truncate">{theme.description}</p>
                   )}
-                  <div className="text-xs text-muted-foreground mt-1">
-                    by {theme.author} &middot; {theme.variants.join(', ')} &middot; installed {new Date(theme.installedAt).toLocaleDateString()}
+                  <div className="text-xs text-muted-foreground mt-1 flex items-center gap-1 flex-wrap">
+                    <span>by {theme.author} &middot; {theme.variants.join(', ')} &middot; installed {new Date(theme.installedAt).toLocaleDateString()}</span>
+                    {theme.source?.kind === 'marketplace' && (
+                      <Link href={`/admin/marketplace/${encodeURIComponent(theme.source.slug)}`} className="inline-flex items-center gap-1 hover:text-foreground hover:underline">
+                        &middot; <Store className="w-3 h-3" /> Marketplace
+                      </Link>
+                    )}
                   </div>
                 </div>
 
                 <div className="flex items-center gap-2">
+                  {theme.previousVersions && theme.previousVersions.length > 0 && (
+                    <button
+                      type="button"
+                      onClick={() => rollbackTheme(theme)}
+                      title={`Roll back to v${theme.previousVersions[0]}`}
+                      className="p-2 rounded-md hover:bg-accent text-muted-foreground hover:text-foreground transition-colors"
+                    >
+                      <RotateCcw className="w-4 h-4" />
+                    </button>
+                  )}
                   <button
                     onClick={() => toggleForceEnabled(theme.id, !theme.forceEnabled)}
                     title={theme.forceEnabled ? 'Remove force-enable (users can deactivate)' : 'Force enable (users cannot deactivate)'}

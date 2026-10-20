@@ -6,16 +6,20 @@ import { emailExportFilename, attachmentDownloadFilename, attachmentsBundleFilen
 import { EML_IMPORT_ACCEPT, expandImportableEmails } from "@/lib/eml-import";
 import { applyNewTabToAnchor, emailIframeCsp, escapeHtml, isExternalResourceUrl, isOpenableLinkHref, plainTextToSafeHtml, sanitizeEmailBodyForIframe, sanitizeEmailHtml, sanitizePlainTextRenderedHtml } from "@/lib/email-sanitization";
 import { getRenderableHtmlBody } from "@/lib/email-body-selection";
-import { collectReferencedCids, isEmbeddedInBody } from "@/lib/attachment-visibility";
+import { collectReferencedCids, isEmbeddedInBody, normalizeCid } from "@/lib/attachment-visibility";
 import { collapsePlainTextQuotes, setupQuoteCollapse } from "@/lib/quote-collapse";
 import { DARK_PENDING_CLASS, applyEmailDarkMode, emailColorScheme, emailDarkModeCss, emailHasNativeDarkMode as htmlHasNativeDarkMode, resolveColorSchemeMedia } from "@/lib/email-dark-mode";
 import { fitEmailBodyWidth } from "@/lib/email-fit-width";
+import { hasFullBleedCanvas } from "@/lib/email-full-bleed";
+import { stripBidiControls } from "@/lib/bidi";
 import { withBasePath } from "@/lib/browser-navigation";
 import { buildContactsPath, buildMailPath } from "@/lib/deep-links";
 import { useCopyLink } from "@/hooks/use-copy-link";
 import { Button } from "@/components/ui/button";
 import { Avatar } from "@/components/ui/avatar";
+import { SubMenuPanel } from "@/components/ui/context-menu";
 import { formatFileSize, cn, MailboxNode, formatDate, formatDateTime, formatRelativeAgo, generateUUID, cleanPreview } from "@/lib/utils";
+import { getEffectiveTimeZone, getWallClock } from "@/lib/timezone";
 import { itemsToHide } from "@/lib/toolbar-overflow";
 import { formatScheduledSendAt } from "@/lib/scheduled-send-label";
 import { buildMoveTargets, resolveMoveOwnerAccountId } from "@/lib/move-targets";
@@ -75,6 +79,7 @@ import {
   PanelRightOpen,
   Send,
   FolderInput,
+  FolderX,
   Inbox,
   Folder,
   Sun,
@@ -102,7 +107,7 @@ import { useDeviceDetection } from "@/hooks/use-media-query";
 import { useIsPaneScoped } from "@/hooks/use-pane-context";
 import { useAuthStore } from "@/stores/auth-store";
 import { useAccountStore } from "@/stores/account-store";
-import { useEmailStore } from "@/stores/email-store";
+import { useEmailStore, resolveEmailBlobContext, type EmailBlobContext } from "@/stores/email-store";
 import { useThemeStore } from "@/stores/theme-store";
 import { EmailIdentityBadge } from "./email-identity-badge";
 import { UnsubscribeBanner } from "./unsubscribe-banner";
@@ -112,16 +117,19 @@ import { stripCrossAccountIdentityPrefix } from "@/hooks/use-pro-multi-account-i
 import { useTour } from "@/components/tour/tour-provider";
 import { useMenuNavigation } from "@/hooks/use-menu-navigation";
 import { findCalendarAttachment, isCalendarMimeType } from "@/lib/calendar-invitation";
-import { RecipientPopover } from "./recipient-popover";
+import { RecipientPopover, RecipientCardPopover, type CardAnchor } from "./recipient-popover";
+import { mentionFromLink } from "@/lib/recipient-mentions";
 import { MailtoLink } from "@/components/ui/mailto-link";
 import { requestInternalMailto } from "@/lib/protocol-handlers/mailto";
 import { imageBlobUrl, inertBlobType, isFilePreviewable, isMimeTypeSafeForInlinePreview, toInertBlob } from "@/lib/file-preview";
+import { openPreviewInNewWindow } from "@/lib/standalone-display";
+import { FilePreviewModal } from "@/components/files/file-preview-modal";
 import { useWopiStatus, canWopiOpen } from "@/hooks/use-wopi-status";
 import { parseTnef, isTnefAttachment } from "@/lib/tnef";
 import { debug } from "@/lib/debug";
 import { findVerificationCode, verificationCodeBodyText } from "@/lib/verification-code";
 import { VerificationCodeChip } from "./verification-code-chip";
-import { ConversationEmailBody, useConversationExternalContent, useMarkReadWhenShown } from "./thread-conversation-view";
+import { ConversationEmailBody, type ConversationAttachmentHandler, useConversationExternalContent, useMarkReadWhenShown } from "./thread-conversation-view";
 import type { TnefAttachment } from "@/lib/tnef";
 import { PluginSlot } from "@/components/plugins/plugin-slot";
 import { PluginActions } from "@/components/plugins/plugin-actions";
@@ -135,6 +143,7 @@ import { resolveExternalLink } from "@/lib/plugin-hook-result";
 import type { AttachmentInfo, AttachmentPreview } from "@/lib/plugin-types";
 import { useAttachmentDrag, isDragOutSupported, type AttachmentDragSource } from "@/hooks/use-attachment-drag";
 import type { IJMAPClient } from "@/lib/jmap/client-interface";
+import { useArchiveActionEnabled } from "@/lib/archive-gate";
 
 /** The More menu's two drill-downs: a folder list and a tag list. */
 type MoreMenuSub = 'move' | 'tag' | 'rules';
@@ -145,7 +154,7 @@ const SUB_MENU_ITEM_SELECTOR = '[role="menuitem"],[role="menuitemcheckbox"],[rol
 interface EmailViewerProps {
   email: Email | null;
   /** Captured message routing supplied by the standard mail UI. */
-  blobSource?: { client: IJMAPClient | null; accountId?: string };
+  blobSource?: EmailBlobContext;
   isLoading?: boolean;
   onReply?: (draftText?: string) => void;
   onReplyAll?: () => void;
@@ -156,11 +165,16 @@ interface EmailViewerProps {
   onToggleStar?: () => void;
   onMarkAsRead?: (emailId: string, read: boolean) => void;
   onSetTag?: (emailId: string, tagId: string | null) => void;
-  onDownloadAttachment?: (blobId: string, name: string, type?: string, forceDownload?: boolean) => void;
+  onDownloadAttachment?: (blobId: string, name: string, type?: string, forceDownload?: boolean, source?: EmailBlobContext) => void;
   onQuickReply?: (body: string) => Promise<void>;
   onMarkAsSpam?: () => void;
   onUndoSpam?: () => void;
   onMoveToMailbox?: (mailboxId: string) => void;
+  /**
+   * Take the message out of the open folder only (#615). Passed only when
+   * the message is also in another folder.
+   */
+  onRemoveFromFolder?: () => void;
   onBack?: () => void;
   onNavigateNext?: () => void;
   onNavigatePrev?: () => void;
@@ -256,7 +270,9 @@ const MIME_TYPE_LABELS: Record<string, string> = {
 };
 
 const getAttachmentDisplayName = (name: string | null | undefined, mimeType?: string): string => {
-  if (name) return name;
+  // Without directional overrides, which would show `report‮fdp.exe`
+  // as `reportexe.pdf` (the download name is cleaned separately).
+  if (name) return stripBidiControls(name);
   if (mimeType) {
     const label = MIME_TYPE_LABELS[mimeType.toLowerCase()];
     if (label) return label;
@@ -679,7 +695,12 @@ function DraggableAttachmentChip({ attachment, client, accountId, enabled, downl
  */
 function mvSenderDate(date: Date | string, timeFormat: '12h' | '24h'): string {
   const d = typeof date === 'string' ? new Date(date) : date;
-  const today = new Date().toDateString() === d.toDateString();
+  // "Today" in the time zone setting, the zone the time and the relative
+  // part are shown in, not the browser's (#1259).
+  const zone = getEffectiveTimeZone();
+  const day = Number.isNaN(d.getTime()) ? null : getWallClock(d, zone);
+  const now = getWallClock(new Date(), zone);
+  const today = !!day && day.year === now.year && day.month === now.month && day.day === now.day;
   const when = today
     ? formatDateTime(d, timeFormat)
     : formatDateTime(d, timeFormat, { year: 'numeric', month: 'short', day: 'numeric' });
@@ -709,7 +730,7 @@ function MvConversationCard({ email, onOpen, timeFormat, compact }: { email: Ema
             {sender?.name || sender?.email || ''}
           </span>
           <span className="ms-auto ps-2 text-xs text-muted-foreground whitespace-nowrap">
-            {compact ? formatDate(email.receivedAt) : mvSenderDate(email.receivedAt, timeFormat)}
+            {compact ? formatDate(emailDisplayDate(email)) : mvSenderDate(emailDisplayDate(email), timeFormat)}
           </span>
         </span>
         <span className="block text-sm text-muted-foreground truncate">{cleanPreview(email.preview)}</span>
@@ -770,6 +791,7 @@ export function MvExpandedConversationCard({
   onMarkRead,
   onReply,
   onDownloadAttachment,
+  blobSource,
   compact,
 }: {
   email: Email;
@@ -779,7 +801,8 @@ export function MvExpandedConversationCard({
   onLoadBody?: (email: Email) => void;
   onMarkRead?: (email: Email) => void;
   onReply?: (email: Email) => void;
-  onDownloadAttachment?: (blobId: string, name: string, type?: string) => void;
+  onDownloadAttachment?: ConversationAttachmentHandler;
+  blobSource?: EmailBlobContext;
 }) {
   const t = useTranslations('email_viewer');
   const externalContent = useConversationExternalContent();
@@ -824,7 +847,7 @@ export function MvExpandedConversationCard({
               <span className="text-xs text-muted-foreground truncate">&lt;{sender.email}&gt;</span>
             )}
             <span className="ms-auto ps-2 text-xs text-muted-foreground whitespace-nowrap">
-              {compact ? formatDate(email.receivedAt) : mvSenderDate(email.receivedAt, timeFormat)}
+              {compact ? formatDate(emailDisplayDate(email)) : mvSenderDate(emailDisplayDate(email), timeFormat)}
             </span>
           </span>
           <button
@@ -862,6 +885,7 @@ export function MvExpandedConversationCard({
           onAllowExternal={() => externalContent.allow(email.id)}
           onTrustSender={externalContent.trustSender(email)}
           onDownloadAttachment={onDownloadAttachment}
+          blobSource={blobSource}
           className={cn("pb-4", compact ? "px-4" : "ps-[80px] pe-6")}
           bodyStyle={{ paddingBlock: '0.25rem 0.5rem' }}
         />
@@ -987,6 +1011,13 @@ function SidebarSection({ icon: Icon, title, children }: { icon: React.Component
 // open resets that state; a fresh [] each time is a new value, so React
 // renders the viewer once more even though nothing changed.
 const NO_POSTAL_ATTACHMENTS: PostalMimeAttachment[] = [];
+/**
+ * Largest winmail.dat or message/rfc822 part the reader downloads and parses
+ * on its own, on the UI thread, when a message is merely selected. A bigger
+ * one stays an attachment chip; a sender must not be able to make every
+ * selection of their message decode tens of megabytes.
+ */
+const MAX_INLINE_PARSE_BYTES = 5 * 1024 * 1024;
 const NO_TNEF_ATTACHMENTS: TnefAttachment[] = [];
 
 export function EmailViewer({
@@ -1007,6 +1038,7 @@ export function EmailViewer({
   onMarkAsSpam,
   onUndoSpam,
   onMoveToMailbox,
+  onRemoveFromFolder,
   onBack,
   onNavigateNext,
   onNavigatePrev,
@@ -1033,6 +1065,7 @@ export function EmailViewer({
   className,
 }: EmailViewerProps) {
   const t = useTranslations('email_viewer');
+  const archiveActionEnabled = useArchiveActionEnabled();
   const tComposer = useTranslations('email_composer');
   const tNotifications = useTranslations('notifications');
   const tCommon = useTranslations('common');
@@ -1185,7 +1218,10 @@ export function EmailViewer({
       onLoadBody={onLoadConversationEmail}
       onMarkRead={onMarkConversationEmailRead}
       onReply={onReplyConversationEmail}
-      onDownloadAttachment={onDownloadAttachment}
+      blobSource={target.sourceClientAccountId || target.sourceAccountId
+        ? resolveEmailBlobContext(target, client)
+        : blobSource ?? resolveEmailBlobContext(target, client)}
+      onDownloadAttachment={(blobId, name, type, source) => onDownloadAttachment?.(blobId, name, type, false, source)}
       compact={mvMobileViewer}
     />
   );
@@ -1274,7 +1310,26 @@ export function EmailViewer({
   // at a part can be routed through the attachment preview/download gate
   // instead of window.open() (GHSA-xvjh-v9c6-qcvc). A ref because the iframe
   // click handler is bound once per document.
-  const cidBlobPartsRef = useRef<Map<string, { name: string; type?: string }>>(new Map());
+  const cidBlobPartsRef = useRef<Map<string, { name: string; type?: string; blob: Blob }>>(new Map());
+  // A locally held attachment (TNEF, decrypted, cid: part) shown in the
+  // in-app preview because an installed app cannot open its blob: URL in a
+  // new window (#865).
+  const [inAppPreview, setInAppPreview] = useState<{ name: string; downloadName: string; blob: Blob; contentType: string } | null>(null);
+  const getInAppPreviewContent = useCallback(async () => {
+    if (!inAppPreview) throw new Error('No attachment selected');
+    return { blob: inAppPreview.blob, contentType: inAppPreview.contentType };
+  }, [inAppPreview]);
+  const downloadInAppPreview = useCallback(() => {
+    if (!inAppPreview) return;
+    const url = URL.createObjectURL(inAppPreview.blob);
+    const anchor = document.createElement('a');
+    anchor.href = url;
+    anchor.download = inAppPreview.downloadName;
+    document.body.appendChild(anchor);
+    anchor.click();
+    anchor.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 60_000);
+  }, [inAppPreview]);
   const [quickReplyText, setQuickReplyText] = useState("");
   const [isQuickReplyFocused, setIsQuickReplyFocused] = useState(false);
   const [isSendingQuickReply, setIsSendingQuickReply] = useState(false);
@@ -1736,6 +1791,13 @@ export function EmailViewer({
     setContactSidebarEmail(null);
   }, [email?.id]);
 
+  // An @mention clicked in the message body: the card for that person, as
+  // for a name in the header, instead of starting a new message.
+  const [bodyMention, setBodyMention] = useState<{ email: string; anchor: CardAnchor } | null>(null);
+  useEffect(() => {
+    setBodyMention(null);
+  }, [email?.id]);
+
   const [dismissedUnsubBanners, setDismissedUnsubBanners] = useState<Set<string>>(
     () => {
       if (typeof window === 'undefined') return new Set();
@@ -1930,6 +1992,11 @@ export function EmailViewer({
     } else {
       debug.log('email', 'TNEF: Email has no usable HTML body, proceeding with full TNEF extraction');
     }
+    if ((tnefAtt.size ?? 0) > MAX_INLINE_PARSE_BYTES) {
+      debug.log('email', 'TNEF: attachment too large to decode on open, leaving it as a chip');
+      debug.groupEnd();
+      return;
+    }
 
     let cancelled = false;
 
@@ -2003,6 +2070,7 @@ export function EmailViewer({
       att => att.type === 'message/rfc822' && att.blobId
     );
     if (!rfc822Att?.blobId) return;
+    if ((rfc822Att.size ?? 0) > MAX_INLINE_PARSE_BYTES) return;
 
     // Only unwrap if the outer body is effectively empty
     const htmlPartId = email.htmlBody?.[0]?.partId;
@@ -2081,7 +2149,7 @@ export function EmailViewer({
       decryptedCidAttachments.forEach((att) => {
         const bytes = getAttachmentContentBytes(att);
         if (!bytes) return;
-        const cidValue = att.contentId!.replace(/^<|>$/g, '');
+        const cidValue = normalizeCid(att.contentId!);
         const buffer = bytes.buffer.slice(bytes.byteOffset, bytes.byteOffset + bytes.byteLength) as ArrayBuffer;
         // Sender-typed part: never let a script-bearing MIME type reach a
         // blob: URL in our origin (GHSA-xvjh-v9c6-qcvc).
@@ -2089,7 +2157,7 @@ export function EmailViewer({
         const objectUrl = URL.createObjectURL(blob);
         urls[cidValue] = objectUrl;
         objectUrls.push(objectUrl);
-        cidBlobParts.set(objectUrl, { name: att.filename || cidValue, type: att.mimeType });
+        cidBlobParts.set(objectUrl, { name: att.filename || cidValue, type: att.mimeType, blob });
       });
 
       setCidBlobUrls(urls);
@@ -2117,17 +2185,18 @@ export function EmailViewer({
     async function fetchCidBlobs() {
       const urls: Record<string, string> = {};
       await Promise.all(cidAttachments.map(async (att) => {
-        const cidValue = att.cid!.replace(/^<|>$/g, '');
+        const cidValue = normalizeCid(att.cid!);
         try {
           // The download URL echoes the sender-declared Content-Type back as
           // the Blob type; re-type anything that could execute as our origin
           // before it becomes a blob: URL (GHSA-xvjh-v9c6-qcvc).
           const blob = await blobClient!.fetchBlob(att.blobId, att.name || 'inline', att.type, blobAccountId);
-          const objectUrl = URL.createObjectURL(toInertBlob(blob));
+          const inertBlob = toInertBlob(blob);
+          const objectUrl = URL.createObjectURL(inertBlob);
           if (!cancelled) {
             urls[cidValue] = objectUrl;
             objectUrls.push(objectUrl);
-            cidBlobParts.set(objectUrl, { name: att.name || cidValue, type: att.type });
+            cidBlobParts.set(objectUrl, { name: att.name || cidValue, type: att.type, blob: inertBlob });
           } else {
             URL.revokeObjectURL(objectUrl);
           }
@@ -2494,7 +2563,9 @@ export function EmailViewer({
 
       if (opensPreview) {
         const transformed = await emailHooks.onAttachmentPreview.transform({ previewUrl: objectUrl } as AttachmentPreview, info);
-        window.open(transformed.previewUrl || objectUrl, '_blank', 'noopener,noreferrer');
+        if (!openPreviewInNewWindow(transformed.previewUrl || objectUrl)) {
+          setInAppPreview({ name: attachment.name || downloadName, downloadName, blob, contentType: blob.type });
+        }
       } else {
         emailHooks.onAttachmentDownload.emit(info);
         const anchor = document.createElement('a');
@@ -2524,7 +2595,9 @@ export function EmailViewer({
 
     if (opensPreview) {
       const transformed = await emailHooks.onAttachmentPreview.transform({ previewUrl: objectUrl } as AttachmentPreview, info);
-      window.open(transformed.previewUrl || objectUrl, '_blank', 'noopener,noreferrer');
+      if (!openPreviewInNewWindow(transformed.previewUrl || objectUrl)) {
+        setInAppPreview({ name: attachment.name || downloadName, downloadName, blob, contentType: blob.type });
+      }
     } else {
       emailHooks.onAttachmentDownload.emit(info);
       const anchor = document.createElement('a');
@@ -2769,13 +2842,10 @@ export function EmailViewer({
     // background. A <style> tag alone is too weak a signal: plenty of
     // transactional mails ship one for web fonts yet have no gutter of their
     // own, and zeroing the padding glues their content to the corner.
-    const emailHtml = effectiveEmailContent.html;
-    const hasFullBleedCanvas =
-      /<(?:table|div|body)\b[^>]*(?:\bwidth\s*=\s*["']?\s*100%|width\s*:\s*100%)[^>]*(?:\bbgcolor\s*=|background(?:-color)?\s*:)/i.test(emailHtml) ||
-      /<(?:table|div|body)\b[^>]*(?:\bbgcolor\s*=|background(?:-color)?\s*:)[^>]*(?:\bwidth\s*=\s*["']?\s*100%|width\s*:\s*100%)/i.test(emailHtml);
-    const autoDropsGutter = effectiveEmailContent.hasStyleTag && !isWordHtml && hasFullBleedCanvas;
-    const dropGutter =
-      messageSpacing === 'edge' || (messageSpacing === 'auto' && autoDropsGutter);
+    // Only looked at when it decides anything (lib/email-full-bleed.ts).
+    const autoDropsGutter =
+      messageSpacing === 'auto' && effectiveEmailContent.hasStyleTag && !isWordHtml && hasFullBleedCanvas(effectiveEmailContent.html);
+    const dropGutter = messageSpacing === 'edge' || autoDropsGutter;
     const bodyPadding = dropGutter ? '0' : '1rem 1.25rem';
     const mobileBodyPaddingX = dropGutter ? '0' : '0.75rem';
 
@@ -2940,7 +3010,9 @@ export function EmailViewer({
       && isFilePreviewable(part.name, part.type)
       && isMimeTypeSafeForInlinePreview(part.type);
     if (opensPreview) {
-      window.open(href, '_blank', 'noopener,noreferrer');
+      if (!openPreviewInNewWindow(href)) {
+        setInAppPreview({ name: part.name, downloadName: part.name, blob: part.blob, contentType: part.type || part.blob.type });
+      }
       return;
     }
     const anchor = document.createElement('a');
@@ -3071,6 +3143,19 @@ export function EmailViewer({
           const href = targetEl.getAttribute('href') || '';
           if (!href || href.startsWith('#')) return;
           if (/^mailto:/i.test(href)) {
+            const mention = mentionFromLink(targetEl as HTMLElement);
+            if (mention) {
+              ev.preventDefault();
+              ev.stopPropagation();
+              // The link's box is in the iframe's coordinates.
+              const frame = iframe.getBoundingClientRect();
+              const box = targetEl.getBoundingClientRect();
+              setBodyMention({
+                email: mention.email,
+                anchor: { top: frame.top + box.top, bottom: frame.top + box.bottom, left: frame.left + box.left },
+              });
+              return;
+            }
             // Write it here, like any other address in the app; the mail page
             // asks onMailtoIntercept first. Not taken (no recipient, nobody
             // listening): the browser's own handling stays.
@@ -3106,6 +3191,9 @@ export function EmailViewer({
           window.open(target, '_blank', 'noopener,noreferrer');
         };
         doc.addEventListener('click', onLinkClick, true);
+        // A press in the body closes a mention's card. The page never sees
+        // it: the focus is already inside the iframe, so there is no blur.
+        doc.addEventListener('mousedown', () => setBodyMention(null), true);
 
       }
     } catch {
@@ -3145,7 +3233,8 @@ export function EmailViewer({
       return;
     }
     const action = useSettingsStore.getState().postExportAction;
-    if (action === 'archive') onArchive?.();
+    // With the Archive action off a stored 'archive' keeps the message.
+    if (action === 'archive' && archiveActionEnabled) onArchive?.();
     else if (action === 'trash') onDelete?.();
   };
 
@@ -3177,9 +3266,9 @@ export function EmailViewer({
 
       let imported = 0;
       let failed = 0;
-      for (const { blob } of emails) {
+      for (const { blob, receivedAt } of emails) {
         try {
-          await client.importRawEmail(blob, { [mailboxId]: true }, { '$seen': true });
+          await client.importRawEmail(blob, { [mailboxId]: true }, { '$seen': true }, undefined, receivedAt);
           imported++;
         } catch {
           failed++;
@@ -3293,8 +3382,11 @@ export function EmailViewer({
       }
     }
     if (!raw) return null;
-    const m = raw.match(/<([^>]+)>/);
-    const addr = (m ? m[1] : raw).trim();
+    // A header is a line: cap it, and give up an unclosed `<` at the next
+    // `<` rather than rescanning to the end once per `<` (sender-controlled).
+    const line = raw.slice(0, 1000);
+    const m = line.match(/<([^<>]+)>/);
+    const addr = (m ? m[1] : line).trim();
     return addr || null;
   }, [email?.headers]);
 
@@ -3654,18 +3746,20 @@ export function EmailViewer({
       {!isScheduled && (
       <div className="flex items-center gap-0 sm:gap-0.5">
         {/* Archive */}
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={onArchive}
-          data-overflow-item
-          data-overflow-priority="4"
-          className={cn("flex-col items-center gap-0.5 h-auto py-1.5 px-2 sm:flex-row sm:h-8 sm:gap-1.5 sm:py-0", mvViewer && "order-1")}
-          title={t('tooltips.archive')}
-        >
-          <Archive className="w-4 h-4" />
-          {showToolbarLabels && <span className="text-[10px] leading-tight sm:text-sm">{t('archive')}</span>}
-        </Button>
+        {archiveActionEnabled && (
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={onArchive}
+            data-overflow-item
+            data-overflow-priority="4"
+            className={cn("flex-col items-center gap-0.5 h-auto py-1.5 px-2 sm:flex-row sm:h-8 sm:gap-1.5 sm:py-0", mvViewer && "order-1")}
+            title={t('tooltips.archive')}
+          >
+            <Archive className="w-4 h-4" />
+            {showToolbarLabels && <span className="text-[10px] leading-tight sm:text-sm">{t('archive')}</span>}
+          </Button>
+        )}
         {/* Delete */}
         <Button
           variant="ghost"
@@ -3942,14 +4036,16 @@ export function EmailViewer({
                 {t('forward')}
               </button>
               {/* Overflow: archive */}
-              <button
-                role="menuitem"
-                onClick={() => { onArchive?.(); setMoreMenuOpen(false); setMoreMenuSub(null); }}
-                className={cn("w-full px-3 py-1.5 text-sm text-start hover:bg-muted text-foreground flex items-center gap-2", hiddenPriorities.has(4) ? "" : "sm:hidden")}
-              >
-                <Archive className="w-4 h-4" />
-                {t('archive')}
-              </button>
+              {archiveActionEnabled && (
+                <button
+                  role="menuitem"
+                  onClick={() => { onArchive?.(); setMoreMenuOpen(false); setMoreMenuSub(null); }}
+                  className={cn("w-full px-3 py-1.5 text-sm text-start hover:bg-muted text-foreground flex items-center gap-2", hiddenPriorities.has(4) ? "" : "sm:hidden")}
+                >
+                  <Archive className="w-4 h-4" />
+                  {t('archive')}
+                </button>
+              )}
               {/* Overflow: move to folder - submenu */}
               {moveTree.length > 0 && onMoveToMailbox && (
                 <div className={cn("relative", hiddenPriorities.has(5) ? "" : "sm:hidden")}
@@ -3969,10 +4065,11 @@ export function EmailViewer({
                     <ChevronRight className="w-3 h-3 text-muted-foreground" />
                   </button>
                   {moreMenuSub === 'move' && (
-                    <div
+                    <SubMenuPanel
+                      side="start"
                       role="menu"
                       aria-label={t('move_to')}
-                      className="absolute end-full top-0 me-1 py-1 w-48 max-h-72 overflow-y-auto bg-background rounded-md shadow-lg border border-border z-10"
+                      className="py-1 w-48 max-h-72 overflow-y-auto bg-background rounded-md shadow-lg border border-border"
                     >
                       {(() => {
                         const renderMobileNodes = (nodes: MailboxNode[], depth = 0) => {
@@ -4007,9 +4104,20 @@ export function EmailViewer({
                         };
                         return renderMobileNodes(moveTree);
                       })()}
-                    </div>
+                    </SubMenuPanel>
                   )}
                 </div>
+              )}
+              {onRemoveFromFolder && (
+                <button
+                  role="menuitem"
+                  data-testid="viewer-remove-from-folder"
+                  onClick={() => { onRemoveFromFolder(); setMoreMenuOpen(false); setMoreMenuSub(null); }}
+                  className="w-full px-3 py-1.5 text-sm text-start hover:bg-muted text-foreground flex items-center gap-2"
+                >
+                  <FolderX className="w-4 h-4" />
+                  {tContextMenu('remove_from_folder')}
+                </button>
               )}
               {/* Overflow: tag - submenu */}
               {(emailKeywords.length > 0 || currentTagIds.length > 0) && (
@@ -4030,16 +4138,17 @@ export function EmailViewer({
                     <ChevronRight className="w-3 h-3 text-muted-foreground" />
                   </button>
                   {moreMenuSub === 'tag' && (
-                    <div
+                    <SubMenuPanel
+                      side="start"
                       role="menu"
                       aria-label={t('tag')}
-                      className="absolute end-full top-0 me-1 py-1 w-56 bg-background rounded-md shadow-lg border border-border z-10"
+                      className="py-1 w-56 bg-background rounded-md shadow-lg border border-border"
                     >
                       <TagPicker
                         selectedIds={currentTagIds}
                         onToggle={(tagId) => { if (email) onSetTag?.(email.id, tagId); }}
                       />
-                    </div>
+                    </SubMenuPanel>
                   )}
                 </div>
               )}
@@ -4063,13 +4172,14 @@ export function EmailViewer({
                     <ChevronRight className="w-3 h-3 text-muted-foreground" />
                   </button>
                   {moreMenuSub === 'rules' && (
-                    <div
+                    <SubMenuPanel
+                      side="start"
                       role="menu"
                       aria-label={tContextMenu('rules.title')}
-                      className="absolute end-full top-0 me-1 py-1 w-72 max-h-80 overflow-y-auto bg-background rounded-md shadow-lg border border-border z-10"
+                      className="py-1 w-72 max-h-80 overflow-y-auto bg-background rounded-md shadow-lg border border-border"
                     >
                       <RulesPanel email={email} target={rulesTarget} variant="desktop" onDone={closeMoreMenu} />
-                    </div>
+                    </SubMenuPanel>
                   )}
                 </div>
               )}
@@ -4289,6 +4399,16 @@ export function EmailViewer({
                   <FolderInput className="w-5 h-5" />
                   <span className="flex-1">{t('move_to')}</span>
                   <ChevronRight className="w-4 h-4 text-muted-foreground" />
+                </button>
+              )}
+              {onRemoveFromFolder && (
+                <button
+                  role="menuitem"
+                  onClick={() => { onRemoveFromFolder(); setMoreMenuOpen(false); }}
+                  className="w-full px-4 py-3 min-h-[44px] text-sm text-start hover:bg-muted text-foreground flex items-center gap-3"
+                >
+                  <FolderX className="w-5 h-5" />
+                  {tContextMenu('remove_from_folder')}
                 </button>
               )}
               {/* Tag (opens sub-view) */}
@@ -6295,6 +6415,17 @@ export function EmailViewer({
       </>
     )}
 
+    {bodyMention && (
+      <RecipientCardPopover
+        anchor={bodyMention.anchor}
+        email={bodyMention.email}
+        name={[...(email?.from || []), ...(email?.to || []), ...(email?.cc || []), ...(email?.replyTo || [])]
+          .find((r) => r.email.toLowerCase() === bodyMention.email.toLowerCase())?.name || undefined}
+        onViewContact={handleViewContactSidebar}
+        onClose={() => setBodyMention(null)}
+      />
+    )}
+
     {/* Contact Detail Sidebar - desktop only */}
     {contactSidebarEmail && !isMobileDevice && (
       <ContactSidebarPanel
@@ -6329,6 +6460,15 @@ export function EmailViewer({
               .then((created) => { if (created) toast.success('Contact added'); });
           }
         }}
+      />
+    )}
+
+    {inAppPreview && (
+      <FilePreviewModal
+        name={inAppPreview.name}
+        onClose={() => setInAppPreview(null)}
+        onDownload={downloadInAppPreview}
+        getFileContent={getInAppPreviewContent}
       />
     )}
 

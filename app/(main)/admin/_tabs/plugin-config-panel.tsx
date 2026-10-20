@@ -1,8 +1,9 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Puzzle, ArrowLeft, Loader2, Eye, EyeOff } from '@/components/icons';
 import { apiFetch } from '@/lib/browser-navigation';
+import { useAdminUnsavedChanges, useAdminUnsavedStore } from '@/stores/admin-unsaved-store';
 import { usePluginSlotOffers } from '@/hooks/use-plugin-slot-offers';
 import { PluginIframeSlot } from '@/components/plugins/plugin-iframe-slot';
 
@@ -73,9 +74,9 @@ export function PluginConfigPanel({ pluginId, onBack }: Props) {
     return () => { cancelled = true; };
   }, [pluginId]);
 
-  useEffect(() => {
-    if (!plugin?.configSchema) return;
+  const savedValues = useMemo(() => {
     const initial: Record<string, string> = {};
+    if (!plugin?.configSchema) return initial;
     for (const [key, field] of Object.entries(plugin.configSchema)) {
       const stored = config[key];
       if (stored !== undefined && stored !== null) {
@@ -86,8 +87,18 @@ export function PluginConfigPanel({ pluginId, onBack }: Props) {
         initial[key] = '';
       }
     }
-    setFormValues(initial);
+    return initial;
   }, [plugin, config]);
+
+  useEffect(() => {
+    if (!plugin?.configSchema) return;
+    setFormValues(savedValues);
+  }, [plugin, savedValues]);
+
+  const dirty = Object.keys(savedValues).some(key => (formValues[key] ?? '') !== savedValues[key]);
+  useAdminUnsavedChanges('plugin-config', dirty);
+  const requestLeave = useAdminUnsavedStore((s) => s.requestLeave);
+  const handleBack = () => requestLeave(onBack, 'plugin-config');
 
   async function handleSaveAll() {
     if (!plugin?.configSchema) return;
@@ -104,6 +115,13 @@ export function PluginConfigPanel({ pluginId, onBack }: Props) {
 
     try {
       let hasError = false;
+      let firstError: string | null = null;
+      const noteError = async (res: Response) => {
+        hasError = true;
+        if (firstError) return;
+        const data = await res.json().catch(() => null);
+        if (typeof data?.error === 'string') firstError = data.error;
+      };
       for (const [key, field] of Object.entries(plugin.configSchema)) {
         const newVal = formValues[key] ?? '';
         const oldVal = config[key] !== undefined ? String(config[key]) : '';
@@ -124,7 +142,7 @@ export function PluginConfigPanel({ pluginId, onBack }: Props) {
           if (res.ok) {
             setConfig(prev => { const next = { ...prev }; delete next[key]; return next; });
           } else {
-            hasError = true;
+            await noteError(res);
           }
           continue;
         }
@@ -137,12 +155,12 @@ export function PluginConfigPanel({ pluginId, onBack }: Props) {
         if (res.ok) {
           setConfig(prev => ({ ...prev, [key]: value }));
         } else {
-          hasError = true;
+          await noteError(res);
         }
       }
 
       setMessage(hasError
-        ? { type: 'error', text: 'Some settings failed to save' }
+        ? { type: 'error', text: firstError ?? 'Some settings failed to save' }
         : { type: 'success', text: 'Configuration saved' }
       );
     } catch {
@@ -166,7 +184,7 @@ export function PluginConfigPanel({ pluginId, onBack }: Props) {
       <div className="space-y-4">
         <button
           type="button"
-          onClick={onBack}
+          onClick={handleBack}
           className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground"
         >
           <ArrowLeft className="w-4 h-4" /> Back to Plugins
@@ -184,7 +202,7 @@ export function PluginConfigPanel({ pluginId, onBack }: Props) {
       <div className="flex items-center gap-3">
         <button
           type="button"
-          onClick={onBack}
+          onClick={handleBack}
           className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground"
           aria-label="Back to Plugins"
         >

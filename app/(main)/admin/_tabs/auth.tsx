@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { Save, Loader2, RotateCcw, Sparkles } from '@/components/icons';
 import { apiFetch } from '@/lib/browser-navigation';
+import { useAdminUnsavedChanges } from '@/stores/admin-unsaved-store';
 import { DEFAULT_OAUTH_SCOPES } from '@/lib/oauth/scopes';
 
 interface ConfigEntry {
@@ -20,8 +21,15 @@ export function AuthTab() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
+  const [configReadOnly, setConfigReadOnly] = useState(false);
 
-  useEffect(() => { fetchConfig(); }, []);
+  useEffect(() => {
+    fetchConfig();
+    apiFetch('/api/setup/status')
+      .then(res => (res.ok ? res.json() : null))
+      .then(data => setConfigReadOnly(data?.readOnly === true))
+      .catch(() => {});
+  }, []);
 
   async function fetchConfig() {
     setLoading(true);
@@ -128,6 +136,8 @@ export function AuthTab() {
 
   const hasEdits = Object.keys(edits).length > 0;
 
+  useAdminUnsavedChanges('auth', hasEdits);
+
   if (loading) {
     return <div className="flex items-center justify-center py-12 text-muted-foreground text-sm">Loading...</div>;
   }
@@ -168,10 +178,15 @@ export function AuthTab() {
               Registers an OAuth client on the connected Stalwart server, generates a client secret, and saves the settings here.
               Requires your Stalwart account to have admin permissions.
             </p>
+            {configReadOnly && (
+              <p className="text-xs text-destructive mt-1">
+                Not available while the configuration is read-only (ADMIN_CONFIG_READONLY).
+              </p>
+            )}
           </div>
           <button
             onClick={openSetupDialog}
-            disabled={setupRunning}
+            disabled={setupRunning || configReadOnly}
             className="shrink-0 inline-flex items-center gap-2 h-9 px-4 rounded-md bg-primary text-primary-foreground text-sm font-medium hover:bg-primary/90 disabled:opacity-50 transition-all shadow-sm"
           >
             {setupRunning ? <Loader2 className="w-4 h-4 animate-spin" /> : <Sparkles className="w-4 h-4" />}
@@ -281,7 +296,8 @@ export function AuthTab() {
 
       <Section title="Single Sign-On">
         <Toggle label="Auto SSO" description="Automatically redirect to SSO provider on load" configKey="autoSsoEnabled" value={currentValue('autoSsoEnabled') as boolean} source={config.autoSsoEnabled?.source} onChange={handleChange} onRevert={handleRevert} />
-        <Toggle label="End provider session on sign-out" description="Signing out of an SSO account also signs out of the identity provider, when it advertises an end_session_endpoint. Turn off if the provider is shared with apps that should stay signed in." configKey="oauthEndSession" value={currentValue('oauthEndSession') as boolean} source={config.oauthEndSession?.source} onChange={handleChange} onRevert={handleRevert} />
+        <Toggle label="End provider session on sign-out" description="Signing out of an SSO account also signs out of the identity provider, when it advertises an end_session_endpoint or a logout URL is set below. Turn off if the provider is shared with apps that should stay signed in." configKey="oauthEndSession" value={currentValue('oauthEndSession') as boolean} source={config.oauthEndSession?.source} onChange={handleChange} onRevert={handleRevert} />
+        <Text label="Provider logout URL" description="For providers whose discovery has no end_session_endpoint, such as Stalwart. Used instead of the discovered endpoint when set, with the same parameters. Must be https. Applies to the global OAuth settings; servers in the server list set their own." configKey="oauthEndSessionUrl" value={currentValue('oauthEndSessionUrl') as string} source={config.oauthEndSessionUrl?.source} onChange={handleChange} onRevert={handleRevert} placeholder="https://auth.example.com/logout" />
         <Text label="Post-logout redirect URI" description="Where the provider sends users after signing them out. Register it with the provider as a post-logout redirect URI first, or it will refuse the logout. Leave blank to stay on the provider's signed-out page." configKey="oauthPostLogoutRedirectUri" value={currentValue('oauthPostLogoutRedirectUri') as string} source={config.oauthPostLogoutRedirectUri?.source} onChange={handleChange} onRevert={handleRevert} placeholder="https://mail.example.com/en/login" />
       </Section>
 

@@ -30,14 +30,21 @@
 import { ADMIN_TABS, type AdminTabId } from '@/stores/admin-tab-store';
 import type { SettingsSearchTab } from '@/lib/settings-search';
 import { buildSettingsPath, buildFilesPath } from '@/lib/deep-links';
+import { RELEASE_VERSION } from '@/lib/release-version';
 
-/** Mirrors `SettingsSearchTab`. Listed so an unknown tab is refused here. */
-const SETTINGS_TABS: readonly SettingsSearchTab[] = [
-  'account', 'language', 'notifications', 'appearance', 'layout', 'reading',
-  'composing', 'downloads', 'identities', 'vacation', 'filters', 'templates',
-  'folders', 'keywords', 'security', 'content_senders', 'calendar', 'contacts',
-  'files', 'protocol_handlers', 'sidebar_apps', 'about_data', 'themes',
-  'plugins', 'debug',
+/**
+ * Mirrors `SettingsSearchTab`, plus the ids of tabs that have since been
+ * folded into another page: a connector link made for an old tab still
+ * opens the page that holds the setting now (the settings page migrates
+ * the id). Listed so an unknown tab is refused here.
+ */
+const LEGACY_SETTINGS_TABS = ['layout', 'themes', 'content_senders', 'identities', 'language', 'protocol_handlers', 'templates', 'folders', 'keywords', 'downloads', 'sidebar_apps', 'about_data', 'plugins', 'debug'] as const;
+const SETTINGS_TABS: readonly (SettingsSearchTab | typeof LEGACY_SETTINGS_TABS[number])[] = [
+  'account', 'general', 'notifications', 'appearance', 'message_list', 'reading',
+  'composing', 'vacation', 'filters',
+  'organize', 'security', 'calendar', 'contacts',
+  'files', 'addons', 'backup',
+  ...LEGACY_SETTINGS_TABS,
 ];
 
 const CALENDAR_VIEWS = ['month', 'week', 'day', 'agenda', 'tasks'] as const;
@@ -48,7 +55,7 @@ const CALENDAR_VIEWS = ['month', 'week', 'day', 'agenda', 'tasks'] as const;
 // JMAP id. The connector carries the alias list purely as suggestions for its
 // link generator.
 
-export type ParamType = 'enum' | 'slug' | 'date' | 'id' | 'path';
+export type ParamType = 'enum' | 'slug' | 'date' | 'id' | 'path' | 'version';
 
 export interface ParamSpec {
   readonly type: ParamType;
@@ -137,9 +144,15 @@ export const TARGETS: readonly Target[] = [
   {
     name: 'admin_extension',
     label: 'an extension in the marketplace',
-    params: { slug: { type: 'slug', required: true } },
+    // `version` picks the version the page offers to install; without it the
+    // page offers the newest one this Bulwark can run. The marketplace page
+    // reads it from the query string, and `safeAdminNext` lets exactly this
+    // query through the admin login.
+    params: { slug: { type: 'slug', required: true }, version: { type: 'version' } },
     resolve: (p) => ({
-      path: `/admin/marketplace/${encodeURIComponent(p.slug)}`,
+      path: p.version
+        ? `/admin/marketplace/${encodeURIComponent(p.slug)}?version=${encodeURIComponent(p.version)}`
+        : `/admin/marketplace/${encodeURIComponent(p.slug)}`,
       admin: true,
     }),
   },
@@ -195,6 +208,8 @@ function checkParam(spec: ParamSpec, value: string): boolean {
       return SLUG.test(value);
     case 'date':
       return isRealDate(value);
+    case 'version':
+      return RELEASE_VERSION.test(value);
     case 'id':
       // Becomes one path segment, so it must not be able to climb out of it.
       // `%` is refused along with the separators because the value is decoded

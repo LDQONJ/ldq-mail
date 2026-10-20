@@ -35,6 +35,8 @@ import { getActiveAccountSlotHeaders } from '@/lib/auth/active-account-slot';
 import { useUpdateStore, selectHasUpdate } from '@/stores/update-store';
 import { apiFetch, getPathPrefix, withBasePath } from '@/lib/browser-navigation';
 import { AdminI18nProvider } from '@/components/admin/admin-i18n-provider';
+import { useAdminUnsavedStore } from '@/stores/admin-unsaved-store';
+import { UnsavedChangesGuard } from './_unsaved-changes-guard';
 
 // Single-page tab navigation: clicks update a Zustand store. The URL stays
 // at /admin so React doesn't fire a route transition on every tab switch -
@@ -83,6 +85,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const pathname = usePathname();
   const storeActiveTab = useAdminTabStore((s) => s.activeTab);
   const setActiveTab = useAdminTabStore((s) => s.setActiveTab);
+  const requestLeave = useAdminUnsavedStore((s) => s.requestLeave);
   // Highlight the active tab only on /admin itself - on dynamic routes
   // (e.g. /admin/plugins/[id]) no tab is "current".
   const activeTab = pathname === '/admin' ? storeActiveTab : null;
@@ -90,6 +93,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const [authError, setAuthError] = useState<string | null>(null);
   const [isStalwartAutoLogin, setIsStalwartAutoLogin] = useState(false);
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
+  const [configReadOnly, setConfigReadOnly] = useState(false);
   const { appLogoLightUrl, appLogoDarkUrl, loginLogoLightUrl, loginLogoDarkUrl } = useConfig();
   const filesEnabled = usePolicyStore((s) => s.isFeatureEnabled('filesEnabled'));
   const resolvedTheme = useThemeStore((s) => s.resolvedTheme);
@@ -178,9 +182,23 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     return () => { cancelled = true; };
   }, [pathname, router]);
 
-  async function handleLogout() {
-    await apiFetch('/api/admin/auth', { method: 'DELETE' });
-    router.replace('/admin/login');
+  // With ADMIN_CONFIG_READONLY the panel still shows every setting, but
+  // nothing can be saved; say so up front instead of after a failed save (#1249).
+  useEffect(() => {
+    if (!authenticated) return;
+    let cancelled = false;
+    apiFetch('/api/setup/status')
+      .then(res => (res.ok ? res.json() : null))
+      .then(data => { if (!cancelled) setConfigReadOnly(data?.readOnly === true); })
+      .catch(() => {});
+    return () => { cancelled = true; };
+  }, [authenticated]);
+
+  function handleLogout() {
+    requestLeave(async () => {
+      await apiFetch('/api/admin/auth', { method: 'DELETE' });
+      router.replace('/admin/login');
+    });
   }
 
   // Don't gate the login page
@@ -210,10 +228,13 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                 const active = activeTab === tab;
                 const showDot = tab === 'version' && hasUpdate;
                 const handleClick = () => {
-                  setActiveTab(tab);
-                  // From a dynamic route (/admin/plugins/[id], /admin/marketplace/[slug])
-                  // we still need a real navigation back to /admin so the page renders.
-                  if (pathname !== '/admin') router.push('/admin');
+                  if (active) return;
+                  requestLeave(() => {
+                    setActiveTab(tab);
+                    // From a dynamic route (/admin/plugins/[id], /admin/marketplace/[slug])
+                    // we still need a real navigation back to /admin so the page renders.
+                    if (pathname !== '/admin') router.push('/admin');
+                  });
                 };
                 return (
                   <button
@@ -284,6 +305,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   return (
     <AdminI18nProvider>
       <div className="min-h-screen flex bg-background">
+        <UnsavedChangesGuard />
       {/* Slim webmail nav rail (desktop only) */}
       <nav className="hidden md:flex w-14 bg-secondary flex-col items-center py-3 gap-2 border-e border-border sticky top-0 h-screen shrink-0">
         {logoUrl ? (
@@ -420,7 +442,18 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
               Loading admin panel…
             </div>
           ) : authenticated ? (
-            children
+            <>
+              {configReadOnly && (
+                <div role="status" className="mb-4 rounded-lg border border-border bg-muted p-4 text-sm">
+                  <p className="font-medium text-foreground">The configuration is read-only</p>
+                  <p className="mt-1 text-muted-foreground">
+                    ADMIN_CONFIG_READONLY is set, so you can look at the settings here but not save changes.
+                    Change them in the mounted config files or environment instead.
+                  </p>
+                </div>
+              )}
+              {children}
+            </>
           ) : null}
         </div>
       </main>

@@ -19,9 +19,11 @@ import type { IJMAPClient } from "@/lib/jmap/client-interface";
 import { buildReplySubject, buildForwardSubject } from "@/lib/subject-prefix";
 import { getQuoteBodies } from "@/lib/email-composer-utils";
 import { buildForwardAsAttachmentPayload } from "@/lib/forward-as-attachment";
-import { KEYWORD_PREFIX, KEYWORD_PREFIX_LEGACY } from "@/lib/thread-utils";
+import { KEYWORD_PREFIX, KEYWORD_PREFIX_LEGACY, emailKeyFor } from "@/lib/thread-utils";
 import { cn } from "@/lib/utils";
 import { getDraftTextBody } from '@/lib/email-body-selection';
+import { messagePriorityFromHeaders } from '@/lib/message-priority';
+import { useArchiveActionEnabled } from '@/lib/archive-gate';
 
 interface ProEmailTabBodyProps {
   tabId: string;
@@ -81,6 +83,7 @@ function buildReplyContext(email: Email): ProReplyContext {
 export function ProEmailView({ emailId, client: clientOverride, accountId, onLoaded, onClose, className }: ProEmailViewProps) {
   const t = useTranslations();
   const tNotifications = useTranslations('notifications');
+  const archiveActionEnabled = useArchiveActionEnabled();
 
   const activeClient = useAuthStore((s) => s.client);
   const client = clientOverride ?? activeClient;
@@ -249,7 +252,7 @@ export function ProEmailView({ emailId, client: clientOverride, accountId, onLoa
     const archiveMb = mailboxes.find((m) => m.role === 'archive');
     if (!archiveMb) return;
     try {
-      if (!(await moveToMailbox(client, email.id, archiveMb.id))) return;
+      if (!(await moveToMailbox(client, email.id, archiveMb.id, emailKeyFor(email)))) return;
       toast.success(tNotifications('email_archived'));
       onClose();
     } catch (err) {
@@ -260,7 +263,7 @@ export function ProEmailView({ emailId, client: clientOverride, accountId, onLoa
   const handleToggleStar = useCallback(async () => {
     if (!client || !email) return;
     try {
-      if (!(await toggleStar(client, email.id))) return;
+      if (!(await toggleStar(client, email.id, emailKeyFor(email)))) return;
       // Reflect locally - the viewer re-reads from email-store's selectedEmail
       // shape only for the mail tab; here we update our local copy too.
       setEmail((prev) => prev ? {
@@ -317,7 +320,7 @@ export function ProEmailView({ emailId, client: clientOverride, accountId, onLoa
   const handleMoveToMailbox = useCallback(async (mailboxId: string) => {
     if (!client || !email) return;
     try {
-      if (await moveToMailbox(client, email.id, mailboxId)) onClose();
+      if (await moveToMailbox(client, email.id, mailboxId, emailKeyFor(email))) onClose();
     } catch (err) {
       console.error('Move failed:', err);
     }
@@ -381,6 +384,7 @@ export function ProEmailView({ emailId, client: clientOverride, accountId, onLoa
         // since #849; without this the Pro draft tab still opened the
         // composer without its files and the next save stripped them.
         attachments: email.attachments,
+        priority: messagePriorityFromHeaders(email.headers),
       },
     }, { to: addresses(email.to), cc: addresses(email.cc), subject: draftSubject, body: bodyText }, onClose);
   }, [email, identities, multiAccountIdentities, openComposeTab, onClose, t]);
@@ -396,7 +400,7 @@ export function ProEmailView({ emailId, client: clientOverride, accountId, onLoa
           onForward={handleForward}
           onForwardAsAttachment={handleForwardAsAttachment}
           onDelete={handleDelete}
-          onArchive={handleArchive}
+          onArchive={archiveActionEnabled ? handleArchive : undefined}
           onToggleStar={handleToggleStar}
           onMarkAsRead={handleMarkAsRead}
           onSetTag={handleSetTag}
