@@ -641,6 +641,7 @@
       "copy_failed": "No s'ha pogut copiar el codi"
     },
     "mv_position": "{index} de {total}",
+    "copy": "Copia",
     "plugin_panel_show": "Mostra el tauler del connector",
     "plugin_panel_hide": "Amaga el tauler del connector"
   },
@@ -754,6 +755,8 @@
     "send_offline": "Sembla que no tens connexió. El missatge continua aquí; torna a enviar-lo quan tornis a estar en línia.",
     "send_timeout": "El servidor ha deixat de respondre. Comproveu la carpeta Enviats abans de tornar a enviar: el missatge pot haver sortit.",
     "send_recipients_rejected": "No s'ha enviat: el servidor ha rebutjat tots els destinataris.",
+    "cut": "Retalla",
+    "copy": "Copia",
     "send_plugin_failed": "No s'ha enviat: un connector que gestiona l'enviament ha fallat o ha trigat massa. Comprova la carpeta Enviats abans de tornar-ho a enviar.",
     "send_some_recipients_rejected": "S'ha enviat, però no a aquests destinataris: el servidor els ha rebutjat.",
     "continue_draft": "Continua l'esborrany",

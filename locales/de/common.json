@@ -61,10 +61,10 @@
     "demo_tagline": "Erleben Sie einen voll ausgestatteten E-Mail-Client. Kein Konto erforderlich.",
     "demo_no_signup": "Keine Registrierung nötig - erkunden Sie frei mit Beispieldaten",
     "mobile_handoff": {
-      "title": "Open the Bulwark mobile app?",
-      "description": "This sign-in page was opened by an app on this device. Your sign-in for {username} will be handed to the app that registered the Bulwark link. Continue only if you started this from the Bulwark mobile app.",
-      "confirm": "Hand over to the app",
-      "cancel": "Stay in the webmail"
+      "title": "Bulwark Mail App öffnen?",
+      "description": "Diese Anmeldeseite wurde von einer App auf diesem Gerät geöffnet. Ihre Anmeldung für {username} wird an die App übergeben, die den Bulwark-Link registriert hat. Fahren Sie nur fort, wenn Sie die Anmeldung in der Bulwark Mail App gestartet haben.",
+      "confirm": "An die App übergeben",
+      "cancel": "Im Webmail bleiben"
     },
     "oauth_completing": "Anmeldung wird abgeschlossen...",
     "oauth_error": {
@@ -641,6 +641,7 @@
       "copy_failed": "Code konnte nicht kopiert werden"
     },
     "mv_position": "{index} von {total}",
+    "copy": "Kopieren",
     "plugin_panel_show": "Plugin-Bereich einblenden",
     "plugin_panel_hide": "Plugin-Bereich ausblenden"
   },
@@ -754,6 +755,8 @@
     "send_offline": "Sie scheinen offline zu sein. Die Nachricht ist noch da, senden Sie sie erneut, sobald Sie wieder online sind.",
     "send_timeout": "Der Server antwortet nicht mehr. Prüfen Sie den Ordner „Gesendet“, bevor Sie erneut senden – die Nachricht wurde möglicherweise bereits verschickt.",
     "send_recipients_rejected": "Nicht gesendet – der Server hat alle Empfänger abgelehnt.",
+    "cut": "Ausschneiden",
+    "copy": "Kopieren",
     "send_plugin_failed": "Nicht gesendet – ein Plugin, das den Versand übernimmt, ist fehlgeschlagen oder hat zu lange gebraucht. Prüfen Sie den Ordner „Gesendet“, bevor Sie erneut senden.",
     "send_some_recipients_rejected": "Gesendet, aber nicht an diese Empfänger – der Server hat sie abgelehnt.",
     "continue_draft": "Entwurf fortsetzen",

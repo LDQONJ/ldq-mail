@@ -641,6 +641,7 @@
       "copy_failed": "Koden kunne ikke kopieres"
     },
     "mv_position": "{index} af {total}",
+    "copy": "Kopiér",
     "plugin_panel_show": "Vis pluginpanel",
     "plugin_panel_hide": "Skjul pluginpanel"
   },
@@ -754,6 +755,8 @@
     "send_offline": "Du ser ud til at være offline. Beskeden er her stadig, send den igen, når du er online.",
     "send_timeout": "Serveren holdt op med at svare. Tjek mappen Sendt, før du sender igen — beskeden er måske allerede afsendt.",
     "send_recipients_rejected": "Ikke sendt - serveren afviste alle modtagere.",
+    "cut": "Klip",
+    "copy": "Kopiér",
     "send_plugin_failed": "Ikke sendt - et plugin, der står for afsendelsen, fejlede eller tog for lang tid. Tjek mappen Sendt, før du sender igen.",
     "send_some_recipients_rejected": "Sendt, men ikke til disse modtagere - serveren afviste dem.",
     "continue_draft": "Fortsæt kladde",

@@ -641,6 +641,7 @@
       "copy_failed": "Kod kopyalanamadı"
     },
     "mv_position": "{index} / {total}",
+    "copy": "Kopyala",
     "plugin_panel_show": "Eklenti panelini göster",
     "plugin_panel_hide": "Eklenti panelini gizle"
   },
@@ -754,6 +755,8 @@
     "send_offline": "Çevrimdışı görünüyorsunuz. İleti hâlâ burada; yeniden çevrimiçi olduğunuzda tekrar gönderin.",
     "send_timeout": "Sunucu yanıt vermeyi bıraktı. Yeniden göndermeden önce Gönderilenler klasörünü kontrol edin — ileti gönderilmiş olabilir.",
     "send_recipients_rejected": "Gönderilmedi - sunucu tüm alıcıları reddetti.",
+    "cut": "Kes",
+    "copy": "Kopyala",
     "send_plugin_failed": "Gönderilmedi - gönderimi üstlenen bir eklenti başarısız oldu ya da çok uzun sürdü. Yeniden göndermeden önce Gönderilenler klasörünü kontrol edin.",
     "send_some_recipients_rejected": "Gönderildi, ancak bu alıcılara değil - sunucu onları reddetti.",
     "continue_draft": "Taslağa devam et",

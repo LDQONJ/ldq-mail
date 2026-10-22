@@ -641,6 +641,7 @@
       "copy_failed": "Impossibile copiare il codice"
     },
     "mv_position": "{index} di {total}",
+    "copy": "Copia",
     "plugin_panel_show": "Mostra il pannello del plugin",
     "plugin_panel_hide": "Nascondi il pannello del plugin"
   },
@@ -754,6 +755,8 @@
     "send_offline": "Sembra che tu sia offline. Il messaggio è ancora qui, invialo di nuovo quando torni online.",
     "send_timeout": "Il server ha smesso di rispondere. Controlli la cartella Posta inviata prima di inviare di nuovo: il messaggio potrebbe essere già partito.",
     "send_recipients_rejected": "Non inviato: il server ha rifiutato tutti i destinatari.",
+    "cut": "Taglia",
+    "copy": "Copia",
     "send_plugin_failed": "Non inviato: un plugin che gestisce l'invio non è riuscito o ha impiegato troppo tempo. Controlla la cartella Inviati prima di inviare di nuovo.",
     "send_some_recipients_rejected": "Inviato, ma non a questi destinatari: il server li ha rifiutati.",
     "continue_draft": "Continua bozza",

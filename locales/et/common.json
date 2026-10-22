@@ -641,6 +641,7 @@
       "copy_failed": "Koodi kopeerimine ebaõnnestus"
     },
     "mv_position": "{index} / {total}",
+    "copy": "Kopeeri",
     "plugin_panel_show": "Näita pistikprogrammi paneeli",
     "plugin_panel_hide": "Peida pistikprogrammi paneel"
   },
@@ -754,6 +755,8 @@
     "send_offline": "Paistab, et oled võrgust väljas. Kiri on alles, saada see uuesti, kui oled taas ühenduses.",
     "send_timeout": "Server lakkas vastamast. Enne uuesti saatmist kontrolli oma saadetud kirjade kausta — sõnum võis siiski välja minna.",
     "send_recipients_rejected": "Ei saadetud - server lükkas kõik adressaadid tagasi.",
+    "cut": "Lõika",
+    "copy": "Kopeeri",
     "send_plugin_failed": "Ei saadetud - saatmist käsitlev pistikprogramm ebaõnnestus või võttis liiga kaua aega. Kontrolli enne uuesti saatmist kausta Saadetud.",
     "send_some_recipients_rejected": "Saadetud, kuid mitte neile adressaatidele - server lükkas nad tagasi.",
     "continue_draft": "Jätka mustandiga",

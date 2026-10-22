@@ -641,6 +641,7 @@
       "copy_failed": "無法複製驗證碼"
     },
     "mv_position": "第 {index} 封，共 {total} 封",
+    "copy": "複製",
     "plugin_panel_show": "顯示外掛程式面板",
     "plugin_panel_hide": "隱藏外掛程式面板"
   },
@@ -754,6 +755,8 @@
     "send_offline": "你似乎已離線。郵件仍保留在這裡，恢復連線後請再次寄出。",
     "send_timeout": "伺服器停止回應。再次傳送前，請先檢查「寄件備份」信件匣，因為郵件可能已經寄出。",
     "send_recipients_rejected": "未傳送：伺服器拒絕了所有收件者。",
+    "cut": "剪下",
+    "copy": "複製",
     "send_plugin_failed": "未傳送：負責傳送的外掛程式失敗或耗時過久。再次傳送前，請先檢查「寄件備份」資料夾。",
     "send_some_recipients_rejected": "已傳送，但未傳送給以下收件者：伺服器拒絕了他們。",
     "continue_draft": "繼續編輯草稿",

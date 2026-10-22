@@ -641,6 +641,7 @@
       "copy_failed": "Kód se nepodařilo zkopírovat"
     },
     "mv_position": "{index} z {total}",
+    "copy": "Kopírovat",
     "plugin_panel_show": "Zobrazit panel pluginu",
     "plugin_panel_hide": "Skrýt panel pluginu"
   },
@@ -754,6 +755,8 @@
     "send_offline": "Zdá se, že jste offline. Zpráva tu zůstává, odešlete ji znovu, až budete online.",
     "send_timeout": "Server přestal odpovídat. Než odešlete znovu, zkontrolujte složku Odeslané – zpráva už mohla odejít.",
     "send_recipients_rejected": "Neodesláno – server odmítl všechny příjemce.",
+    "cut": "Vyjmout",
+    "copy": "Kopírovat",
     "send_plugin_failed": "Neodesláno – plugin, který zajišťuje odeslání, selhal nebo trval příliš dlouho. Před opětovným odesláním zkontrolujte složku Odeslané.",
     "send_some_recipients_rejected": "Odesláno, ale ne těmto příjemcům – server je odmítl.",
     "continue_draft": "Pokračovat v úpravě konceptu",

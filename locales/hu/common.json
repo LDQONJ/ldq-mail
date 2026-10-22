@@ -641,6 +641,7 @@
       "copy_failed": "Nem sikerült másolni a kódot"
     },
     "mv_position": "{index} / {total}",
+    "copy": "Másolás",
     "plugin_panel_show": "Bővítménypanel megjelenítése",
     "plugin_panel_hide": "Bővítménypanel elrejtése"
   },
@@ -754,6 +755,8 @@
     "send_offline": "Úgy tűnik, nincs kapcsolat. Az üzenet megmaradt, küldd el újra, ha újra online vagy.",
     "send_timeout": "A kiszolgáló nem válaszol többé. Újraküldés előtt ellenőrizze az Elküldött mappát – az üzenet lehet, hogy már kiment.",
     "send_recipients_rejected": "Nem lett elküldve – a szerver minden címzettet elutasított.",
+    "cut": "Kivágás",
+    "copy": "Másolás",
     "send_plugin_failed": "Nem lett elküldve – egy küldést végző bővítmény hibát jelzett vagy túl sokáig tartott. Újraküldés előtt nézd meg az Elküldött mappát.",
     "send_some_recipients_rejected": "Elküldve, de ezeknek a címzetteknek nem – a szerver elutasította őket.",
     "continue_draft": "Piszkozat folytatása",

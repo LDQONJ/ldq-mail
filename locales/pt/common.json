@@ -641,6 +641,7 @@
       "copy_failed": "Não foi possível copiar o código"
     },
     "mv_position": "{index} de {total}",
+    "copy": "Copiar",
     "plugin_panel_show": "Mostrar o painel do plugin",
     "plugin_panel_hide": "Ocultar o painel do plugin"
   },
@@ -754,6 +755,8 @@
     "send_offline": "Parece que você está offline. A mensagem continua aqui; envie novamente quando voltar a ficar online.",
     "send_timeout": "O servidor deixou de responder. Verifique a pasta Enviados antes de enviar novamente — a mensagem pode já ter saído.",
     "send_recipients_rejected": "Não enviado: o servidor rejeitou todos os destinatários.",
+    "cut": "Cortar",
+    "copy": "Copiar",
     "send_plugin_failed": "Não enviado: um plugin que trata do envio falhou ou demorou demasiado. Verifique a pasta Enviados antes de enviar novamente.",
     "send_some_recipients_rejected": "Enviado, mas não para estes destinatários, que foram rejeitados pelo servidor.",
     "continue_draft": "Continuar rascunho",

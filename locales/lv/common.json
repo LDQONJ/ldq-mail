@@ -641,6 +641,7 @@
       "copy_failed": "Neizdevās nokopēt kodu"
     },
     "mv_position": "{index} no {total}",
+    "copy": "Kopēt",
     "plugin_panel_show": "Rādīt spraudņa paneli",
     "plugin_panel_hide": "Slēpt spraudņa paneli"
   },
@@ -754,6 +755,8 @@
     "send_offline": "Šķiet, esat bezsaistē. Ziņojums joprojām ir šeit, nosūtiet to vēlreiz, kad būsiet tiešsaistē.",
     "send_timeout": "Serveris pārstāja atbildēt. Pirms sūtīt vēlreiz, pārbaudiet mapi Nosūtītie — ziņojums, iespējams, jau ir aizsūtīts.",
     "send_recipients_rejected": "Nav nosūtīts — serveris noraidīja visus adresātus.",
+    "cut": "Izgriezt",
+    "copy": "Kopēt",
     "send_plugin_failed": "Nav nosūtīts – spraudnis, kas veic sūtīšanu, kļūdījās vai strādāja pārāk ilgi. Pirms sūtīt vēlreiz, pārbaudiet mapi Nosūtītie.",
     "send_some_recipients_rejected": "Nosūtīts, taču ne šiem adresātiem — serveris tos noraidīja.",
     "continue_draft": "Turpināt melnrakstu",

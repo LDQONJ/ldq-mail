@@ -641,6 +641,7 @@
       "copy_failed": "Impossible de copier le code"
     },
     "mv_position": "{index} sur {total}",
+    "copy": "Copier",
     "plugin_panel_show": "Afficher le panneau du plugin",
     "plugin_panel_hide": "Masquer le panneau du plugin"
   },
@@ -754,6 +755,8 @@
     "send_offline": "Vous semblez hors ligne. Le message est toujours là ; renvoyez-le une fois de nouveau en ligne.",
     "send_timeout": "Le serveur ne répond plus. Vérifiez le dossier Envoyés avant de renvoyer : le message est peut-être déjà parti.",
     "send_recipients_rejected": "Non envoyé : le serveur a refusé tous les destinataires.",
+    "cut": "Couper",
+    "copy": "Copier",
     "send_plugin_failed": "Non envoyé : un plugin chargé de l'envoi a échoué ou a pris trop de temps. Vérifiez le dossier Envoyés avant de renvoyer le message.",
     "send_some_recipients_rejected": "Envoyé, mais pas à ces destinataires : le serveur les a refusés.",
     "continue_draft": "Continuer le brouillon",

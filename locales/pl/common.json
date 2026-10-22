@@ -641,6 +641,7 @@
       "copy_failed": "Nie udało się skopiować kodu"
     },
     "mv_position": "{index} z {total}",
+    "copy": "Kopiuj",
     "plugin_panel_show": "Pokaż panel wtyczki",
     "plugin_panel_hide": "Ukryj panel wtyczki"
   },
@@ -754,6 +755,8 @@
     "send_offline": "Wygląda na to, że jesteś offline. Wiadomość nadal tu jest, wyślij ją ponownie po odzyskaniu połączenia.",
     "send_timeout": "Serwer przestał odpowiadać. Przed ponownym wysłaniem sprawdź folder Wysłane — wiadomość mogła już zostać wysłana.",
     "send_recipients_rejected": "Nie wysłano – serwer odrzucił wszystkich odbiorców.",
+    "cut": "Wytnij",
+    "copy": "Kopiuj",
     "send_plugin_failed": "Nie wysłano – wtyczka obsługująca wysyłanie zawiodła lub działała zbyt długo. Przed ponownym wysłaniem sprawdź folder Wysłane.",
     "send_some_recipients_rejected": "Wysłano, ale nie do tych odbiorców – serwer ich odrzucił.",
     "continue_draft": "Kontynuuj szkic",

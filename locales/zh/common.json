@@ -641,6 +641,7 @@
       "copy_failed": "无法复制验证码"
     },
     "mv_position": "第 {index} 封，共 {total} 封",
+    "copy": "复制",
     "plugin_panel_show": "显示插件面板",
     "plugin_panel_hide": "隐藏插件面板"
   },
@@ -754,6 +755,8 @@
     "send_offline": "你似乎已离线。邮件仍保留在这里，恢复联网后请再次发送。",
     "send_timeout": "服务器已停止响应。再次发送前请检查“已发送”文件夹——邮件可能已经发出。",
     "send_recipients_rejected": "未发送：服务器拒绝了所有收件人。",
+    "cut": "剪切",
+    "copy": "复制",
     "send_plugin_failed": "未发送：负责发送的插件失败或耗时过长。再次发送前，请先检查“已发送”文件夹。",
     "send_some_recipients_rejected": "已发送，但未发送给以下收件人：服务器拒绝了他们。",
     "continue_draft": "继续编辑草稿",
