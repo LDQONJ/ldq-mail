@@ -1,6 +1,6 @@
 {
   "name": "bulwark-webmail",
-  "version": "1.17.0",
+  "version": "1.17.1",
   "description": "Bulwark Webmail - a modern webmail client built for Stalwart Mail Server",
   "author": "Bulwark Mail <dev@bulwarkmail.org>",
   "license": "AGPL-3.0-only",
@@ -70,7 +70,7 @@
     "dompurify": "^3.4.12",
     "jalaali-js": "^2.0.0",
     "jszip": "^3.10.1",
-    "next": "^16.2.6",
+    "next": "^16.4.2",
     "next-intl": "^4.13.3",
     "nodemailer": "^10.0.10",
     "otpauth": "^9.5.0",
