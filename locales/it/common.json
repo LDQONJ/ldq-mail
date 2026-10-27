@@ -76,7 +76,7 @@
       "back_to_login": "Torna al login"
     },
     "have_invite_code": "Have an invite code?",
-    "register_link": "Register"
+    "register_link": "Register Account"
   },
   "sidebar": {
     "close": "Chiudi",
@@ -179,18 +179,18 @@
   },
   "protocol_handlers": {
     "title": "App predefinite",
-    "description": "Scegli se i link e-mail e calendario devono aprirsi in Bulwark. Tecnicamente, Bulwark si registra come gestore di protocollo per i link mailto: e webcal:.",
+    "description": "Scegli se i link e-mail e calendario devono aprirsi in {appName}. Tecnicamente, {appName} si registra come gestore di protocollo per i link mailto: e webcal:.",
     "unsupported": "Questo browser o questa connessione non supporta la registrazione manuale dei gestori di protocollo. Potresti comunque poter usare la PWA installata tramite le impostazioni del browser o del sistema.",
     "mailto_label": "Link e-mail",
-    "mailto_description": "Apre i link mailto: in Bulwark con l'editor precompilato.",
+    "mailto_description": "Apre i link mailto: in {appName} con l'editor precompilato.",
     "protocol_open_mode_label": "All'apertura dei link di protocollo",
-    "protocol_open_mode_description": "Scegli se Bulwark deve aprire i link mailto: e webcal: in una nuova scheda o riutilizzare una sessione aperta. L'opzione sessione attiva richiede l'autorizzazione alle notifiche, così puoi fare clic su una notifica di fallback per portare Bulwark in primo piano se il browser blocca il focus.",
+    "protocol_open_mode_description": "Scegli se {appName} deve aprire i link mailto: e webcal: in una nuova scheda o riutilizzare una sessione aperta. L'opzione sessione attiva richiede l'autorizzazione alle notifiche, così puoi fare clic su una notifica di fallback per portare {appName} in primo piano se il browser blocca il focus.",
     "protocol_open_mode_active_session": "Apri nella sessione attiva se possibile",
     "protocol_open_mode_new_tab": "Apri sempre una nuova scheda",
-    "focus_notification_title": "Apri Bulwark",
-    "focus_notification_body": "Il link è stato aperto in Bulwark. Fai clic per portare la finestra in primo piano.",
+    "focus_notification_title": "Apri {appName}",
+    "focus_notification_body": "Il link è stato aperto in {appName}. Fai clic per portare la finestra in primo piano.",
     "webcal_label": "Link calendario",
-    "webcal_description": "Apre i link webcal: in Bulwark con una finestra di dialogo di sottoscrizione al calendario precompilata.",
+    "webcal_description": "Apre i link webcal: in {appName} con una finestra di dialogo di sottoscrizione al calendario precompilata.",
     "register_mailto": "Registra app e-mail",
     "register_webcal": "Registra app calendario",
     "mailto_registered": "Registrazione del gestore e-mail richiesta",
@@ -198,7 +198,7 @@
     "registration_failed": "Registrazione del gestore di protocollo non riuscita",
     "opening_mailto": "Apertura editor...",
     "opening_webcal": "Apertura calendario...",
-    "browser_note": "Il browser o il sistema operativo potrebbe chiederti di confermare e potrebbe richiedere che Bulwark sia installato prima di poterlo selezionare come app predefinita.",
+    "browser_note": "Il browser o il sistema operativo potrebbe chiederti di confermare e potrebbe richiedere che {appName} sia installato prima di poterlo selezionare come app predefinita.",
     "select_account_title": "Scegli account",
     "select_mailto_account": "Scegli quale account deve aprire questo link e-mail.",
     "select_webcal_account": "Scegli quale account deve aprire questo link calendario.",
@@ -246,6 +246,11 @@
     "show_on_mobile": "Mostra su mobile"
   },
   "email_list": {
+    "sections": {
+      "unread": "Da leggere",
+      "everything_else": "Tutto il resto",
+      "unread_empty": "Hai letto tutti i messaggi della posta in arrivo."
+    },
     "columns": {
       "from": "Da",
       "to": "A",
@@ -564,6 +569,8 @@
       "authentication_missing_info": "Questo invito non include un'autenticazione email verificata. Conferma i dettagli con l'organizzatore se qualcosa sembra insolito.",
       "sender_mismatch_info": "Questo invito è stato inviato da {sender}, mentre l'organizzatore indicato nei dati del calendario è {organizer}.",
       "sender_mismatch_unverified_info": "Questo invito è stato inviato da {sender}, mentre l'organizzatore indicato nei dati del calendario è {organizer}, e il messaggio non ha potuto essere verificato.",
+      "attendee_mismatch_info": "Questa risposta è stata inviata da {sender}, mentre il partecipante che risponde nei dati del calendario è {attendee}.",
+      "attendee_mismatch_unverified_info": "Questa risposta è stata inviata da {sender}, mentre il partecipante che risponde nei dati del calendario è {attendee}, e il messaggio non ha potuto essere verificato.",
       "organizer_role": "Sei l'organizzatore di questo evento",
       "your_response": "La tua risposta: {status}",
       "response_needed": "Risposta richiesta",
@@ -606,6 +613,7 @@
     "scheduled_send_created": "E-mail programmata per l’invio",
     "sending_in": "Invio tra {seconds} s",
     "undo_send_failed": "Impossibile annullare. Il messaggio potrebbe essere già stato inviato.",
+    "undo_send_signed_out": "Impossibile annullare: l'account da cui è stato inviato il messaggio non è più connesso.",
     "cancel_scheduled_send": "Annulla invio",
     "reschedule_send": "Riprogramma",
     "cancel_and_edit": "Annulla e modifica",
@@ -614,6 +622,14 @@
     "scheduled_actions_only": "La vista Programmate supporta solo azioni di programmazione",
     "undo_send_scheduled": "Messaggio programmato per l’invio",
     "undo_send": "Annulla invio",
+    "send_cancelled_restore_failed": "L'invio è stato annullato, ma non è stato possibile riportare il messaggio in Bozze. Si trova ancora in Inviati.",
+    "send_cancelled_remove_failed": "L'invio è stato annullato, ma non è stato possibile rimuovere il messaggio non inviato da Inviati.",
+    "cancel_scheduled_failed": "Impossibile annullare l'invio programmato",
+    "still_scheduled_at": "Il messaggio è ancora programmato per il {date}.",
+    "still_scheduled": "Il messaggio è ancora programmato.",
+    "already_sent": "Questo messaggio è già stato inviato.",
+    "no_longer_scheduled": "Questo messaggio non è più programmato.",
+    "reschedule_recipients_refused": "Non è stato cambiato nulla: il server ha rifiutato {recipients}.",
     "contact_sidebar": {
       "title": "Contatto",
       "close": "Chiudi barra laterale",
@@ -686,6 +702,7 @@
     "link_url_prompt": "Inserisci l'URL",
     "draft_saved": "Bozza salvata",
     "save_failed": "Salvataggio non riuscito",
+    "discard_signed_out": "La bozza non è stata eliminata: l'account in cui è stata salvata non è più connesso. Rimane nelle bozze di quell'account.",
     "to_placeholder": "Indirizzi email dei destinatari",
     "cc_placeholder": "Destinatari in copia",
     "bcc_placeholder": "Destinatari in copia nascosta",
@@ -754,6 +771,10 @@
     "send_failed": "Invio dell'e-mail non riuscito",
     "send_offline": "Sembra che tu sia offline. Il messaggio è ancora qui, invialo di nuovo quando torni online.",
     "send_timeout": "Il server ha smesso di rispondere. Controlli la cartella Posta inviata prima di inviare di nuovo: il messaggio potrebbe essere già partito.",
+    "submission_quota": "Il server conserva troppi record di messaggi inviati per questo account. Bulwark ha rimosso quelli che poteva; se il problema si ripete, chieda all'amministratore di aumentare il limite di invii di posta.",
+    "submission_limit": "Il server ha rifiutato di inviare il messaggio perché è stato raggiunto un limite: {reason}",
+    "recipients_refused": "Non inviato: il server ha rifiutato {recipients}.",
+    "recipients_partly_refused": "Il server ha rifiutato {recipients}. Gli altri destinatari ricevono il messaggio.",
     "send_recipients_rejected": "Non inviato: il server ha rifiutato tutti i destinatari.",
     "cut": "Taglia",
     "copy": "Copia",
@@ -849,7 +870,7 @@
     "send_filing_warning": "Inviato - ma la pulizia successiva non è riuscita, potrebbe restare una bozza obsoleta.",
     "pop_out": "Apri la risposta in una finestra",
     "send_guard_failed": "Non inviato - un plugin che controlla i messaggi prima dell'invio non è riuscito o non ha risposto.",
-    "use_oracle_relay": "Send via Oracle Relay"
+    "use_oracle_relay": "Send via Oracle SMTP relay"
   },
   "confirm_dialog": {
     "confirm": "Conferma",
@@ -875,9 +896,9 @@
     "app_title": "Webmail",
     "reconnecting": "Connessione persa. Tentativo di riconnessione…",
     "rate_limited_title": "L'autenticazione del server e temporaneamente limitata.",
-    "rate_limited_detail": "Bulwark ha sospeso le richieste in background per evitare il blocco. Nuovo tentativo tra {seconds}s.",
+    "rate_limited_detail": "{appName} ha sospeso le richieste in background per evitare il blocco. Nuovo tentativo tra {seconds}s.",
     "rate_limited_action_title": "Richiesta sospesa per evitare il blocco.",
-    "rate_limited_action_detail": "Bulwark attende che termini il cooldown del server prima di inviare altre richieste autenticate. Riprova tra {seconds}s.",
+    "rate_limited_action_detail": "{appName} attende che termini il cooldown del server prima di inviare altre richieste autenticate. Riprova tra {seconds}s.",
     "pull_to_refresh": "Trascina per aggiornare",
     "release_to_refresh": "Rilascia per aggiornare",
     "refreshing": "Aggiornamento…"
@@ -1332,7 +1353,10 @@
         "revoke": "Revoca",
         "confirm_revoke_title": "Revocare questo dispositivo?",
         "confirm_revoke_message": "Smetterà subito di ricevere le notifiche in background. Riattivando il push su quel dispositivo verrà registrato di nuovo.",
-        "confirm_revoke_message_this": "Questo dispositivo smetterà subito di ricevere le notifiche in background."
+        "confirm_revoke_message_this": "Questo dispositivo smetterà subito di ricevere le notifiche in background.",
+        "shared_mailboxes_no_push": "Le caselle di posta che altri condividono con te non inviano notifiche in background.",
+        "error_forbidden": "Il server di posta non consente le notifiche in background per questo account.",
+        "error_over_quota": "Questo account ha troppe registrazioni push sul server di posta (il limite di solito è 15). Revoca i dispositivi che non usi più nelle impostazioni delle notifiche, poi riprova."
       },
       "push_all": {
         "title": "Tutti gli account",
@@ -1418,6 +1442,12 @@
       }
     },
     "email_behavior": {
+      "inbox_type": {
+        "label": "Tipo di posta in arrivo",
+        "description": "\"Prima i non letti\" mostra i 25 messaggi non letti più recenti in una sezione sopra il resto della posta in arrivo",
+        "default": "Predefinito",
+        "unread_first": "Prima i non letti"
+      },
       "clear_search_on_folder_change": {
         "label": "Cancella la ricerca quando cambi cartella",
         "description": "Facendo clic su una cartella (Posta in arrivo, Inviati…) la ricerca attiva viene cancellata e si apre quella cartella. Se disattivato, la ricerca resta attiva e viene rieseguita nella cartella scelta."
@@ -1508,6 +1538,10 @@
       "plain_text_mode": {
         "label": "Solo testo normale",
         "description": "Disabilita l'editor di testo formattato e invia tutte le email solo come testo normale, incluse risposte e inoltri"
+      },
+      "quick_reply": {
+        "label": "Risposta rapida",
+        "description": "Mostra la casella di risposta rapida sotto i messaggi."
       },
       "auto_select_reply_identity": {
         "label": "Seleziona automaticamente l'indirizzo di risposta",
@@ -1754,6 +1788,10 @@
         "signed_in": "Accesso fatto a {count, plural, one {# account} other {# account}} con la password salvata.",
         "sign_in_failed": "{count, plural, one {# password salvata è stata rifiutata} other {# password salvate sono state rifiutate}}: accedi a quegli account dall'elenco account.",
         "deleted": "Elenco salvato eliminato.",
+        "prompt_title": "Ripristinare gli altri account?",
+        "prompt_description": "Per {account} è salvato un elenco di account. Inserisci la password del backup per aggiungerli a questo browser, oppure fallo più tardi dalle Impostazioni.",
+        "prompt_not_now": "Non ora",
+        "prompt_done": "Fatto",
         "errors": {
           "mismatch": "Le password non coincidono.",
           "password_length": "Usa almeno 10 caratteri.",
@@ -2356,6 +2394,7 @@
       "validation_empty_name": "Il nome della regola è obbligatorio",
       "validation_empty_conditions": "È necessaria almeno una condizione con un valore",
       "validation_empty_actions": "È necessaria almeno un'azione",
+      "validation_header_name": "I nomi delle intestazioni possono contenere solo le lettere A-Z, cifre, trattini e trattini bassi",
       "templates_section": "Parti da un modello",
       "template_newsletters": "Sposta newsletter in cartella",
       "template_receipts": "Archivia ricevute automaticamente",
@@ -3129,7 +3168,8 @@
     },
     "export": {
       "title": "Esporta contatti",
-      "success": "{count, plural, one {1 contatto esportato} other {# contatti esportati}}"
+      "success": "{count, plural, one {1 contatto esportato} other {# contatti esportati}}",
+      "exporting": "Esportazione..."
     },
     "bulk": {
       "selected": "{count, plural, one {1 selezionato} other {# selezionati}}",
@@ -3272,8 +3312,11 @@
         "free": "Disponibile",
         "busy": "Occupato",
         "tentative": "Provvisorio",
+        "no_busy_times": "Nessun orario occupato condiviso",
         "unknown": "Non è un utente di questo server",
-        "checking": "Verifica in corso…"
+        "error": "Impossibile verificare",
+        "checking": "Verifica in corso…",
+        "unavailable_on_server": "Le informazioni libero/occupato non sono disponibili su questo server"
       },
       "title": "Partecipanti",
       "add": "Aggiungi partecipante",
@@ -3295,6 +3338,7 @@
       "you_organizer": "Sei l'organizzatore",
       "you_attendee": "Sei un partecipante",
       "no_participants": "Nessun partecipante",
+      "limit_warning": "Più di {max, plural, one {# partecipante} other {# partecipanti}}, organizzatore incluso: il server potrebbe rifiutarsi di salvare questo evento. Un amministratore può aumentare il limite.",
       "count": "{count, plural, one {# partecipante} other {# partecipanti}}"
     },
     "recurrence": {
@@ -3485,6 +3529,7 @@
       "save_without_invitations": "Salva senza inviti",
       "rsvp_updated": "Risposta aggiornata",
       "rsvp_error": "Impossibile aggiornare la risposta",
+      "participant_limit": "Il server consente al massimo {max, plural, one {# partecipante} other {# partecipanti}} per evento, organizzatore incluso, quindi ha rifiutato la modifica. Un amministratore può aumentare il limite.",
       "event_duplicated": "Evento duplicato",
       "event_error": "Salvataggio dell'evento non riuscito",
       "task_due": "Attività in scadenza",
@@ -3494,7 +3539,10 @@
     },
     "status": {
       "loading_calendars": "Caricamento calendari...",
-      "loading_events": "Caricamento eventi..."
+      "loading_events": "Caricamento eventi...",
+      "events_load_failed": "Impossibile caricare gli eventi. Il calendario potrebbe non essere aggiornato.",
+      "tasks_load_failed": "Impossibile caricare le attività. L'elenco potrebbe non essere aggiornato.",
+      "retry": "Riprova"
     },
     "quick_create": {
       "placeholder": "Titolo del nuovo evento",
@@ -3705,8 +3753,12 @@
     "loading_principals": "Caricamento utenti…",
     "no_principals": "Nessun altro utente o gruppo trovato.",
     "no_match": "Nessun risultato.",
+    "directory_restricted": "Il tuo server non consente di sfogliare la directory degli utenti, quindi vengono elencati solo i tuoi gruppi e le persone che hanno condiviso qualcosa con te. Un amministratore può attivare le query sulla directory nelle impostazioni di condivisione di Stalwart.",
+    "directory_not_browsable": "Il tuo server non ti consente di sfogliare la directory degli utenti.",
+    "directory_failed": "Impossibile caricare l'elenco di utenti e gruppi.",
     "remove": "Rimuovi accesso",
     "group": "Gruppo",
+    "unknown_user": "Utente sconosciuto",
     "share_added": "Accesso concesso",
     "share_updated": "Accesso aggiornato",
     "share_removed": "Accesso rimosso",
@@ -3802,6 +3854,8 @@
     "new_name": "Nuovo nome",
     "name_forbidden_chars": "Il server non consente questi caratteri nei nomi: {chars}",
     "name_reserved": "Questo nome è riservato sul server.",
+    "name_control_chars": "I nomi non possono contenere caratteri di controllo.",
+    "name_too_long": "Questo nome è troppo lungo per il server.",
     "delete": "Elimina",
     "delete_confirm_title": "Elimina risorsa",
     "delete_confirm_message": "Sei sicuro di voler eliminare \"{name}\"? Questa azione non può essere annullata.",
@@ -3812,12 +3866,22 @@
     "type": "Tipo",
     "folder": "Cartella",
     "file": "File",
+    "symlink": "Collegamento simbolico",
+    "parent_directory": "Directory superiore",
+    "breadcrumb_root": "Home",
     "no_accounts": "Nessun account collegato.",
     "uploading": "Caricamento in corso...",
     "upload_success": "{count, plural, one {1 file caricato} other {# file caricati}}",
     "upload_canceled": "Caricamento annullato",
     "upload_canceled_partial": "{count, plural, one {1 file era già stato caricato} other {# file erano già stati caricati}} prima dell'annullamento",
     "upload_error": "Caricamento del file non riuscito",
+    "upload_failed": "{count, plural, one {Impossibile caricare 1 file} other {Impossibile caricare # file}}",
+    "error_over_quota": "Hai raggiunto il limite di file o cartelle. Eliminane alcuni e riprova.",
+    "error_too_deep": "Le cartelle non possono essere annidate così in profondità.",
+    "error_invalid_name": "Il server non accetta questo nome.",
+    "error_forbidden": "Non hai l'autorizzazione per farlo qui.",
+    "error_too_large": "Questo file è troppo grande per il server.",
+    "error_partial_copy": "Una parte della copia è rimasta al suo posto.",
     "create_folder_success": "Cartella creata",
     "create_folder_error": "Creazione della cartella non riuscita",
     "delete_success": "Eliminato con successo",
@@ -3856,6 +3920,7 @@
     "shared": "Shared",
     "shared_with_me": "Shared with me",
     "shared_by": "Shared by {name}",
+    "shared_files_from": "File di {name}",
     "create_file_success": "File creato",
     "create_file_error": "Creazione del file non riuscita",
     "favorites": "Preferiti",
@@ -4397,7 +4462,7 @@
       },
       "http_proxy": {
         "title": "Usare gli account che colleghi",
-        "body": "Inviare richieste tramite il server di Bulwark con un account o una chiave configurati da te o dal tuo amministratore. Il plugin non vede mai la password, ma può fare tutto ciò che quell'account può fare sul proprio server."
+        "body": "Inviare richieste tramite il server di {appName} con un account o una chiave configurati da te o dal tuo amministratore. Il plugin non vede mai la password, ma può fare tutto ciò che quell'account può fare sul proprio server."
       },
       "compose_open": {
         "title": "Aprire l'editor per te",
@@ -4430,9 +4495,9 @@
     },
     "connect": {
       "title": "Connetti {label}",
-      "intro_password": "{name} vuole usare il tuo account {label}. Bulwark conserva la password sul proprio server e la invia solo a {host}. Il plugin non la vede mai.",
-      "intro_password_any": "{name} vuole usare il tuo account {label}. Bulwark conserva la password sul proprio server e la invia solo al server che inserisci qui. Il plugin non la vede mai.",
-      "intro_signin": "{name} vuole accedere al tuo account {label}. Inserisci qui il server, poi accedi sulla sua pagina. Bulwark conserva sul proprio server l'accesso ottenuto; il plugin non lo vede mai.",
+      "intro_password": "{name} vuole usare il tuo account {label}. {appName} conserva la password sul proprio server e la invia solo a {host}. Il plugin non la vede mai.",
+      "intro_password_any": "{name} vuole usare il tuo account {label}. {appName} conserva la password sul proprio server e la invia solo al server che inserisci qui. Il plugin non la vede mai.",
+      "intro_signin": "{name} vuole accedere al tuo account {label}. Inserisci qui il server, poi accedi sulla sua pagina. {appName} conserva sul proprio server l'accesso ottenuto; il plugin non lo vede mai.",
       "server": "Indirizzo del server",
       "server_hint": "cloud.example.com",
       "username": "Nome utente",

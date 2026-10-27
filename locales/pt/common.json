@@ -76,7 +76,7 @@
       "back_to_login": "Voltar ao login"
     },
     "have_invite_code": "Have an invite code?",
-    "register_link": "Register"
+    "register_link": "Register Account"
   },
   "sidebar": {
     "close": "Fechar",
@@ -179,18 +179,18 @@
   },
   "protocol_handlers": {
     "title": "Aplicativos padrão",
-    "description": "Escolha se links de e-mail e calendário devem abrir no Bulwark. Tecnicamente, o Bulwark se registra como manipulador de protocolo para links mailto: e webcal:.",
+    "description": "Escolha se links de e-mail e calendário devem abrir no {appName}. Tecnicamente, o {appName} se registra como manipulador de protocolo para links mailto: e webcal:.",
     "unsupported": "Este navegador ou esta conexão não oferece suporte ao registro manual de manipuladores de protocolo. Talvez você ainda consiga usar o PWA instalado pelas configurações do navegador ou do sistema.",
     "mailto_label": "Links de e-mail",
-    "mailto_description": "Abre links mailto: no Bulwark com o editor preenchido previamente.",
+    "mailto_description": "Abre links mailto: no {appName} com o editor preenchido previamente.",
     "protocol_open_mode_label": "Ao abrir links de protocolo",
-    "protocol_open_mode_description": "Escolha se o Bulwark abre links mailto: e webcal: em uma nova guia ou reutiliza uma sessão aberta. A opção de sessão ativa precisa da permissão de notificações para que você possa clicar em uma notificação alternativa e trazer o Bulwark para a frente se o navegador bloquear o foco.",
+    "protocol_open_mode_description": "Escolha se o {appName} abre links mailto: e webcal: em uma nova guia ou reutiliza uma sessão aberta. A opção de sessão ativa precisa da permissão de notificações para que você possa clicar em uma notificação alternativa e trazer o {appName} para a frente se o navegador bloquear o foco.",
     "protocol_open_mode_active_session": "Abrir na sessão ativa se possível",
     "protocol_open_mode_new_tab": "Sempre abrir uma nova guia",
-    "focus_notification_title": "Abrir Bulwark",
-    "focus_notification_body": "O link foi aberto no Bulwark. Clique para trazer a janela para a frente.",
+    "focus_notification_title": "Abrir {appName}",
+    "focus_notification_body": "O link foi aberto no {appName}. Clique para trazer a janela para a frente.",
     "webcal_label": "Links de calendário",
-    "webcal_description": "Abre links webcal: no Bulwark com uma janela de assinatura de calendário preenchida previamente.",
+    "webcal_description": "Abre links webcal: no {appName} com uma janela de assinatura de calendário preenchida previamente.",
     "register_mailto": "Registrar aplicativo de e-mail",
     "register_webcal": "Registrar aplicativo de calendário",
     "mailto_registered": "Registro do manipulador de e-mail solicitado",
@@ -198,7 +198,7 @@
     "registration_failed": "Falha ao registrar manipulador de protocolo",
     "opening_mailto": "Abrindo editor...",
     "opening_webcal": "Abrindo calendário...",
-    "browser_note": "Seu navegador ou sistema operacional pode pedir confirmação e pode exigir que o Bulwark esteja instalado antes de poder ser selecionado como aplicativo padrão.",
+    "browser_note": "Seu navegador ou sistema operacional pode pedir confirmação e pode exigir que o {appName} esteja instalado antes de poder ser selecionado como aplicativo padrão.",
     "select_account_title": "Escolher conta",
     "select_mailto_account": "Escolha qual conta deve abrir este link de e-mail.",
     "select_webcal_account": "Escolha qual conta deve abrir este link de calendário.",
@@ -246,6 +246,11 @@
     "show_on_mobile": "Mostrar no celular"
   },
   "email_list": {
+    "sections": {
+      "unread": "Não lidas",
+      "everything_else": "Todo o resto",
+      "unread_empty": "Leu todas as mensagens da caixa de entrada."
+    },
     "columns": {
       "from": "De",
       "to": "Para",
@@ -564,6 +569,8 @@
       "authentication_missing_info": "Este convite não inclui autenticação de email verificada. Confirme os detalhes com o organizador se algo parecer incomum.",
       "sender_mismatch_info": "Este convite foi enviado por {sender}, enquanto o organizador indicado nos dados do calendário é {organizer}.",
       "sender_mismatch_unverified_info": "Este convite foi enviado por {sender}, enquanto o organizador indicado nos dados do calendário é {organizer}, e a mensagem não pôde ser verificada.",
+      "attendee_mismatch_info": "Esta resposta foi enviada por {sender}, enquanto o participante que responde nos dados do calendário é {attendee}.",
+      "attendee_mismatch_unverified_info": "Esta resposta foi enviada por {sender}, enquanto o participante que responde nos dados do calendário é {attendee}, e a mensagem não pôde ser verificada.",
       "organizer_role": "Você organiza este evento",
       "your_response": "Sua resposta: {status}",
       "response_needed": "Resposta necessária",
@@ -606,6 +613,7 @@
     "scheduled_send_created": "E-mail agendado para envio",
     "sending_in": "Enviando em {seconds} s",
     "undo_send_failed": "Não foi possível desfazer. A mensagem pode já ter sido enviada.",
+    "undo_send_signed_out": "Não foi possível desfazer: a conta a partir da qual a mensagem foi enviada já não tem sessão iniciada.",
     "cancel_scheduled_send": "Cancelar envio",
     "reschedule_send": "Reagendar",
     "cancel_and_edit": "Cancelar e editar",
@@ -614,6 +622,14 @@
     "scheduled_actions_only": "A visualização Agendados permite apenas ações de agendamento",
     "undo_send_scheduled": "Mensagem agendada para envio",
     "undo_send": "Desfazer envio",
+    "send_cancelled_restore_failed": "O envio foi cancelado, mas não foi possível devolver a mensagem para Rascunhos. Ela ainda está em Enviados.",
+    "send_cancelled_remove_failed": "O envio foi cancelado, mas não foi possível remover a mensagem não enviada de Enviados.",
+    "cancel_scheduled_failed": "Não foi possível cancelar o envio agendado",
+    "still_scheduled_at": "A mensagem continua agendada para {date}.",
+    "still_scheduled": "A mensagem continua agendada.",
+    "already_sent": "Esta mensagem já foi enviada.",
+    "no_longer_scheduled": "Esta mensagem não está mais agendada.",
+    "reschedule_recipients_refused": "Nada foi alterado: o servidor recusou {recipients}.",
     "contact_sidebar": {
       "title": "Contato",
       "close": "Fechar barra lateral",
@@ -686,6 +702,7 @@
     "link_url_prompt": "Insira a URL",
     "draft_saved": "Rascunho salvo",
     "save_failed": "Falha ao salvar",
+    "discard_signed_out": "O rascunho não foi eliminado: a conta onde foi guardado já não tem sessão iniciada. Fica nos rascunhos dessa conta.",
     "to_placeholder": "Endereços de e-mail dos destinatários",
     "cc_placeholder": "Destinatários CC",
     "bcc_placeholder": "Destinatários CCO",
@@ -754,6 +771,10 @@
     "send_failed": "Falha ao enviar o e-mail",
     "send_offline": "Parece que você está offline. A mensagem continua aqui; envie novamente quando voltar a ficar online.",
     "send_timeout": "O servidor deixou de responder. Verifique a pasta Enviados antes de enviar novamente — a mensagem pode já ter saído.",
+    "submission_quota": "O servidor tem registros de mensagens enviadas demais para esta conta. O Bulwark removeu os que pôde; se isso continuar acontecendo, peça ao seu administrador para aumentar o limite de envios de e-mail.",
+    "submission_limit": "O servidor se recusou a enviar a mensagem porque um limite foi atingido: {reason}",
+    "recipients_refused": "Não enviado: o servidor recusou {recipients}.",
+    "recipients_partly_refused": "O servidor recusou {recipients}. Os demais destinatários recebem a mensagem.",
     "send_recipients_rejected": "Não enviado: o servidor rejeitou todos os destinatários.",
     "cut": "Cortar",
     "copy": "Copiar",
@@ -849,7 +870,7 @@
     "send_filing_warning": "Enviado - mas a limpeza posterior falhou, um rascunho antigo pode permanecer.",
     "pop_out": "Abrir a resposta numa janela",
     "send_guard_failed": "Não enviado - um plugin que verifica as mensagens antes do envio falhou ou não respondeu.",
-    "use_oracle_relay": "Send via Oracle Relay"
+    "use_oracle_relay": "Send via Oracle SMTP relay"
   },
   "confirm_dialog": {
     "confirm": "Confirmar",
@@ -875,9 +896,9 @@
     "app_title": "Webmail",
     "reconnecting": "Conexão perdida. Tentando reconectar…",
     "rate_limited_title": "A autenticação do servidor está temporariamente limitada.",
-    "rate_limited_detail": "O Bulwark pausou as solicitações em segundo plano para evitar bloqueio. Nova tentativa em {seconds}s.",
+    "rate_limited_detail": "O {appName} pausou as solicitações em segundo plano para evitar bloqueio. Nova tentativa em {seconds}s.",
     "rate_limited_action_title": "Solicitação pausada para evitar bloqueio.",
-    "rate_limited_action_detail": "O Bulwark está aguardando o fim do cooldown do servidor antes de enviar mais solicitações autenticadas. Tente novamente em {seconds}s.",
+    "rate_limited_action_detail": "O {appName} está aguardando o fim do cooldown do servidor antes de enviar mais solicitações autenticadas. Tente novamente em {seconds}s.",
     "pull_to_refresh": "Puxe para atualizar",
     "release_to_refresh": "Solte para atualizar",
     "refreshing": "Atualizando…"
@@ -1332,7 +1353,10 @@
         "revoke": "Revogar",
         "confirm_revoke_title": "Revogar este dispositivo?",
         "confirm_revoke_message": "Ele deixará de receber notificações em segundo plano imediatamente. Ativar o push novamente nesse dispositivo o registrará de novo.",
-        "confirm_revoke_message_this": "Este dispositivo deixará de receber notificações em segundo plano imediatamente."
+        "confirm_revoke_message_this": "Este dispositivo deixará de receber notificações em segundo plano imediatamente.",
+        "shared_mailboxes_no_push": "Caixas de correio que outras pessoas compartilham com você não enviam notificações em segundo plano.",
+        "error_forbidden": "O servidor de e-mail não permite notificações em segundo plano para esta conta.",
+        "error_over_quota": "Esta conta tem registros push demais no servidor de e-mail (o limite costuma ser 15). Revogue os dispositivos que você não usa mais nas configurações de notificação e tente novamente."
       },
       "push_all": {
         "title": "All accounts",
@@ -1418,6 +1442,12 @@
       }
     },
     "email_behavior": {
+      "inbox_type": {
+        "label": "Tipo de caixa de entrada",
+        "description": "\"Não lidas primeiro\" mostra as suas 25 mensagens não lidas mais recentes numa secção acima do resto da caixa",
+        "default": "Predefinido",
+        "unread_first": "Não lidas primeiro"
+      },
       "clear_search_on_folder_change": {
         "label": "Limpar a pesquisa ao mudar de pasta",
         "description": "Clicar numa pasta (Caixa de entrada, Enviados…) limpa a pesquisa ativa e mostra essa pasta. Se desativado, a pesquisa mantém-se e volta a ser executada na pasta para a qual mudar."
@@ -1508,6 +1538,10 @@
       "plain_text_mode": {
         "label": "Apenas texto simples",
         "description": "Desativar o editor de texto formatado e enviar todos os e-mails apenas como texto simples, incluindo respostas e encaminhamentos"
+      },
+      "quick_reply": {
+        "label": "Resposta rápida",
+        "description": "Mostrar a caixa de resposta rápida abaixo das mensagens."
       },
       "auto_select_reply_identity": {
         "label": "Selecionar automaticamente o endereço de resposta",
@@ -1754,6 +1788,10 @@
         "signed_in": "Signed in to {count, plural, one {# account} other {# accounts}} with the saved password.",
         "sign_in_failed": "{count, plural, one {# saved password was} other {# saved passwords were}} refused: sign in to those accounts from the account list.",
         "deleted": "Saved list deleted.",
+        "prompt_title": "Restore your other accounts?",
+        "prompt_description": "A list of accounts is saved for {account}. Enter its backup password to add them to this browser, or do it later from Settings.",
+        "prompt_not_now": "Not now",
+        "prompt_done": "Done",
         "errors": {
           "mismatch": "The passwords do not match.",
           "password_length": "Use at least 10 characters.",
@@ -2356,6 +2394,7 @@
       "validation_empty_name": "O nome da regra é obrigatório",
       "validation_empty_conditions": "É necessária pelo menos uma condição com um valor",
       "validation_empty_actions": "É necessária pelo menos uma ação",
+      "validation_header_name": "Os nomes de cabeçalho só podem conter as letras A-Z, algarismos, hífenes e sublinhados",
       "templates_section": "Começar com modelo",
       "template_newsletters": "Mover newsletters para pasta",
       "template_receipts": "Arquivar recibos automaticamente",
@@ -3129,7 +3168,8 @@
     },
     "export": {
       "title": "Exportar contatos",
-      "success": "{count, plural, one {1 contato exportado} other {# contatos exportados}}"
+      "success": "{count, plural, one {1 contato exportado} other {# contatos exportados}}",
+      "exporting": "Exportando..."
     },
     "bulk": {
       "selected": "{count, plural, one {1 selecionado} other {# selecionados}}",
@@ -3272,8 +3312,11 @@
         "free": "Disponível",
         "busy": "Ocupado",
         "tentative": "Provisório",
+        "no_busy_times": "Nenhum horário ocupado compartilhado",
         "unknown": "Não é um utilizador deste servidor",
-        "checking": "A verificar…"
+        "error": "Não foi possível verificar",
+        "checking": "A verificar…",
+        "unavailable_on_server": "As informações de livre/ocupado não estão disponíveis neste servidor"
       },
       "title": "Participantes",
       "add": "Adicionar participante",
@@ -3295,6 +3338,7 @@
       "you_organizer": "Você é o organizador",
       "you_attendee": "Você é um participante",
       "no_participants": "Sem participantes",
+      "limit_warning": "Mais de {max, plural, one {# participante} other {# participantes}}, incluindo o organizador: o servidor pode se recusar a salvar este evento. Um administrador pode aumentar o limite.",
       "count": "{count, plural, one {# participante} other {# participantes}}"
     },
     "recurrence": {
@@ -3485,6 +3529,7 @@
       "save_without_invitations": "Guardar sem convites",
       "rsvp_updated": "Resposta atualizada",
       "rsvp_error": "Falha ao atualizar resposta",
+      "participant_limit": "O servidor permite no máximo {max, plural, one {# participante} other {# participantes}} por evento, incluindo o organizador, por isso recusou esta alteração. Um administrador pode aumentar o limite.",
       "event_duplicated": "Evento duplicado",
       "event_error": "Falha ao salvar o evento",
       "task_due": "Tarefa vencendo",
@@ -3494,7 +3539,10 @@
     },
     "status": {
       "loading_calendars": "Carregando calendários...",
-      "loading_events": "Carregando eventos..."
+      "loading_events": "Carregando eventos...",
+      "events_load_failed": "Não foi possível carregar os eventos. O calendário pode estar desatualizado.",
+      "tasks_load_failed": "Não foi possível carregar as tarefas. A lista pode estar desatualizada.",
+      "retry": "Tentar novamente"
     },
     "quick_create": {
       "placeholder": "Título do novo evento",
@@ -3705,8 +3753,12 @@
     "loading_principals": "Carregando usuários…",
     "no_principals": "Nenhum outro usuário ou grupo encontrado.",
     "no_match": "Sem resultados.",
+    "directory_restricted": "Seu servidor não permite navegar no diretório de usuários, então apenas seus grupos e as pessoas que compartilharam algo com você são listados. Um administrador pode ativar as consultas ao diretório nas configurações de compartilhamento do Stalwart.",
+    "directory_not_browsable": "Seu servidor não permite que você navegue no diretório de usuários.",
+    "directory_failed": "Não foi possível carregar a lista de usuários e grupos.",
     "remove": "Remover acesso",
     "group": "Grupo",
+    "unknown_user": "Usuário desconhecido",
     "share_added": "Acesso concedido",
     "share_updated": "Acesso atualizado",
     "share_removed": "Acesso removido",
@@ -3802,6 +3854,8 @@
     "new_name": "Novo nome",
     "name_forbidden_chars": "O servidor não permite estes caracteres nos nomes: {chars}",
     "name_reserved": "Este nome está reservado no servidor.",
+    "name_control_chars": "Os nomes não podem conter caracteres de controle.",
+    "name_too_long": "Este nome é longo demais para o servidor.",
     "delete": "Eliminar",
     "delete_confirm_title": "Eliminar recurso",
     "delete_confirm_message": "Tem a certeza de que deseja eliminar \"{name}\"? Esta ação não pode ser desfeita.",
@@ -3812,12 +3866,22 @@
     "type": "Tipo",
     "folder": "Pasta",
     "file": "Arquivo",
+    "symlink": "Link simbólico",
+    "parent_directory": "Diretório superior",
+    "breadcrumb_root": "Início",
     "no_accounts": "Nenhuma conta conectada.",
     "uploading": "A carregar...",
     "upload_success": "{count, plural, one {1 arquivo carregado} other {# arquivos carregados}}",
     "upload_canceled": "Carregamento cancelado",
     "upload_canceled_partial": "{count, plural, one {1 arquivo foi carregado} other {# arquivos foram carregados}} antes de cancelar",
     "upload_error": "Falha ao carregar o arquivo",
+    "upload_failed": "{count, plural, one {Não foi possível carregar 1 arquivo} other {Não foi possível carregar # arquivos}}",
+    "error_over_quota": "O limite de arquivos ou pastas foi atingido. Exclua alguns e tente novamente.",
+    "error_too_deep": "As pastas não podem ser aninhadas tão profundamente.",
+    "error_invalid_name": "O servidor não aceita este nome.",
+    "error_forbidden": "Não tem permissão para fazer isso aqui.",
+    "error_too_large": "Este arquivo é grande demais para o servidor.",
+    "error_partial_copy": "Parte da cópia ficou no lugar.",
     "create_folder_success": "Pasta criada",
     "create_folder_error": "Falha ao criar a pasta",
     "delete_success": "Eliminado com sucesso",
@@ -3856,6 +3920,7 @@
     "shared": "Compartilhado",
     "shared_with_me": "Compartilhado comigo",
     "shared_by": "Compartilhado por {name}",
+    "shared_files_from": "Arquivos de {name}",
     "create_file_success": "Arquivo criado",
     "create_file_error": "Falha ao criar arquivo",
     "favorites": "Favoritos",
@@ -4397,7 +4462,7 @@
       },
       "http_proxy": {
         "title": "Usar contas que você conecta",
-        "body": "Enviar solicitações pelo servidor do Bulwark com uma conta ou chave configurada por você ou pelo seu administrador. O plugin nunca vê a senha, mas pode fazer tudo o que essa conta pode fazer no próprio servidor."
+        "body": "Enviar solicitações pelo servidor do {appName} com uma conta ou chave configurada por você ou pelo seu administrador. O plugin nunca vê a senha, mas pode fazer tudo o que essa conta pode fazer no próprio servidor."
       },
       "compose_open": {
         "title": "Abrir o editor para você",
@@ -4430,9 +4495,9 @@
     },
     "connect": {
       "title": "Conectar {label}",
-      "intro_password": "{name} quer usar sua conta {label}. O Bulwark guarda a senha no servidor dele e só a envia para {host}. O plugin nunca a vê.",
-      "intro_password_any": "{name} quer usar sua conta {label}. O Bulwark guarda a senha no servidor dele e só a envia para o servidor que você informar aqui. O plugin nunca a vê.",
-      "intro_signin": "{name} quer entrar na sua conta {label}. Informe o servidor aqui e depois entre na página dele. O Bulwark guarda no servidor dele o acesso que recebe; o plugin nunca o vê.",
+      "intro_password": "{name} quer usar sua conta {label}. O {appName} guarda a senha no servidor dele e só a envia para {host}. O plugin nunca a vê.",
+      "intro_password_any": "{name} quer usar sua conta {label}. O {appName} guarda a senha no servidor dele e só a envia para o servidor que você informar aqui. O plugin nunca a vê.",
+      "intro_signin": "{name} quer entrar na sua conta {label}. Informe o servidor aqui e depois entre na página dele. O {appName} guarda no servidor dele o acesso que recebe; o plugin nunca o vê.",
       "server": "Endereço do servidor",
       "server_hint": "cloud.example.com",
       "username": "Nome de usuário",

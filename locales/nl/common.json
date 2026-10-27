@@ -76,7 +76,7 @@
       "back_to_login": "Terug naar inloggen"
     },
     "have_invite_code": "Have an invite code?",
-    "register_link": "Register"
+    "register_link": "Register Account"
   },
   "sidebar": {
     "close": "Sluiten",
@@ -179,18 +179,18 @@
   },
   "protocol_handlers": {
     "title": "Standaardapps",
-    "description": "Kies of e-mail- en kalenderlinks in Bulwark worden geopend. Technisch registreert Bulwark zich als protocolhandler voor mailto:- en webcal:-links.",
+    "description": "Kies of e-mail- en kalenderlinks in {appName} worden geopend. Technisch registreert {appName} zich als protocolhandler voor mailto:- en webcal:-links.",
     "unsupported": "Deze browser of verbinding ondersteunt geen handmatige registratie van protocolhandlers. Mogelijk kun je de geïnstalleerde PWA nog gebruiken via de browser- of systeeminstellingen.",
     "mailto_label": "E-maillinks",
-    "mailto_description": "Opent mailto:-links in Bulwark met een vooraf ingevulde opsteller.",
+    "mailto_description": "Opent mailto:-links in {appName} met een vooraf ingevulde opsteller.",
     "protocol_open_mode_label": "Bij het openen van protocollinks",
-    "protocol_open_mode_description": "Kies of Bulwark mailto:- en webcal:-links in een nieuw tabblad opent of een geopende sessie hergebruikt. Voor de optie actieve sessie is toestemming voor meldingen nodig, zodat je op een fallbackmelding kunt klikken om Bulwark naar voren te halen als de browser focus blokkeert.",
+    "protocol_open_mode_description": "Kies of {appName} mailto:- en webcal:-links in een nieuw tabblad opent of een geopende sessie hergebruikt. Voor de optie actieve sessie is toestemming voor meldingen nodig, zodat je op een fallbackmelding kunt klikken om {appName} naar voren te halen als de browser focus blokkeert.",
     "protocol_open_mode_active_session": "Indien mogelijk openen in actieve sessie",
     "protocol_open_mode_new_tab": "Altijd een nieuw tabblad openen",
-    "focus_notification_title": "Bulwark openen",
-    "focus_notification_body": "De link is geopend in Bulwark. Klik om het venster naar voren te halen.",
+    "focus_notification_title": "{appName} openen",
+    "focus_notification_body": "De link is geopend in {appName}. Klik om het venster naar voren te halen.",
     "webcal_label": "Kalenderlinks",
-    "webcal_description": "Opent webcal:-links in Bulwark met een vooraf ingevuld dialoogvenster voor kalenderabonnementen.",
+    "webcal_description": "Opent webcal:-links in {appName} met een vooraf ingevuld dialoogvenster voor kalenderabonnementen.",
     "register_mailto": "E-mailapp registreren",
     "register_webcal": "Kalenderapp registreren",
     "mailto_registered": "Registratie van e-mailhandler aangevraagd",
@@ -198,7 +198,7 @@
     "registration_failed": "Registratie van protocolhandler mislukt",
     "opening_mailto": "Opsteller wordt geopend...",
     "opening_webcal": "Kalender wordt geopend...",
-    "browser_note": "Je browser of besturingssysteem kan om bevestiging vragen en kan vereisen dat Bulwark is geïnstalleerd voordat het als standaardapp kan worden geselecteerd.",
+    "browser_note": "Je browser of besturingssysteem kan om bevestiging vragen en kan vereisen dat {appName} is geïnstalleerd voordat het als standaardapp kan worden geselecteerd.",
     "select_account_title": "Account kiezen",
     "select_mailto_account": "Kies welk account deze e-maillink moet openen.",
     "select_webcal_account": "Kies welk account deze kalenderlink moet openen.",
@@ -246,6 +246,11 @@
     "show_on_mobile": "Weergeven op mobiel"
   },
   "email_list": {
+    "sections": {
+      "unread": "Ongelezen",
+      "everything_else": "Al het andere",
+      "unread_empty": "Je hebt alle berichten in je inbox gelezen."
+    },
     "columns": {
       "from": "Van",
       "to": "Aan",
@@ -564,6 +569,8 @@
       "authentication_missing_info": "Deze uitnodiging bevat geen geverifieerde mailauthenticatie. Controleer de details bij de organisator als iets ongewoon lijkt.",
       "sender_mismatch_info": "Deze uitnodiging is verzonden vanaf {sender}, terwijl de organisator in de kalendergegevens {organizer} is.",
       "sender_mismatch_unverified_info": "Deze uitnodiging is verzonden vanaf {sender}, terwijl de organisator in de kalendergegevens {organizer} is, en het bericht kon niet worden geverifieerd.",
+      "attendee_mismatch_info": "Dit antwoord is verzonden vanaf {sender}, terwijl de antwoordende deelnemer in de kalendergegevens {attendee} is.",
+      "attendee_mismatch_unverified_info": "Dit antwoord is verzonden vanaf {sender}, terwijl de antwoordende deelnemer in de kalendergegevens {attendee} is, en het bericht kon niet worden geverifieerd.",
       "organizer_role": "U organiseert dit evenement",
       "your_response": "Uw reactie: {status}",
       "response_needed": "Reactie vereist",
@@ -606,6 +613,7 @@
     "scheduled_send_created": "E-mail gepland voor verzending",
     "sending_in": "Wordt over {seconds} s verzonden",
     "undo_send_failed": "Ongedaan maken lukte niet. Het bericht is misschien al verzonden.",
+    "undo_send_signed_out": "Ongedaan maken mislukt: het account waarvanaf het bericht is verzonden, is niet meer aangemeld.",
     "cancel_scheduled_send": "Verzenden annuleren",
     "reschedule_send": "Opnieuw plannen",
     "cancel_and_edit": "Annuleren en bewerken",
@@ -614,6 +622,14 @@
     "scheduled_actions_only": "De geplande weergave ondersteunt alleen geplande acties",
     "undo_send_scheduled": "Bericht gepland voor verzending",
     "undo_send": "Verzenden ongedaan maken",
+    "send_cancelled_restore_failed": "Het verzenden is geannuleerd, maar het bericht kon niet terug naar Concepten. Het staat nog in Verzonden.",
+    "send_cancelled_remove_failed": "Het verzenden is geannuleerd, maar het niet-verzonden bericht kon niet uit Verzonden worden verwijderd.",
+    "cancel_scheduled_failed": "De geplande verzending kon niet worden geannuleerd",
+    "still_scheduled_at": "Het bericht staat nog steeds gepland voor {date}.",
+    "still_scheduled": "Het bericht staat nog steeds gepland.",
+    "already_sent": "Dit bericht is al verzonden.",
+    "no_longer_scheduled": "Dit bericht staat niet meer gepland.",
+    "reschedule_recipients_refused": "Er is niets gewijzigd: de server heeft {recipients} geweigerd.",
     "contact_sidebar": {
       "title": "Contact",
       "close": "Zijbalk sluiten",
@@ -686,6 +702,7 @@
     "link_url_prompt": "Voer de URL in",
     "draft_saved": "Concept opgeslagen",
     "save_failed": "Opslaan mislukt",
+    "discard_signed_out": "Het concept is niet verwijderd: het account waarin het is opgeslagen, is niet meer aangemeld. Het blijft in de concepten van dat account.",
     "to_placeholder": "E-mailadressen van ontvangers",
     "cc_placeholder": "CC-ontvangers",
     "bcc_placeholder": "BCC-ontvangers",
@@ -754,6 +771,10 @@
     "send_failed": "E-mail verzenden mislukt",
     "send_offline": "Je lijkt offline te zijn. Het bericht staat er nog; verstuur het opnieuw zodra je weer online bent.",
     "send_timeout": "De server reageert niet meer. Controleer de map Verzonden voordat u opnieuw verstuurt — het bericht is mogelijk al verzonden.",
+    "submission_quota": "De server bewaart te veel records van verzonden berichten voor dit account. Bulwark heeft verwijderd wat kon; blijft dit gebeuren, vraag uw beheerder dan de limiet voor e-mailverzendingen te verhogen.",
+    "submission_limit": "De server weigerde het bericht te verzenden omdat een limiet is bereikt: {reason}",
+    "recipients_refused": "Niet verzonden: de server heeft {recipients} geweigerd.",
+    "recipients_partly_refused": "De server heeft {recipients} geweigerd. De andere ontvangers krijgen het bericht.",
     "send_recipients_rejected": "Niet verzonden - de server heeft alle ontvangers geweigerd.",
     "cut": "Knippen",
     "copy": "Kopiëren",
@@ -849,7 +870,7 @@
     "send_filing_warning": "Verzonden - maar het opruimen daarna is mislukt, mogelijk blijft een oud concept staan.",
     "pop_out": "Antwoord in een apart venster openen",
     "send_guard_failed": "Niet verzonden - een plug-in die berichten controleert voor het verzenden is mislukt of reageerde niet.",
-    "use_oracle_relay": "Send via Oracle Relay"
+    "use_oracle_relay": "Send via Oracle SMTP relay"
   },
   "confirm_dialog": {
     "confirm": "Bevestigen",
@@ -875,9 +896,9 @@
     "app_title": "Webmail",
     "reconnecting": "Verbinding verloren. Opnieuw verbinden…",
     "rate_limited_title": "Serverauthenticatie is tijdelijk beperkt.",
-    "rate_limited_detail": "Bulwark heeft achtergrondverzoeken gepauzeerd om een blokkade te voorkomen. Nieuwe poging over {seconds}s.",
+    "rate_limited_detail": "{appName} heeft achtergrondverzoeken gepauzeerd om een blokkade te voorkomen. Nieuwe poging over {seconds}s.",
     "rate_limited_action_title": "Verzoek gepauzeerd om blokkade te voorkomen.",
-    "rate_limited_action_detail": "Bulwark wacht tot de servercooldown voorbij is voordat er nieuwe geauthenticeerde verzoeken worden verzonden. Probeer het over {seconds}s opnieuw.",
+    "rate_limited_action_detail": "{appName} wacht tot de servercooldown voorbij is voordat er nieuwe geauthenticeerde verzoeken worden verzonden. Probeer het over {seconds}s opnieuw.",
     "pull_to_refresh": "Trek om te vernieuwen",
     "release_to_refresh": "Laat los om te vernieuwen",
     "refreshing": "Vernieuwen…"
@@ -1332,7 +1353,10 @@
         "revoke": "Intrekken",
         "confirm_revoke_title": "Dit apparaat intrekken?",
         "confirm_revoke_message": "Het ontvangt meteen geen achtergrondmeldingen meer. Push opnieuw inschakelen op dat apparaat registreert het opnieuw.",
-        "confirm_revoke_message_this": "Dit apparaat ontvangt meteen geen achtergrondmeldingen meer."
+        "confirm_revoke_message_this": "Dit apparaat ontvangt meteen geen achtergrondmeldingen meer.",
+        "shared_mailboxes_no_push": "Mailboxen die anderen met u delen, sturen geen achtergrondmeldingen.",
+        "error_forbidden": "De mailserver staat voor dit account geen achtergrondmeldingen toe.",
+        "error_over_quota": "Dit account heeft te veel pushregistraties op de mailserver (de limiet is meestal 15). Trek in de meldingsinstellingen apparaten in die u niet meer gebruikt en probeer het opnieuw."
       },
       "push_all": {
         "title": "All accounts",
@@ -1418,6 +1442,12 @@
       }
     },
     "email_behavior": {
+      "inbox_type": {
+        "label": "Type inbox",
+        "description": "'Ongelezen eerst' toont je 25 nieuwste ongelezen berichten in een sectie boven de rest van de inbox",
+        "default": "Standaard",
+        "unread_first": "Ongelezen eerst"
+      },
       "clear_search_on_folder_change": {
         "label": "Zoekopdracht wissen bij wisselen van map",
         "description": "Op een map klikken (Postvak IN, Verzonden…) wist de actieve zoekopdracht en toont die map. Uitgeschakeld blijft de zoekopdracht staan en wordt opnieuw uitgevoerd in de gekozen map."
@@ -1508,6 +1538,10 @@
       "plain_text_mode": {
         "label": "Alleen platte tekst",
         "description": "Schakel de rich text-editor uit en verzend alle e-mails alleen als platte tekst, inclusief antwoorden en doorgestuurde berichten"
+      },
+      "quick_reply": {
+        "label": "Snel antwoorden",
+        "description": "Het vak voor snel antwoorden onder berichten tonen."
       },
       "auto_select_reply_identity": {
         "label": "Antwoordadres automatisch selecteren",
@@ -1754,6 +1788,10 @@
         "signed_in": "Signed in to {count, plural, one {# account} other {# accounts}} with the saved password.",
         "sign_in_failed": "{count, plural, one {# saved password was} other {# saved passwords were}} refused: sign in to those accounts from the account list.",
         "deleted": "Saved list deleted.",
+        "prompt_title": "Restore your other accounts?",
+        "prompt_description": "A list of accounts is saved for {account}. Enter its backup password to add them to this browser, or do it later from Settings.",
+        "prompt_not_now": "Not now",
+        "prompt_done": "Done",
         "errors": {
           "mismatch": "The passwords do not match.",
           "password_length": "Use at least 10 characters.",
@@ -2356,6 +2394,7 @@
       "validation_empty_name": "Regelnaam is verplicht",
       "validation_empty_conditions": "Minstens één voorwaarde met een waarde is vereist",
       "validation_empty_actions": "Minstens één actie is vereist",
+      "validation_header_name": "Headernamen mogen alleen de letters A-Z, cijfers, koppeltekens en underscores bevatten",
       "templates_section": "Starten vanuit sjabloon",
       "template_newsletters": "Nieuwsbrieven naar map verplaatsen",
       "template_receipts": "Bonnen automatisch archiveren",
@@ -3129,7 +3168,8 @@
     },
     "export": {
       "title": "Contacten exporteren",
-      "success": "{count, plural, one {1 contact geëxporteerd} other {# contacten geëxporteerd}}"
+      "success": "{count, plural, one {1 contact geëxporteerd} other {# contacten geëxporteerd}}",
+      "exporting": "Exporteren..."
     },
     "bulk": {
       "selected": "{count, plural, one {1 geselecteerd} other {# geselecteerd}}",
@@ -3272,8 +3312,11 @@
         "free": "Beschikbaar",
         "busy": "Bezet",
         "tentative": "Voorlopig",
+        "no_busy_times": "Geen bezette tijden gedeeld",
         "unknown": "Geen gebruiker op deze server",
-        "checking": "Controleren…"
+        "error": "Kon niet controleren",
+        "checking": "Controleren…",
+        "unavailable_on_server": "Vrij/bezet-informatie is niet beschikbaar op deze server"
       },
       "title": "Deelnemers",
       "add": "Deelnemer toevoegen",
@@ -3295,6 +3338,7 @@
       "you_organizer": "Je bent de organisator",
       "you_attendee": "Je bent een deelnemer",
       "no_participants": "Geen deelnemers",
+      "limit_warning": "Meer dan {max, plural, one {# deelnemer} other {# deelnemers}}, de organisator meegeteld: de server kan weigeren dit evenement op te slaan. Een beheerder kan de limiet verhogen.",
       "count": "{count, plural, one {# deelnemer} other {# deelnemers}}"
     },
     "recurrence": {
@@ -3485,6 +3529,7 @@
       "save_without_invitations": "Opslaan zonder uitnodigingen",
       "rsvp_updated": "Reactie bijgewerkt",
       "rsvp_error": "Reactie kon niet worden bijgewerkt",
+      "participant_limit": "De server staat maximaal {max, plural, one {# deelnemer} other {# deelnemers}} per evenement toe, de organisator meegeteld, en heeft deze wijziging daarom geweigerd. Een beheerder kan de limiet verhogen.",
       "event_duplicated": "Evenement gedupliceerd",
       "event_error": "Evenement opslaan mislukt",
       "task_due": "Taak vervalt",
@@ -3494,7 +3539,10 @@
     },
     "status": {
       "loading_calendars": "Agenda's laden...",
-      "loading_events": "Evenementen laden..."
+      "loading_events": "Evenementen laden...",
+      "events_load_failed": "Evenementen konden niet worden geladen. De agenda is mogelijk niet actueel.",
+      "tasks_load_failed": "Taken konden niet worden geladen. De lijst is mogelijk niet actueel.",
+      "retry": "Opnieuw proberen"
     },
     "quick_create": {
       "placeholder": "Titel nieuw evenement",
@@ -3705,8 +3753,12 @@
     "loading_principals": "Gebruikers laden…",
     "no_principals": "Geen andere gebruikers of groepen gevonden.",
     "no_match": "Geen overeenkomsten.",
+    "directory_restricted": "Uw server staat het doorbladeren van de gebruikersdirectory niet toe, daarom worden alleen uw groepen en personen die iets met u hebben gedeeld weergegeven. Een beheerder kan directoryquery's inschakelen in de instellingen voor delen van Stalwart.",
+    "directory_not_browsable": "Uw server staat u niet toe de gebruikersdirectory te doorbladeren.",
+    "directory_failed": "Kan de lijst met gebruikers en groepen niet laden.",
     "remove": "Toegang intrekken",
     "group": "Groep",
+    "unknown_user": "Onbekende gebruiker",
     "share_added": "Toegang verleend",
     "share_updated": "Toegang bijgewerkt",
     "share_removed": "Toegang ingetrokken",
@@ -3802,6 +3854,8 @@
     "new_name": "Nieuwe naam",
     "name_forbidden_chars": "De server staat deze tekens niet toe in namen: {chars}",
     "name_reserved": "Deze naam is gereserveerd op de server.",
+    "name_control_chars": "Namen mogen geen besturingstekens bevatten.",
+    "name_too_long": "Deze naam is te lang voor de server.",
     "delete": "Verwijderen",
     "delete_confirm_title": "Bron verwijderen",
     "delete_confirm_message": "Weet u zeker dat u \"{name}\" wilt verwijderen? Dit kan niet ongedaan worden gemaakt.",
@@ -3812,12 +3866,22 @@
     "type": "Type",
     "folder": "Map",
     "file": "Bestand",
+    "symlink": "Symbolische koppeling",
+    "parent_directory": "Bovenliggende map",
+    "breadcrumb_root": "Start",
     "no_accounts": "Geen gekoppelde accounts.",
     "uploading": "Uploaden...",
     "upload_success": "{count, plural, one {1 bestand geüpload} other {# bestanden geüpload}}",
     "upload_canceled": "Uploaden geannuleerd",
     "upload_canceled_partial": "{count, plural, one {1 bestand was} other {# bestanden waren}} al geüpload voordat u annuleerde",
     "upload_error": "Bestand uploaden mislukt",
+    "upload_failed": "{count, plural, one {1 bestand kon niet worden geüpload} other {# bestanden konden niet worden geüpload}}",
+    "error_over_quota": "Het maximumaantal bestanden of mappen is bereikt. Verwijder er enkele en probeer het opnieuw.",
+    "error_too_deep": "Mappen kunnen niet zo diep worden genest.",
+    "error_invalid_name": "De server accepteert deze naam niet.",
+    "error_forbidden": "U hebt hier geen toestemming voor.",
+    "error_too_large": "Dit bestand is te groot voor de server.",
+    "error_partial_copy": "Een deel van de kopie is blijven staan.",
     "create_folder_success": "Map aangemaakt",
     "create_folder_error": "Map aanmaken mislukt",
     "delete_success": "Succesvol verwijderd",
@@ -3856,6 +3920,7 @@
     "shared": "Shared",
     "shared_with_me": "Shared with me",
     "shared_by": "Shared by {name}",
+    "shared_files_from": "Bestanden van {name}",
     "create_file_success": "Bestand aangemaakt",
     "create_file_error": "Bestand aanmaken mislukt",
     "favorites": "Favorieten",
@@ -4397,7 +4462,7 @@
       },
       "http_proxy": {
         "title": "Accounts gebruiken die je koppelt",
-        "body": "Verzoeken via de server van Bulwark sturen met een account of sleutel die jij of je beheerder heeft ingesteld. De plug-in ziet het wachtwoord nooit, maar kan alles doen wat dat account op zijn eigen server mag."
+        "body": "Verzoeken via de server van {appName} sturen met een account of sleutel die jij of je beheerder heeft ingesteld. De plug-in ziet het wachtwoord nooit, maar kan alles doen wat dat account op zijn eigen server mag."
       },
       "compose_open": {
         "title": "De opsteller voor je openen",
@@ -4430,9 +4495,9 @@
     },
     "connect": {
       "title": "{label} koppelen",
-      "intro_password": "{name} wil je account bij {label} gebruiken. Bulwark bewaart het wachtwoord op zijn eigen server en stuurt het alleen naar {host}. De plug-in ziet het nooit.",
-      "intro_password_any": "{name} wil je account bij {label} gebruiken. Bulwark bewaart het wachtwoord op zijn eigen server en stuurt het alleen naar de server die je hier invult. De plug-in ziet het nooit.",
-      "intro_signin": "{name} wil inloggen op je account bij {label}. Vul hier de server in en log daarna in op de eigen pagina van die server. Bulwark bewaart de toegang die het krijgt op zijn eigen server; de plug-in ziet die nooit.",
+      "intro_password": "{name} wil je account bij {label} gebruiken. {appName} bewaart het wachtwoord op zijn eigen server en stuurt het alleen naar {host}. De plug-in ziet het nooit.",
+      "intro_password_any": "{name} wil je account bij {label} gebruiken. {appName} bewaart het wachtwoord op zijn eigen server en stuurt het alleen naar de server die je hier invult. De plug-in ziet het nooit.",
+      "intro_signin": "{name} wil inloggen op je account bij {label}. Vul hier de server in en log daarna in op de eigen pagina van die server. {appName} bewaart de toegang die het krijgt op zijn eigen server; de plug-in ziet die nooit.",
       "server": "Serveradres",
       "server_hint": "cloud.example.com",
       "username": "Gebruikersnaam",

@@ -51,6 +51,7 @@ export const SLOT_CATALOG = {
   'navigation-rail-bottom': S('navigation', 'frame', ['ui:navigation-rail'], {}, 'the bottom of the navigation rail'),
   'sidebar-widget': S('navigation', 'frame', ['ui:sidebar-widget'], {}, 'a widget at the bottom of the mail sidebar'),
   'sidebar-section': S('navigation', 'frame', ['ui:sidebar-widget'], { mailboxId: null }, 'a collapsible section in the mail sidebar, below the folders'),
+  'sidebar-section-actions': S('navigation', 'frame', ['ui:sidebar-widget'], {}, 'compact controls beside a collapsible plugin sidebar-section heading', true),
   'top-bar-actions': S('navigation', 'action', ['ui:toolbar'], {}, 'buttons in the top bar, next to search', true),
   'app-page': S('navigation', 'frame', ['ui:app-page'], { pageId: null, path: null }, 'a full page of its own, with an entry in the navigation rail (api.ui.setPages)'),
 
@@ -61,6 +62,7 @@ export const SLOT_CATALOG = {
   'message-bulk-actions': S('mail-list', 'action', ['ui:message-list'], { emailIds: 'email:read' }, 'buttons in the toolbar shown while messages are selected', true),
   'context-menu-email': S('mail-list', 'frame', ['ui:context-menu'], {}, 'the right-click menu of a message'),
   'toolbar-actions': S('mail-list', 'frame', ['ui:toolbar'], {}, 'the message toolbar', true),
+  'search-results': S('mail-list', 'data', ['email:read'], { query: 'email:read' }, 'entries a plugin returns from onProvideSearchResults, in a block above a search\'s message list; a click opens the message an entry names, any other reaches the plugin as onAction with the entry\'s key as actionId'),
 
   // ─── Reader ────────────────────────────────────────────────
   'reader-header': S('reader', 'frame', ['ui:email-banner'], { email: 'email:read' }, 'at the top of the open message, above the subject'),

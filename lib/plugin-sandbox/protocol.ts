@@ -11,6 +11,20 @@
 import type { SlotName, PluginTier } from '../plugin-types';
 import type { ThemeSnapshot } from './host-theme';
 
+/** Resolved presentation/regional settings mirrored into plugin runtimes. */
+export interface RegionalSnapshot {
+  /** The effective UI language, e.g. 'en', 'de', 'fr'. */
+  locale: string;
+  /** Resolved BCP-47 tag for date rendering (respects dateLocale override, e.g. 'en-CA' for iso). */
+  dateLocale: string;
+  /** True for 12-hour clock (AM/PM), false for 24-hour clock. */
+  hour12: boolean;
+  /** The user's effective time zone, e.g. 'Europe/Berlin'. */
+  timeZone: string;
+  /** First day of week (0 = Sunday, 1 = Monday, 6 = Saturday). */
+  firstDayOfWeek: 0 | 1 | 6;
+}
+
 /** Initialisation payload for a background-instance iframe (one per plugin). */
 export interface BackgroundInit {
   mode: 'background';
@@ -34,6 +48,8 @@ export interface BackgroundInit {
   code: string;
   /** Initial app locale; host pushes updates via 'locale-change'. */
   locale: string;
+  /** Resolved presentation/regional preferences (time format, date locale, time zone). */
+  regional?: RegionalSnapshot;
 }
 
 /** Initialisation payload for a slot-instance iframe (one per slot mount). */
@@ -73,6 +89,8 @@ export interface SlotInit {
    */
   extraProps: Record<string, unknown>;
   locale: string;
+  /** Resolved presentation/regional preferences (time format, date locale, time zone). */
+  regional?: RegionalSnapshot;
   /**
    * Resolved host theme (colour tokens, font stack, dark flag). The sandbox
    * can't load globals.css/fonts cross-origin, so the runtime replays this as
@@ -138,6 +156,13 @@ export interface HookResultMsg {
   error?: string;
 }
 
+/**
+ * A slot frame has applied a theme-change. The host sets the iframe element's
+ * color-scheme only now, so element and document never disagree (see
+ * SandboxInstance.setTheme).
+ */
+export interface ThemeAppliedMsg { type: 'theme-applied'; dark: boolean; }
+
 export interface SlotResizeMsg {
   type: 'slot-resize';
   height: number;
@@ -201,6 +226,7 @@ export type SandboxToHost =
   | CallbackInvokeMsg
   | HookResultMsg
   | SlotResizeMsg
+  | ThemeAppliedMsg
   | SlotShouldShowResultMsg
   | FloatingDropdownOpenMsg
   | FloatingDropdownUpdateMsg
@@ -225,7 +251,13 @@ export interface HookInvokeMsg {
   args: unknown[];
 }
 
-export interface LocaleChangeMsg { type: 'locale-change'; locale: string; }
+export interface LocaleChangeMsg {
+  type: 'locale-change';
+  locale: string;
+  regional?: RegionalSnapshot;
+  /** The plugin's tables for the new locale (init carries only the current ones). */
+  locales?: Record<string, Record<string, string>>;
+}
 
 /** Host → sandbox: the resolved theme changed; re-inject the slot's theme CSS. */
 export interface ThemeChangeMsg { type: 'theme-change'; theme: ThemeSnapshot; }
@@ -293,6 +325,6 @@ export const SANDBOX_PATH = '/plugin-sandbox';
  * Path used for the privileged (same-origin) sandbox iframe `src`. A distinct
  * route so the iframe gets `allow-same-origin` (real WebCrypto + IndexedDB)
  * while keeping the same CSP relaxations as the untrusted sandbox. Matched in
- * `proxy.ts`. Renders the identical `SandboxRuntime`.
+ * `proxy.ts`. Serves the same document (sandbox-document.ts).
  */
 export const SANDBOX_PRIVILEGED_PATH = '/plugin-sandbox-privileged';

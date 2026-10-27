@@ -239,6 +239,8 @@ export type Density = 'extra-compact' | 'compact' | 'regular' | 'comfortable';
  * docked compose window) that keeps the theme's icons, type and palette.
  */
 export type InterfaceLayout = 'default' | 'mountain-view';
+// Mountain View's inbox: Gmail's "Default" or "Unread first" (lib/unread-first.ts).
+export type MvInboxType = 'default' | 'unread-first';
 export type DeleteAction = 'trash' | 'trash-and-read' | 'permanent';
 export type ReplyMode = 'reply' | 'replyAll';
 export type SignaturePosition = 'above_quote' | 'below_quote';
@@ -358,6 +360,7 @@ export interface KeywordDefinition {
   label: string;  // Display name
   color: string;  // Key from KEYWORD_PALETTE
   visibility?: KeywordVisibility; // Absent on tags stored before this was configurable
+  addedBy?: string; // Id of the plugin that added it with keywords.add; only that plugin may update or remove it
 }
 
 /** Resolves the sidebar visibility of a tag, defaulting to always shown. */
@@ -480,6 +483,10 @@ interface SettingsState {
   fontSize: FontSize;
   density: Density;
   interfaceLayout: InterfaceLayout;
+  mvInboxType: MvInboxType;
+  // The folded sections of the "Unread first" inbox; per device.
+  mvUnreadSectionCollapsed: boolean;
+  mvEverythingElseCollapsed: boolean;
   animationsEnabled: boolean;
   // Message-list ordering (#718): prioritised sort levels mapped onto the JMAP
   // Email/query sort; empty = chronological. Scope: Inbox only or every folder.
@@ -521,6 +528,7 @@ interface SettingsState {
   // Composer
   autoSaveDraftInterval: number; // milliseconds
   sendConfirmation: boolean;
+  quickReplyEnabled: boolean;
   defaultReplyMode: ReplyMode;
   autoSelectReplyIdentity: boolean;
   replyIdentityMatch: ReplyIdentityMatch; // With autoSelectReplyIdentity on: 'exact' = configured identities only, 'domain' = also same-domain catch-all addresses (rewrites From) #1000
@@ -787,6 +795,9 @@ const DEFAULT_SETTINGS = {
   fontSize: 'medium' as FontSize,
   density: 'regular' as Density,
   interfaceLayout: 'default' as InterfaceLayout,
+  mvInboxType: 'unread-first' as MvInboxType,
+  mvUnreadSectionCollapsed: false,
+  mvEverythingElseCollapsed: false,
   animationsEnabled: true,
   messageListOrder: [] as SortLevel[],
   messageListOrderScope: 'inbox' as MessageListOrderScope,
@@ -826,6 +837,7 @@ const DEFAULT_SETTINGS = {
   // Composer
   autoSaveDraftInterval: 60000, // 1 minute
   sendConfirmation: false,
+  quickReplyEnabled: true,
   defaultReplyMode: 'reply' as ReplyMode,
   autoSelectReplyIdentity: false,
   replyIdentityMatch: 'domain' as ReplyIdentityMatch,
@@ -1158,6 +1170,7 @@ export const useSettingsStore = create<SettingsState>()(
           fontSize: state.fontSize,
           density: state.density,
           interfaceLayout: state.interfaceLayout,
+          mvInboxType: state.mvInboxType,
           animationsEnabled: state.animationsEnabled,
           messageListOrder: state.messageListOrder,
           messageListOrderScope: state.messageListOrderScope,
@@ -1191,6 +1204,7 @@ export const useSettingsStore = create<SettingsState>()(
           trustedSenders: state.trustedSenders,
           autoSaveDraftInterval: state.autoSaveDraftInterval,
           sendConfirmation: state.sendConfirmation,
+          quickReplyEnabled: state.quickReplyEnabled,
           defaultReplyMode: state.defaultReplyMode,
           autoSelectReplyIdentity: state.autoSelectReplyIdentity,
           replyIdentityMatch: state.replyIdentityMatch,

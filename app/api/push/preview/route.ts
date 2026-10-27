@@ -10,7 +10,9 @@ import {
 } from '@/lib/stalwart/credentials';
 import { fetchJmapServer, isTrustedJmapServerUrl } from '@/lib/stalwart/server-fetch';
 import { rebaseApiUrl } from '@/lib/stalwart/jmap-api';
+import { forwardedClientHeaders, loginClientAddress } from '@/lib/auth/client-address';
 import { DisallowedUrlError } from '@/lib/security/url-guard';
+import { UPSTREAM_JSON_MAX_BYTES, UpstreamBodyTooLargeError, readJsonCapped } from '@/lib/security/capped-body';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -34,10 +36,12 @@ interface ResolveTargetOptions {
   accountLabel?: string | null;
   serverUrl?: string | null;
   emailId?: string | null;
+  forwarded: Record<string, string>;
 }
 
 interface ProbeResult extends ResolvedTarget {
   hasTargetEmail?: boolean;
+  own: boolean;
 }
 
 // When the SW passes ?serverUrl=, ?accountId=, or ?accountLabel=, we need the slot whose
@@ -46,8 +50,8 @@ interface ProbeResult extends ResolvedTarget {
 // parallel and return the best match.
 async function resolveTargetForAccount(
   options: ResolveTargetOptions,
-): Promise<ResolvedTarget | null> {
-  const { accountId, accountLabel, serverUrl, emailId } = options;
+): Promise<ResolvedTarget | 'ambiguous' | null> {
+  const { accountId, accountLabel, serverUrl, emailId, forwarded } = options;
   const cookieStore = await cookies();
   const probes: Promise<ProbeResult | null>[] = [];
 
@@ -128,14 +132,14 @@ async function resolveTargetForAccount(
         try {
           const trusted = await isTrustedJmapServerUrl(ctxServerUrl);
           const res = await fetchJmapServer(`${ctxServerUrl}/.well-known/jmap`, {
-            headers: { Authorization: ctx.authHeader },
+            headers: { Authorization: ctx.authHeader, ...forwarded },
           }, trusted);
-          
+
           if (!res.ok) {
             logger.warn('push-preview: probe well-known failed', { slot, ctxServerUrl, status: res.status });
             return null;
           }
-          const session = (await res.json()) as {
+          const session = (await readJsonCapped(res, UPSTREAM_JSON_MAX_BYTES)) as {
             apiUrl?: string;
             primaryAccounts?: Record<string, string>;
             accounts?: Record<string, unknown>;
@@ -169,7 +173,7 @@ async function resolveTargetForAccount(
             try {
               const checkRes = await fetchJmapServer(absoluteApiUrl, {
                 method: 'POST',
-                headers: { Authorization: ctx.authHeader, 'Content-Type': 'application/json' },
+                headers: { Authorization: ctx.authHeader, 'Content-Type': 'application/json', ...forwarded },
                 body: JSON.stringify({
                   using: ['urn:ietf:params:jmap:core', 'urn:ietf:params:jmap:mail'],
                   methodCalls: [
@@ -178,7 +182,7 @@ async function resolveTargetForAccount(
                 }),
               }, trusted);
               if (checkRes.ok) {
-                const checkData = (await checkRes.json()) as {
+                const checkData = (await readJsonCapped(checkRes, UPSTREAM_JSON_MAX_BYTES)) as {
                   methodResponses?: [string, { list?: unknown[] }, string][];
                 };
                 hasTargetEmail = ((checkData?.methodResponses?.[0]?.[1] as { list?: unknown[] })?.list?.length ?? 0) > 0;
@@ -189,7 +193,15 @@ async function resolveTargetForAccount(
           }
 
           logger.info('push-preview: probe success', { slot, ctxServerUrl, hasTargetEmail, trusted });
-          return { authHeader: ctx.authHeader, apiUrl: absoluteApiUrl, accountId: targetAccountId, trusted, slot, hasTargetEmail };
+          return {
+            authHeader: ctx.authHeader,
+            apiUrl: absoluteApiUrl,
+            accountId: targetAccountId,
+            trusted,
+            slot,
+            hasTargetEmail,
+            own: mailAccountId === targetAccountId,
+          };
         } catch (err) {
           logger.warn('push-preview: probe exception', { slot, ctxServerUrl, err: String(err) });
           return null;
@@ -197,19 +209,24 @@ async function resolveTargetForAccount(
       })(),
     );
   }
+
   const results = await Promise.all(probes);
   const valid = results.filter((r): r is ProbeResult => r !== null);
   if (valid.length === 0) return null;
   const foundWithEmail = valid.find((r) => r.hasTargetEmail);
-  return foundWithEmail ?? valid[0] ?? null;
+  if (foundWithEmail) return foundWithEmail;
+  const owners = valid.filter((r) => r.own);
+  if (owners.length === 1) return owners[0];
+  if (valid.length === 1) return valid[0];
+  return valid.length > 1 ? 'ambiguous' : null;
 }
 
-async function resolveDefaultTarget(creds: StalwartCredentials): Promise<ResolvedTarget | null> {
+async function resolveDefaultTarget(creds: StalwartCredentials, forwarded: Record<string, string>): Promise<ResolvedTarget | null> {
   const sessionRes = await fetchJmapServer(`${creds.serverUrl}/.well-known/jmap`, {
-    headers: { Authorization: creds.authHeader },
+    headers: { Authorization: creds.authHeader, ...forwarded },
   }, creds.trusted);
   if (!sessionRes.ok) return null;
-  const session = (await sessionRes.json()) as {
+  const session = (await readJsonCapped(sessionRes, UPSTREAM_JSON_MAX_BYTES)) as {
     apiUrl?: string;
     primaryAccounts?: Record<string, string>;
   };
@@ -245,35 +262,42 @@ export async function GET(request: NextRequest) {
     // asks for that one instead of guessing "newest unread in the Inbox" -
     // which is wrong whenever Sieve filed the new message into a folder.
     const requestedEmailId = request.nextUrl.searchParams.get('emailId');
+    const forwarded = forwardedClientHeaders(loginClientAddress(request));
 
     let target: ResolvedTarget | null = null;
     let authHeader: string;
     if (requestedAccountId || requestedAccountLabel || requestedServerUrl) {
-      target = await resolveTargetForAccount({
+      const resolved = await resolveTargetForAccount({
         accountId: requestedAccountId,
         accountLabel: requestedAccountLabel,
         serverUrl: requestedServerUrl,
         emailId: requestedEmailId,
+        forwarded,
       });
-      if (!target) {
+      if (!resolved) {
         // Return 401 so the service worker knows the account is not authenticated,
         // which triggers the safe fallback notification ("You have new mail") instead
         // of falsely dropping the notification.
         return NextResponse.json({ error: 'Account not authenticated' }, { status: 401 });
       }
+      // The service worker shows its generic notification, and a click opens
+      // the app without switching login.
+      if (resolved === 'ambiguous') {
+        return NextResponse.json({ error: 'Account is in more than one signed-in login' }, { status: 409 });
+      }
+      target = resolved;
       authHeader = target.authHeader;
     } else {
       const creds = await getStalwartCredentials(request);
       if (!creds) {
         return NextResponse.json({ error: 'Not authenticated' }, { status: 401 });
       }
-      target = await resolveDefaultTarget(creds);
+      target = await resolveDefaultTarget(creds, forwarded);
       if (!target) {
         return NextResponse.json({ error: 'JMAP session failed' }, { status: 502 });
       }
       authHeader = creds.authHeader;
     }
-
 
     const { apiUrl, accountId, trusted } = target;
 
@@ -282,6 +306,7 @@ export async function GET(request: NextRequest) {
       headers: {
         Authorization: authHeader,
         'Content-Type': 'application/json',
+        ...forwarded,
       },
       body: JSON.stringify({
         using: ['urn:ietf:params:jmap:core', 'urn:ietf:params:jmap:mail'],
@@ -299,7 +324,7 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'JMAP mailbox query failed' }, { status: 502 });
     }
 
-    const inboxData = (await inboxRes.json()) as {
+    const inboxData = (await readJsonCapped(inboxRes, UPSTREAM_JSON_MAX_BYTES)) as {
       methodResponses: [string, Record<string, unknown>, string][];
     };
 
@@ -373,106 +398,61 @@ export async function GET(request: NextRequest) {
       methodCalls,
     };
 
-    const jmapRes = await fetchJmapServer(apiUrl, {
+    const emailRes = await fetchJmapServer(apiUrl, {
       method: 'POST',
       headers: {
         Authorization: authHeader,
         'Content-Type': 'application/json',
+        ...forwarded,
       },
       body: JSON.stringify(requestBody),
     }, trusted);
-    if (!jmapRes.ok) {
-      return NextResponse.json({ error: 'JMAP request failed' }, { status: 502 });
-    }
-    const data = (await jmapRes.json()) as {
-      methodResponses: [string, Record<string, unknown>, string][];
-    };
 
-    // Missing/failed method responses are preview failures, not proof that
-    // there is no unread mail. A non-2xx response lets the SW show its fallback.
-    // The message the server named, once read, is a complete preview on its
-    // own, whatever became of the Inbox lookups next to it.
-    const resultOf = (name: string, id: string) =>
-      data.methodResponses.find(([method, , callId]) => method === name && callId === id)?.[1];
-    const failed = (methodCalls as [string, unknown, string][]).some(([name, , id]) => {
-      const result = resultOf(name, id);
-      return !result || (name === 'Email/query' ? !Array.isArray(result.ids) : !Array.isArray(result.list));
-    });
-    const deliveredList = resultOf('Email/get', 'delivered')?.list;
-    if (failed && !(Array.isArray(deliveredList) && deliveredList.length > 0)) {
+    if (!emailRes.ok) {
       return NextResponse.json({ error: 'JMAP email query failed' }, { status: 502 });
     }
 
-    type EmailLite = {
-      id: string;
-      threadId: string;
-      from?: { name?: string | null; email?: string }[] | null;
-      subject?: string | null;
-      preview?: string | null;
-      receivedAt?: string | null;
+    const emailData = (await readJsonCapped(emailRes, UPSTREAM_JSON_MAX_BYTES)) as {
+      methodResponses: [string, Record<string, unknown>, string][];
     };
 
-    let email: EmailLite | null = null;
-    let delivered: EmailLite | null = null;
-    let unreadTotal = 0;
-    for (const [method, body, callId] of data.methodResponses) {
-      if (method === 'Email/query') {
-        // A server that leaves out the optional total still lists the ids.
-        const query = body as { total?: number; ids?: unknown[] };
-        unreadTotal = typeof query.total === 'number' ? query.total : (query.ids?.length ?? 0);
-      }
-      if (method === 'Email/get') {
-        const list = (body as { list?: EmailLite[] }).list ?? [];
-        if (callId === 'delivered') delivered = list[0] ?? null;
-        else email = list[0] ?? null;
-      }
-    }
-    // The message the server said it delivered beats "newest unread in the
-    // Inbox" - it may have been filed elsewhere by Sieve. Keep the Inbox
-    // unread total for the group line; count the delivered one if it isn't
-    // already in it (unread total is Inbox-scoped).
-    if (delivered) {
-      if (!email || email.id !== delivered.id) {
-        unreadTotal = Math.max(unreadTotal, 1);
-      }
-      email = delivered;
-    } else if (requestedEmailId) {
-      // The server named the message that arrived and it could not be read -
-      // deleted since, or filed where this login cannot see it. "Newest unread
-      // in the Inbox" is then some other message, and announcing it would be
-      // confidently wrong. Name no message: the unread total still comes back,
-      // so the SW posts its generic toast instead of staying silent.
-      email = null;
-    }
+    const unreadTotal = (emailData.methodResponses.find(
+      ([method, , callId]) => method === 'Email/query' && callId === 'eq',
+    )?.[1] as { total?: number } | undefined)?.total ?? 0;
 
-    // Some servers build the preview from HTML without skipping <style>; a
-    // notification that opens on a style sheet says nothing.
-    if (email?.preview) email = { ...email, preview: cleanPreview(email.preview) };
+    const deliveredEmail = (emailData.methodResponses.find(
+      ([method, , callId]) => method === 'Email/get' && callId === 'delivered',
+    )?.[1] as { list?: Record<string, unknown>[] } | undefined)?.list?.[0];
+
+    const fallbackEmail = (emailData.methodResponses.find(
+      ([method, , callId]) => method === 'Email/get' && callId === 'eg',
+    )?.[1] as { list?: Record<string, unknown>[] } | undefined)?.list?.[0];
+
+    const rawEmail = deliveredEmail ?? fallbackEmail ?? null;
+
+    const email = rawEmail ? {
+      id: rawEmail.id,
+      threadId: rawEmail.threadId,
+      from: rawEmail.from,
+      subject: rawEmail.subject,
+      preview: typeof rawEmail.preview === 'string' ? cleanPreview(rawEmail.preview) : '',
+      receivedAt: rawEmail.receivedAt,
+    } : null;
 
     return NextResponse.json({
       email,
       unreadTotal,
-      ...(target.slot !== undefined ? { slot: target.slot } : {}),
+      slot: target.slot,
     }, {
       headers: {
-        // SW already gates on its own logic - don't let push events get
-        // cached and served stale.
         'Cache-Control': 'no-store',
       },
     });
   } catch (error) {
-    if (error instanceof DisallowedUrlError) {
-      logger.warn('push preview refused non-public server address', { error: error.message });
-      return NextResponse.json({ error: 'JMAP server address is not allowed' }, { status: 502 });
+    if (error instanceof DisallowedUrlError || error instanceof UpstreamBodyTooLargeError) {
+      return NextResponse.json({ error: 'Upstream request blocked' }, { status: 502 });
     }
-    // `fetch failed` from undici is too generic to debug - the real reason
-    // (ENOTFOUND, ECONNREFUSED, TLS error, …) is on `error.cause`.
-    const err = error as Error & { cause?: { code?: string; message?: string } };
-    logger.error('push preview failed', {
-      error: err?.message ?? 'Unknown error',
-      causeCode: err?.cause?.code,
-      causeMessage: err?.cause?.message,
-    });
-    return NextResponse.json({ error: 'Internal error' }, { status: 500 });
+    logger.error('push-preview: unexpected error', { error: String(error) });
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }

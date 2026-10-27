@@ -76,7 +76,7 @@
       "back_to_login": "Atgriezties pie pierakstīšanās"
     },
     "have_invite_code": "Have an invite code?",
-    "register_link": "Register"
+    "register_link": "Register Account"
   },
   "sidebar": {
     "close": "Aizvērt",
@@ -179,18 +179,18 @@
   },
   "protocol_handlers": {
     "title": "Noklusējuma lietotnes",
-    "description": "Izvēlieties, vai e-pasta un kalendāra saites atvērt Bulwark. Tehniski Bulwark reģistrējas kā protokola apstrādātājs mailto: un webcal: saitēm.",
+    "description": "Izvēlieties, vai e-pasta un kalendāra saites atvērt {appName}. Tehniski {appName} reģistrējas kā protokola apstrādātājs mailto: un webcal: saitēm.",
     "unsupported": "Šī pārlūkprogramma vai savienojums neatbalsta manuālu protokola apstrādātāja reģistrāciju. Iespējams, instalēto PWA joprojām var izmantot pārlūkprogrammas vai sistēmas iestatījumos.",
     "mailto_label": "E-pasta saites",
-    "mailto_description": "Atver mailto: saites Bulwark ar iepriekš aizpildītu ziņojuma redaktoru.",
+    "mailto_description": "Atver mailto: saites {appName} ar iepriekš aizpildītu ziņojuma redaktoru.",
     "protocol_open_mode_label": "Atverot protokola saites",
-    "protocol_open_mode_description": "Izvēlieties, vai Bulwark atver mailto: un webcal: saites jaunā cilnē vai atkārtoti izmanto atvērtu sesiju. Aktīvās sesijas opcijai nepieciešama paziņojumu atļauja, lai jūs varētu noklikšķināt uz rezerves paziņojuma un izcelt Bulwark priekšplānā, ja pārlūkprogramma bloķē fokusu.",
+    "protocol_open_mode_description": "Izvēlieties, vai {appName} atver mailto: un webcal: saites jaunā cilnē vai atkārtoti izmanto atvērtu sesiju. Aktīvās sesijas opcijai nepieciešama paziņojumu atļauja, lai jūs varētu noklikšķināt uz rezerves paziņojuma un izcelt {appName} priekšplānā, ja pārlūkprogramma bloķē fokusu.",
     "protocol_open_mode_active_session": "Ja iespējams, atvērt aktīvajā sesijā",
     "protocol_open_mode_new_tab": "Vienmēr atvērt jaunu cilni",
-    "focus_notification_title": "Atvērt Bulwark",
-    "focus_notification_body": "Saite tika atvērta Bulwark. Noklikšķiniet, lai izceltu logu priekšplānā.",
+    "focus_notification_title": "Atvērt {appName}",
+    "focus_notification_body": "Saite tika atvērta {appName}. Noklikšķiniet, lai izceltu logu priekšplānā.",
     "webcal_label": "Kalendāra saites",
-    "webcal_description": "Atver webcal: saites Bulwark ar iepriekš aizpildītu kalendāra abonēšanas dialogu.",
+    "webcal_description": "Atver webcal: saites {appName} ar iepriekš aizpildītu kalendāra abonēšanas dialogu.",
     "register_mailto": "Reģistrēt e-pasta lietotni",
     "register_webcal": "Reģistrēt kalendāra lietotni",
     "mailto_registered": "E-pasta apstrādātāja reģistrācija pieprasīta",
@@ -198,7 +198,7 @@
     "registration_failed": "Protokola apstrādātāja reģistrācija neizdevās",
     "opening_mailto": "Tiek atvērts redaktors...",
     "opening_webcal": "Tiek atvērts kalendārs...",
-    "browser_note": "Pārlūkprogramma vai operētājsistēma var lūgt apstiprinājumu un var prasīt, lai Bulwark būtu instalēts, pirms to var izvēlēties kā noklusējuma lietotni.",
+    "browser_note": "Pārlūkprogramma vai operētājsistēma var lūgt apstiprinājumu un var prasīt, lai {appName} būtu instalēts, pirms to var izvēlēties kā noklusējuma lietotni.",
     "select_account_title": "Izvēlieties kontu",
     "select_mailto_account": "Izvēlieties, kurā kontā atvērt šo e-pasta saiti.",
     "select_webcal_account": "Izvēlieties, kurā kontā atvērt šo kalendāra saiti.",
@@ -246,6 +246,11 @@
     "show_on_mobile": "Rādīt mobilajā ierīcē"
   },
   "email_list": {
+    "sections": {
+      "unread": "Nelasītie",
+      "everything_else": "Viss pārējais",
+      "unread_empty": "Jūs esat izlasījis visus iesūtnes ziņojumus."
+    },
     "columns": {
       "from": "No",
       "to": "Kam",
@@ -564,6 +569,8 @@
       "authentication_missing_info": "Šim uzaicinājumam nav apstiprinātas autentifikācijas.",
       "sender_mismatch_info": "Uzaicinājumu nosūtīja {sender}, bet organizators ir {organizer}.",
       "sender_mismatch_unverified_info": "Uzaicinājumu nosūtīja {sender}, bet norādītais organizators ir {organizer}, un ziņojumu nevarēja pārbaudīt.",
+      "attendee_mismatch_info": "Atbildi nosūtīja {sender}, bet atbildošais dalībnieks ir {attendee}.",
+      "attendee_mismatch_unverified_info": "Atbildi nosūtīja {sender}, bet atbildošais dalībnieks ir {attendee}, un ziņojumu nevarēja pārbaudīt.",
       "organizer_role": "Jūs esat šī pasākuma organizators",
       "your_response": "Jūsu atbilde: {status}",
       "response_needed": "Nepieciešama atbilde",
@@ -606,6 +613,7 @@
     "scheduled_send_created": "E-pasts ieplānots nosūtīšanai",
     "sending_in": "Sūtīšana pēc {seconds} s",
     "undo_send_failed": "Nevarēja atsaukt. Ziņojums, iespējams, jau ir nosūtīts.",
+    "undo_send_signed_out": "Nevar atsaukt: konts, no kura ziņojums tika nosūtīts, vairs nav pieteicies.",
     "cancel_scheduled_send": "Atcelt sūtīšanu",
     "reschedule_send": "Pārplānot",
     "cancel_and_edit": "Atcelt un rediģēt",
@@ -614,6 +622,14 @@
     "scheduled_actions_only": "Ieplānoto skatā ir pieejamas tikai ieplānošanas darbības",
     "undo_send_scheduled": "Ziņojums ir ieplānots nosūtīšanai",
     "undo_send": "Atsaukt sūtīšanu",
+    "send_cancelled_restore_failed": "Sūtīšana tika atcelta, bet ziņojumu neizdevās atgriezt Melnrakstos. Tas joprojām ir Nosūtītajos.",
+    "send_cancelled_remove_failed": "Sūtīšana tika atcelta, bet nenosūtīto ziņojumu neizdevās noņemt no Nosūtītajiem.",
+    "cancel_scheduled_failed": "Ieplānoto sūtīšanu neizdevās atcelt",
+    "still_scheduled_at": "Ziņojums joprojām ir ieplānots uz {date}.",
+    "still_scheduled": "Ziņojums joprojām ir ieplānots.",
+    "already_sent": "Šis ziņojums jau ir nosūtīts.",
+    "no_longer_scheduled": "Šis ziņojums vairs nav ieplānots.",
+    "reschedule_recipients_refused": "Nekas netika mainīts: serveris noraidīja {recipients}.",
     "contact_sidebar": {
       "title": "Kontaktpersona",
       "close": "Aizvērt sānjoslu",
@@ -686,6 +702,7 @@
     "link_url_prompt": "Ievadiet URL",
     "draft_saved": "Melnraksts saglabāts",
     "save_failed": "Neizdevās saglabāt",
+    "discard_signed_out": "Melnraksts netika dzēsts: konts, kurā tas tika saglabāts, vairs nav pieteicies. Tas paliek šī konta melnrakstos.",
     "to_placeholder": "Saņēmēji",
     "cc_placeholder": "Kopijas saņēmēji",
     "bcc_placeholder": "Slepenās kopijas saņēmēji",
@@ -754,6 +771,10 @@
     "send_failed": "Neizdevās nosūtīt vēstuli",
     "send_offline": "Šķiet, esat bezsaistē. Ziņojums joprojām ir šeit, nosūtiet to vēlreiz, kad būsiet tiešsaistē.",
     "send_timeout": "Serveris pārstāja atbildēt. Pirms sūtīt vēlreiz, pārbaudiet mapi Nosūtītie — ziņojums, iespējams, jau ir aizsūtīts.",
+    "submission_quota": "Serverī šim kontam ir pārāk daudz nosūtīto ziņojumu ierakstu. Bulwark noņēma tos, ko varēja; ja tas atkārtojas, lūdziet administratoram palielināt e-pasta sūtījumu ierobežojumu.",
+    "submission_limit": "Serveris atteicās nosūtīt ziņojumu, jo ir sasniegts ierobežojums: {reason}",
+    "recipients_refused": "Nav nosūtīts: serveris noraidīja {recipients}.",
+    "recipients_partly_refused": "Serveris noraidīja {recipients}. Pārējie adresāti saņem ziņojumu.",
     "send_recipients_rejected": "Nav nosūtīts — serveris noraidīja visus adresātus.",
     "cut": "Izgriezt",
     "copy": "Kopēt",
@@ -849,7 +870,7 @@
     "send_filing_warning": "Nosūtīts - bet pēcapstrāde neizdevās, var palikt novecojis melnraksts.",
     "pop_out": "Atvērt atbildi atsevišķā logā",
     "send_guard_failed": "Nav nosūtīts - spraudnis, kas pārbauda ziņojumus pirms sūtīšanas, neizdevās vai neatbildēja.",
-    "use_oracle_relay": "Send via Oracle Relay"
+    "use_oracle_relay": "Send via Oracle SMTP relay"
   },
   "confirm_dialog": {
     "confirm": "Apstiprināt",
@@ -875,9 +896,9 @@
     "app_title": "Tīmekļa pasts",
     "reconnecting": "Savienojums pārtraukts. Mēģina izveidot savienojumu...",
     "rate_limited_title": "Autentifikācija serverī ir īslaicīgi ierobežota.",
-    "rate_limited_detail": "Bulwark ir apturējis fonā veiktos pieprasījumus, lai izvairītos no bloķēšanas. Mēģinās vēlreiz pēc {seconds} s.",
+    "rate_limited_detail": "{appName} ir apturējis fonā veiktos pieprasījumus, lai izvairītos no bloķēšanas. Mēģinās vēlreiz pēc {seconds} s.",
     "rate_limited_action_title": "Pieprasījums apturēts, lai izvairītos no bloķēšanas.",
-    "rate_limited_action_detail": "Bulwark gaida servera noildzes beigas pirms jaunu autentificētu pieprasījumu sūtīšanas. Mēģiniet vēlreiz pēc {seconds} s.",
+    "rate_limited_action_detail": "{appName} gaida servera noildzes beigas pirms jaunu autentificētu pieprasījumu sūtīšanas. Mēģiniet vēlreiz pēc {seconds} s.",
     "pull_to_refresh": "Velciet, lai atsvaidzinātu",
     "release_to_refresh": "Atlaidiet, lai atsvaidzinātu",
     "refreshing": "Atsvaidzina…"
@@ -1332,7 +1353,10 @@
         "revoke": "Atsaukt",
         "confirm_revoke_title": "Atsaukt šo ierīci?",
         "confirm_revoke_message": "Tā nekavējoties pārstās saņemt fona paziņojumus. Atkārtoti ieslēdzot push šajā ierīcē, tā tiks reģistrēta no jauna.",
-        "confirm_revoke_message_this": "Šī ierīce nekavējoties pārstās saņemt fona paziņojumus."
+        "confirm_revoke_message_this": "Šī ierīce nekavējoties pārstās saņemt fona paziņojumus.",
+        "shared_mailboxes_no_push": "Pastkastes, ko ar jums kopīgo citi, nesūta fona paziņojumus.",
+        "error_forbidden": "Pasta serveris šim kontam neatļauj fona paziņojumus.",
+        "error_over_quota": "Šim kontam pasta serverī ir pārāk daudz push reģistrāciju (ierobežojums parasti ir 15). Paziņojumu iestatījumos atsauciet ierīces, kuras vairs neizmantojat, un mēģiniet vēlreiz."
       },
       "push_all": {
         "title": "All accounts",
@@ -1418,6 +1442,12 @@
       }
     },
     "email_behavior": {
+      "inbox_type": {
+        "label": "Iesūtnes veids",
+        "description": "“Vispirms nelasītie” rāda 25 jaunākos nelasītos ziņojumus atsevišķā sadaļā virs pārējās iesūtnes",
+        "default": "Noklusējums",
+        "unread_first": "Vispirms nelasītie"
+      },
       "clear_search_on_folder_change": {
         "label": "Notīrīt meklēšanu, mainot mapi",
         "description": "Noklikšķinot uz mapes (Iesūtne, Nosūtītie…), aktīvā meklēšana tiek notīrīta un tiek atvērta šī mape. Kad izslēgts, meklēšana paliek un tiek atkārtota izvēlētajā mapē."
@@ -1508,6 +1538,10 @@
       "plain_text_mode": {
         "label": "Tikai parasts teksts",
         "description": "Izslēgt formatētā teksta redaktoru un sūtīt vēstules tikai kā parastu tekstu"
+      },
+      "quick_reply": {
+        "label": "Ātrā atbilde",
+        "description": "Rādīt ātrās atbildes lauku zem ziņojumiem."
       },
       "auto_select_reply_identity": {
         "label": "Automātiski izvēlēties atbildes adresi",
@@ -1754,6 +1788,10 @@
         "signed_in": "Signed in to {count, plural, one {# account} other {# accounts}} with the saved password.",
         "sign_in_failed": "{count, plural, one {# saved password was} other {# saved passwords were}} refused: sign in to those accounts from the account list.",
         "deleted": "Saved list deleted.",
+        "prompt_title": "Restore your other accounts?",
+        "prompt_description": "A list of accounts is saved for {account}. Enter its backup password to add them to this browser, or do it later from Settings.",
+        "prompt_not_now": "Not now",
+        "prompt_done": "Done",
         "errors": {
           "mismatch": "The passwords do not match.",
           "password_length": "Use at least 10 characters.",
@@ -2356,6 +2394,7 @@
       "validation_empty_name": "Nepieciešams noteikuma nosaukums",
       "validation_empty_conditions": "Nepieciešams vismaz viens nosacījums ar vērtību",
       "validation_empty_actions": "Nepieciešama vismaz viena darbība",
+      "validation_header_name": "Galvenes nosaukumā drīkst būt tikai burti A-Z, cipari, defises un pasvītras",
       "templates_section": "Sākt no veidnes",
       "template_newsletters": "Pārvietot ziņu izdevumus uz mapi",
       "template_receipts": "Automātiski arhivēt rēķinus",
@@ -3129,7 +3168,8 @@
     },
     "export": {
       "title": "Kontaktu eksports",
-      "success": "Eksportēts {count, plural, one {1 kontakts} other {# kontakti}}"
+      "success": "Eksportēts {count, plural, one {1 kontakts} other {# kontakti}}",
+      "exporting": "Eksportē..."
     },
     "bulk": {
       "selected": "Atlasīts {count, plural, one {1 kontakts} other {# kontakti}}",
@@ -3272,8 +3312,11 @@
         "free": "Pieejams",
         "busy": "Aizņemts",
         "tentative": "Provizoriski",
+        "no_busy_times": "Nav kopīgotu aizņemto laiku",
         "unknown": "Nav šī servera lietotājs",
-        "checking": "Pārbauda…"
+        "error": "Neizdevās pārbaudīt",
+        "checking": "Pārbauda…",
+        "unavailable_on_server": "Informācija par brīvo/aizņemto laiku šajā serverī nav pieejama"
       },
       "title": "Dalībnieki",
       "add": "Pievienot dalībnieku",
@@ -3295,6 +3338,7 @@
       "you_organizer": "Jūs esat organizators",
       "you_attendee": "Jūs esat dalībnieks",
       "no_participants": "Nav dalībnieku",
+      "limit_warning": "Vairāk nekā {max, plural, one {# dalībnieks} other {# dalībnieki}}, ieskaitot organizatoru: serveris var atteikties saglabāt šo pasākumu. Administrators var palielināt ierobežojumu.",
       "count": "{count, plural, one {# dalībnieks} other {# dalībnieki}}"
     },
     "recurrence": {
@@ -3485,6 +3529,7 @@
       "save_without_invitations": "Saglabāt bez ielūgumiem",
       "rsvp_updated": "Atbilde atjaunināta",
       "rsvp_error": "Neizdevās atjaunināt atbildi",
+      "participant_limit": "Serveris atļauj ne vairāk kā {max, plural, one {# dalībnieku} other {# dalībniekus}} vienam pasākumam, ieskaitot organizatoru, tāpēc šīs izmaiņas tika noraidītas. Administrators var palielināt ierobežojumu.",
       "event_duplicated": "Pasākums dublēts",
       "event_error": "Neizdevās saglabāt pasākumu",
       "task_due": "Uzdevuma termiņš",
@@ -3494,7 +3539,10 @@
     },
     "status": {
       "loading_calendars": "Ielādē kalendārus...",
-      "loading_events": "Ielādē pasākumus..."
+      "loading_events": "Ielādē pasākumus...",
+      "events_load_failed": "Neizdevās ielādēt pasākumus. Kalendārs var nebūt aktuāls.",
+      "tasks_load_failed": "Neizdevās ielādēt uzdevumus. Saraksts var nebūt aktuāls.",
+      "retry": "Mēģināt vēlreiz"
     },
     "quick_create": {
       "placeholder": "Jauna pasākuma nosaukums",
@@ -3705,8 +3753,12 @@
     "loading_principals": "Ielādē lietotājus…",
     "no_principals": "Citi lietotāji vai grupas nav atrastas.",
     "no_match": "Nav atbilstību.",
+    "directory_restricted": "Jūsu serveris neļauj pārlūkot tā lietotāju direktoriju, tāpēc tiek parādītas tikai jūsu grupas un personas, kas ar jums kaut ko kopīgojušas. Administrators var ieslēgt direktorija vaicājumus Stalwart kopīgošanas iestatījumos.",
+    "directory_not_browsable": "Jūsu serveris neļauj jums pārlūkot tā lietotāju direktoriju.",
+    "directory_failed": "Neizdevās ielādēt lietotāju un grupu sarakstu.",
     "remove": "Noņemt piekļuvi",
     "group": "Grupa",
+    "unknown_user": "Nezināms lietotājs",
     "share_added": "Piekļuve piešķirta",
     "share_updated": "Piekļuve atjaunināta",
     "share_removed": "Piekļuve noņemta",
@@ -3802,6 +3854,8 @@
     "new_name": "Jauns nosaukums",
     "name_forbidden_chars": "Serveris neatļauj šīs rakstzīmes nosaukumos: {chars}",
     "name_reserved": "Šis nosaukums serverī ir rezervēts.",
+    "name_control_chars": "Nosaukumos nedrīkst būt vadības rakstzīmes.",
+    "name_too_long": "Šis nosaukums serverim ir pārāk garš.",
     "delete": "Dzēst",
     "delete_confirm_title": "Dzēst resursu",
     "delete_confirm_message": "Vai tiešām vēlaties dzēst «{name}»? Šo darbību nevar atcelt.",
@@ -3812,12 +3866,22 @@
     "type": "Veids",
     "folder": "Mape",
     "file": "Fails",
+    "symlink": "Simboliskā saite",
+    "parent_directory": "Augstāka līmeņa mape",
+    "breadcrumb_root": "Sākums",
     "no_accounts": "Nav pievienotu kontu.",
     "uploading": "Augšupielādē...",
     "upload_success": "Augšupielādēts {count, plural, one {1 fails} other {# faili}}",
     "upload_canceled": "Augšupielāde atcelta",
     "upload_canceled_partial": "{count, plural, zero {# faili tika augšupielādēti} one {# fails tika augšupielādēts} other {# faili tika augšupielādēti}} pirms atcelšanas",
     "upload_error": "Neizdevās augšupielādēt failu",
+    "upload_failed": "{count, plural, one {Neizdevās augšupielādēt # failu} other {Neizdevās augšupielādēt # failus}}",
+    "error_over_quota": "Ir sasniegts failu vai mapju skaita ierobežojums. Izdzēsiet dažus un mēģiniet vēlreiz.",
+    "error_too_deep": "Mapes nevar ievietot tik dziļi citu citā.",
+    "error_invalid_name": "Serveris nepieņem šo nosaukumu.",
+    "error_forbidden": "Jums šeit nav atļaujas to darīt.",
+    "error_too_large": "Šis fails serverim ir pārāk liels.",
+    "error_partial_copy": "Daļa kopijas palika savā vietā.",
     "create_folder_success": "Mape izveidota",
     "create_folder_error": "Neizdevās izveidot mapi",
     "delete_success": "Sekmīgi izdzēsts",
@@ -3856,6 +3920,7 @@
     "shared": "Shared",
     "shared_with_me": "Shared with me",
     "shared_by": "Shared by {name}",
+    "shared_files_from": "Faili no {name}",
     "create_file_success": "Fails izveidots",
     "create_file_error": "Neizdevās izveidot failu",
     "favorites": "Izlase",
@@ -4397,7 +4462,7 @@
       },
       "http_proxy": {
         "title": "Izmantot jūsu savienotos kontus",
-        "body": "Sūtīt pieprasījumus caur Bulwark serveri ar kontu vai atslēgu, ko iestatījāt jūs vai jūsu administrators. Spraudnis nekad neredz paroli, taču tas var darīt visu, ko šis konts var darīt savā serverī."
+        "body": "Sūtīt pieprasījumus caur {appName} serveri ar kontu vai atslēgu, ko iestatījāt jūs vai jūsu administrators. Spraudnis nekad neredz paroli, taču tas var darīt visu, ko šis konts var darīt savā serverī."
       },
       "compose_open": {
         "title": "Atvērt redaktoru jūsu vietā",
@@ -4430,9 +4495,9 @@
     },
     "connect": {
       "title": "Savienot {label}",
-      "intro_password": "{name} vēlas izmantot jūsu {label} kontu. Bulwark glabā paroli savā serverī un sūta to tikai uz {host}. Spraudnis to nekad neredz.",
-      "intro_password_any": "{name} vēlas izmantot jūsu {label} kontu. Bulwark glabā paroli savā serverī un sūta to tikai uz serveri, ko šeit ievadāt. Spraudnis to nekad neredz.",
-      "intro_signin": "{name} vēlas pierakstīties jūsu {label} kontā. Ievadiet šeit serveri un pēc tam pierakstieties šī servera lapā. Bulwark glabā iegūto piekļuvi savā serverī; spraudnis to nekad neredz.",
+      "intro_password": "{name} vēlas izmantot jūsu {label} kontu. {appName} glabā paroli savā serverī un sūta to tikai uz {host}. Spraudnis to nekad neredz.",
+      "intro_password_any": "{name} vēlas izmantot jūsu {label} kontu. {appName} glabā paroli savā serverī un sūta to tikai uz serveri, ko šeit ievadāt. Spraudnis to nekad neredz.",
+      "intro_signin": "{name} vēlas pierakstīties jūsu {label} kontā. Ievadiet šeit serveri un pēc tam pierakstieties šī servera lapā. {appName} glabā iegūto piekļuvi savā serverī; spraudnis to nekad neredz.",
       "server": "Servera adrese",
       "server_hint": "cloud.example.com",
       "username": "Lietotājvārds",

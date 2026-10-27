@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore, type ReactNode } from 'react';
 import { usePathname } from 'next/navigation';
 import {
   ArrowLeft,
@@ -73,6 +73,8 @@ interface Match {
   sections: AdminSectionDef[];
 }
 
+const subscribeNothing = () => () => {};
+
 /**
  * The admin panel's frame: the webmail's own navigation rail, the page list
  * laid out like the settings sidebar (search included), the content column
@@ -82,6 +84,10 @@ export function AdminShell({ authenticated, isStalwartAutoLogin, configReadOnly,
   const pathname = usePathname();
   const location = useAdminLocation();
   const isDesktop = useIsDesktop();
+  // The server can't know the window width, so its HTML would be the phone
+  // layout, shown on desktop until hydration swaps it (the rail's Admin link
+  // is a full page load).
+  const hydrated = useSyncExternalStore(subscribeNothing, () => true, () => false);
   const requestLeave = useAdminUnsavedStore((s) => s.requestLeave);
   const [query, setQuery] = useState('');
   const [saveBarHost, setSaveBarHost] = useState<HTMLElement | null>(null);
@@ -219,6 +225,8 @@ export function AdminShell({ authenticated, isStalwartAutoLogin, configReadOnly,
   // not of their mailbox, so these stay with the panel rather than the rail.
   // A Stalwart admin signed in automatically has neither a password to change
   // nor a session worth ending, since opening the panel signs them back in.
+  // Which kind of admin this is is known once the session check is done.
+  const showSessionLinks = authenticated && !isStalwartAutoLogin;
   const sessionLinks = (mobile: boolean) => (
     <>
       <AdminLink
@@ -256,6 +264,8 @@ export function AdminShell({ authenticated, isStalwartAutoLogin, configReadOnly,
       </p>
     </div>
   );
+
+  if (!hydrated) return <div className="h-dvh bg-background" />;
 
   if (!isDesktop) {
     const showIndex = location.page === null && !onChangePassword;
@@ -335,7 +345,7 @@ export function AdminShell({ authenticated, isStalwartAutoLogin, configReadOnly,
                     </div>
                   ))}
                 </div>
-                {!isStalwartAutoLogin && <div className="border-t border-border px-2 py-2">{sessionLinks(true)}</div>}
+                {showSessionLinks && <div className="border-t border-border px-2 py-2">{sessionLinks(true)}</div>}
                 <div className="border-t border-border px-2 py-2"><AboutFooter /></div>
               </>
             ) : (
@@ -426,7 +436,7 @@ export function AdminShell({ authenticated, isStalwartAutoLogin, configReadOnly,
           </div>
 
           <div className="border-t border-border px-1 py-1">
-            {!isStalwartAutoLogin && <div className="space-y-0.5 px-1 py-1">{sessionLinks(false)}</div>}
+            {showSessionLinks && <div className="space-y-0.5 px-1 py-1">{sessionLinks(false)}</div>}
             <AboutFooter />
           </div>
         </aside>
