@@ -776,21 +776,11 @@ optgroup {
     scroll-behavior: auto !important;
   }
 }
-    animation-duration: 0.01ms !important;
-    animation-iteration-count: 1 !important;
-    /* Every element transitions `all` by default once it has a duration.
-       Visibility is left out: a transition from hidden would keep a newly
-       shown menu or dialog hidden for a frame, and focus() would miss it. */
-    transition-property: all, visibility !important;
-    transition-duration: 0.01ms, 0s !important;
-    scroll-behavior: auto !important;
-  }
-}
 
 /* The same when the user turns Reduce motion on in the settings (#1215). */
-[data-motion="reduce"] *,
-[data-motion="reduce"] *::before,
-[data-motion="reduce"] *::after {
+[data-motion="reduce"] *:not(.animate-spin):not([class*="animate-spin"]):not([class*="spin"]),
+[data-motion="reduce"] *:not(.animate-spin):not([class*="animate-spin"]):not([class*="spin"])::before,
+[data-motion="reduce"] *:not(.animate-spin):not([class*="animate-spin"]):not([class*="spin"])::after {
   animation-duration: 0.01ms !important;
   animation-iteration-count: 1 !important;
   transition-property: all, visibility !important;
