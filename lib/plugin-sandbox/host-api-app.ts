@@ -15,8 +15,9 @@ import { usePolicyStore } from '@/stores/policy-store';
 import { fetchConfig, type ConfigData } from '@/hooks/use-config';
 import { productName } from '@/lib/product-name';
 import {
-  collectSubResults, getByPath, tabKeywords, tabSearchPaths, withAppName, type SettingsSearchTab, type SubResult,
+  getByPath, settingsSubResults, tabKeywords, tabSearchEntries, type SettingsSearchTab,
 } from '@/lib/settings-search';
+import { currentSessionLimits } from '@/lib/session-policy/limits';
 import type { AppSettingsView, SettingsSearchResult } from '../plugin-types';
 
 type Messages = Record<string, unknown>;
@@ -80,29 +81,25 @@ export async function doAppSearchSettings(query: unknown, options?: unknown): Pr
 
   const scored: { score: number; order: number; result: SettingsSearchResult }[] = [];
   let order = 0;
-  for (const tab of Object.keys(tabSearchPaths) as SettingsSearchTab[]) {
+  for (const tab of Object.keys(tabSearchEntries) as SettingsSearchTab[]) {
     if (!pages.has(tab)) continue;
     const page = pageName(local, tab);
     const pageHaystack = `${page} ${pageName(english, tab)} ${tab.replace(/_/g, ' ')} ${tabKeywords[tab] ?? ''}`.toLowerCase();
-    for (const path of tabSearchPaths[tab]) {
-      // The merged catalogue has the English one's shape, so both walks line up.
-      const mine: SubResult[] = [];
-      const theirs: SubResult[] = [];
-      collectSubResults(withAppName(getByPath(local, path), appName), mine);
-      collectSubResults(withAppName(getByPath(english, path), appName), theirs);
-      mine.forEach((entry, i) => {
-        const en = theirs[i];
-        const text = `${entry.label} ${entry.description ?? ''} ${en?.label ?? ''} ${en?.description ?? ''}`.toLowerCase();
-        let score = 0;
-        for (const word of words) {
-          if (text.includes(word)) score += 2;
-          else if (pageHaystack.includes(word)) score += 1;
-        }
-        if (score > 0) {
-          scored.push({ score, order: order++, result: { pageId: tab, page, label: entry.label, ...(entry.description ? { description: entry.description } : {}) } });
-        }
-      });
-    }
+    // The merged catalogue has the English one's shape, so both lists line up.
+    const mine = settingsSubResults(local, tab, appName);
+    const theirs = settingsSubResults(english, tab, appName);
+    mine.forEach((entry, i) => {
+      const en = theirs[i];
+      const text = `${entry.label} ${entry.description ?? ''} ${en?.label ?? ''} ${en?.description ?? ''}`.toLowerCase();
+      let score = 0;
+      for (const word of words) {
+        if (text.includes(word)) score += 2;
+        else if (pageHaystack.includes(word)) score += 1;
+      }
+      if (score > 0) {
+        scored.push({ score, order: order++, result: { pageId: tab, page, label: entry.label, ...(entry.description ? { description: entry.description } : {}) } });
+      }
+    });
   }
   scored.sort((a, b) => b.score - a.score || a.order - b.order);
   const seen = new Set<string>();
@@ -124,7 +121,8 @@ export async function doAppSearchSettings(query: unknown, options?: unknown): Pr
  * and nothing that addresses a server (the push relay).
  */
 export const SHARED_SETTINGS = [
-  'fontSize', 'density', 'interfaceLayout', 'mailLayout', 'toolbarPosition', 'showToolbarLabels', 'animationsEnabled', 'proInterface',
+  'fontSize', 'density', 'interfaceLayout', 'mailLayout', 'toolbarPosition', 'showToolbarLabels', 'reduceMotion', 'proInterface',
+  'contrast', 'underlineLinks', 'appFont', 'focusRing', 'largeTargets', 'singleKeyShortcuts', 'toastDuration',
   'dateFormat', 'timeFormat', 'firstDayOfWeek', 'timeZone',
   'disableThreading', 'showPreview', 'listColumns', 'emailsPerPage', 'showVerificationCodes',
   'markAsReadDelay', 'externalContentPolicy', 'attachmentPosition', 'mailAttachmentAction', 'emailAlwaysLightMode', 'returnToListAfterAction', 'plainTextFont',
@@ -144,6 +142,15 @@ export function doAppGetSettings(): AppSettingsView {
     if (typeof value === 'string' || typeof value === 'boolean' || (typeof value === 'number' && Number.isFinite(value))) out[key] = value;
     else if (Array.isArray(value) && value.every((v) => typeof v === 'number' || typeof v === 'string')) out[key] = value.slice(0, 20) as number[] | string[];
   }
+  // Plugins written before Reduce motion (v9) read this switch.
+  out.animationsEnabled = state.reduceMotion !== 'on';
+  // Minutes without activity before Bulwark signs out (0 = never). The user
+  // setting of that name was never read; the organisation's idle timeout is
+  // what applies, the strictest of the accounts signed in here.
+  const limits = currentSessionLimits();
+  out.sessionTimeout = limits
+    ? limits.idle?.minutes ?? 0
+    : usePolicyStore.getState().getOrganisation().session.idleMinutes;
   const theme = (useThemeStore.getState() as unknown as { theme?: unknown }).theme;
   if (typeof theme === 'string') out.theme = theme;
   const locale = useLocaleStore.getState().locale;

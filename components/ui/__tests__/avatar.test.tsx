@@ -6,6 +6,7 @@ import { useContactStore } from '@/stores/contact-store';
 import { useFaviconRefreshStore } from '@/stores/favicon-refresh-store';
 import { clearContactPhotoCache } from '@/lib/contact-photo-cache';
 import type { ContactCard } from '@/lib/jmap/types';
+import { setNoThirdPartyTraffic } from '@/lib/third-party-mode';
 
 describe('Avatar', () => {
   it('renders initials from full name', () => {
@@ -229,5 +230,38 @@ describe('Avatar', () => {
     const stamp = useFaviconRefreshStore.getState().refreshedAt;
     expect(stamp).toBeGreaterThan(0);
     expect(img()?.getAttribute('src')).toBe(`/api/favicon?domain=example.cz&v=${stamp}`);
+  });
+
+  // #903: no sender icons, and so no /api/favicon request, while third-party traffic is off.
+  it('shows initials instead of the sender favicon in the no-third-party mode', () => {
+    useFaviconRefreshStore.setState({ refreshedAt: 0 });
+    setNoThirdPartyTraffic(true);
+    try {
+      const { container } = render(<Avatar name="Jan" email="jan@example.cz" />);
+      expect(container.querySelector('img')).toBeNull();
+      expect(container.textContent).toBe('JA');
+    } finally {
+      setNoThirdPartyTraffic(false);
+    }
+  });
+
+  // #1439: a forged From must not get the real sender's logo or photo.
+  describe('sender warning', () => {
+    it('shows a shield instead of the favicon and the initials', () => {
+      useFaviconRefreshStore.setState({ refreshedAt: 0 });
+      const { container } = render(<Avatar name="PayPal" email="billing@paypal.com" senderWarning="Sender check failed" />);
+      expect(container.querySelector('img')).toBeNull();
+      expect(container.textContent).toBe('');
+      expect(container.querySelector('svg')).not.toBeNull();
+      expect((container.firstChild as HTMLElement).getAttribute('title')).toBe('PayPal (Sender check failed)');
+    });
+
+    it('downloads no contact photo for the claimed sender', () => {
+      const fetchBlob = vi.fn();
+      useAuthStore.setState({ client: { fetchBlob } as never });
+      const { container } = render(<Avatar name="Ann" email="ann@example.com" contactPhoto={{ blobId: 'dbcAnn' }} senderWarning="Unverified sender" />);
+      expect(container.querySelector('img')).toBeNull();
+      expect(fetchBlob).not.toHaveBeenCalled();
+    });
   });
 });

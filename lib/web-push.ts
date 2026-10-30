@@ -8,6 +8,8 @@ import type { IJMAPClient } from '@/lib/jmap/client-interface';
 import type { AccountInfo, EmailPushConfig, Mailbox } from '@/lib/jmap/types';
 import { isJmapSetError, jmapErrorType } from '@/lib/jmap/jmap-error';
 import { DEFAULT_RELAY_BASE_URL } from '@/lib/push-relays';
+import { isBuiltInHost, relayAllowed } from '@/lib/outgoing-hosts';
+import { noThirdPartyTraffic } from '@/lib/third-party-mode';
 import { IS_LITE } from '@/lib/lite';
 import {
   EMPTY_NOTIFICATION_MUTES,
@@ -54,6 +56,16 @@ function deviceClientIdKey(accountKey: string): string {
 
 function subscriptionIdKey(accountKey: string): string {
   return SUBSCRIPTION_ID_PREFIX + accountKey;
+}
+
+/**
+ * The relay base a registration was made with. The server's PushSubscription
+ * points at it, so a later change of relay (the admin's list, or the built-in
+ * one going away with no third-party traffic, #903) needs a new record.
+ */
+const RELAY_BASE_PREFIX = 'bulwark.push.relayBase.v1.';
+function relayBaseKey(accountKey: string): string {
+  return RELAY_BASE_PREFIX + accountKey;
 }
 
 function emailPushRefusedKey(accountKey: string): string {
@@ -451,7 +463,9 @@ export function isWebPushSupported(): boolean {
   );
 }
 
+/** Every relay request is built here, so the built-in relay can't be reached in the no-third-party mode (#903). */
 function buildRelayUrl(base: string, suffix: string): string {
+  if (!relayAllowed(base)) throw new Error('The built-in push relay is off: this server does not contact outside services');
   return base.replace(/\/+$/, '') + suffix;
 }
 
@@ -889,6 +903,8 @@ export async function enableWebPush(
   const verificationCode = await pollVerificationCode(relayBaseUrl, deviceClientId);
   await params.client.verifyPushSubscription(serverAssignedId, verificationCode);
   localStorage.setItem(subIdKey, serverAssignedId);
+  localStorage.setItem(relayBaseKey(accountKey), relayBaseUrl);
+  localStorage.setItem(relayBaseKey(accountId), relayBaseUrl);
   if (replacedServerId) {
     await params.client.destroyPushSubscription(replacedServerId).catch(() => undefined);
   }
@@ -935,13 +951,15 @@ export async function disableWebPush(params: DisableWebPushParams): Promise<void
     await params.client.destroyPushSubscription(id).catch(() => undefined);
   }
   localStorage.removeItem(subIdKey);
+  localStorage.removeItem(relayBaseKey(accountKey));
   if (rawAccountId) {
     localStorage.removeItem(subscriptionIdKey(rawAccountId));
     localStorage.removeItem(emailPushRefusedKey(rawAccountId));
+    localStorage.removeItem(relayBaseKey(rawAccountId));
   }
   localStorage.removeItem(emailPushRefusedKey(accountKey));
 
-  if (deviceClientId && relayBaseUrl) {
+  if (deviceClientId && relayBaseUrl && relayAllowed(relayBaseUrl)) {
     await fetch(
       buildRelayUrl(relayBaseUrl, `/api/push/register/${encodeURIComponent(deviceClientId)}`),
       { method: 'DELETE' },
@@ -1030,7 +1048,7 @@ export async function revokePushDevice(params: {
   }
 
   await params.client.destroyPushSubscription(params.device.id);
-  if (relayBaseUrl && params.device.deviceClientId) {
+  if (relayBaseUrl && relayAllowed(relayBaseUrl) && params.device.deviceClientId) {
     await fetch(
       buildRelayUrl(
         relayBaseUrl,
@@ -1138,11 +1156,23 @@ async function runResync(accountKey: string, params: ResyncWebPushParams): Promi
       || (rawAccountId && localStorage.getItem(subscriptionIdKey(rawAccountId)))
     );
     if (!isWebPushSupported() || Notification.permission !== 'granted' || !hasSavedSub) return false;
-    if (!params.force && !(await resyncDue(accountKey))) return false;
+    if (!params.relayBaseUrl && noThirdPartyTraffic()) {
+      await disableWebPush({ client: params.client });
+      return false;
+    }
+    const current = (params.relayBaseUrl ?? DEFAULT_RELAY_BASE_URL).replace(/\/+$/, '');
+    const registeredWith = localStorage.getItem(relayBaseKey(accountKey))
+      || (rawAccountId ? localStorage.getItem(relayBaseKey(rawAccountId)) : null);
+    const moved = !!current && (
+      (registeredWith !== null && registeredWith !== current)
+      || (noThirdPartyTraffic() && (registeredWith === null || isBuiltInHost(registeredWith)) && !isBuiltInHost(current))
+    );
+    if (!moved && !params.force && !(await resyncDue(accountKey))) return false;
 
     const clientUsername = typeof params.client?.getUsername === 'function' ? params.client.getUsername() : undefined;
     await enableWebPush({
       client: params.client,
+      forceRecreate: moved,
       relayBaseUrl: params.relayBaseUrl,
       accountLabel: params.accountLabel || clientUsername,
       inboxOnly: params.inboxOnly,

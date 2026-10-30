@@ -14,6 +14,7 @@ import { ConfirmDialog } from '@/components/ui/confirm-dialog';
 import { PluginPermissionList } from '@/components/plugins/plugin-permission-list';
 import type { InstalledPlugin, PluginStatus, SettingFieldSchema } from '@/lib/plugin-types';
 import { effectiveSettings } from '@/lib/plugin-settings';
+import { PLUGIN_REFUSED_ERROR } from '@/lib/outgoing-hosts';
 import { lookup } from '@/lib/plugin-sandbox/plugin-i18n';
 import { forgetCredentials, listConnectedAccounts, type ConnectedAccount } from '@/lib/plugin-sandbox/connect-dialog';
 
@@ -153,7 +154,7 @@ export function PluginsSettings() {
         <div className="flex flex-col items-center justify-center py-12 text-center">
           <Puzzle className="mb-3 h-12 w-12 text-muted-foreground/30" />
           <p className="mb-1 text-sm text-muted-foreground">{t('empty_title')}</p>
-          <p className="text-xs text-muted-foreground/70">
+          <p className="text-xs text-muted-foreground">
             {demoMode ? t('empty_demo') : uploadsAllowed ? t('empty_uploads') : t('empty_admin')}
           </p>
         </div>
@@ -213,12 +214,14 @@ interface PluginCardProps {
 
 function PluginCard({ plugin, isExpanded, isForceEnabled, controlsDisabled, onToggleExpand, onToggle, onRemove, onUpdateSettings }: PluginCardProps) {
   const t = useTranslations('plugins.settings');
+  const tThirdParty = useTranslations('third_party');
   const locale = useLocale();
   const isManaged = Boolean(plugin.managed);
   const awaiting = !isManaged && plugin.approvalStatus === 'pending';
   const denied = !isManaged && plugin.approvalStatus === 'denied';
   const errorText = plugin.error
-    ? ERROR_CODES.has(plugin.error) ? t(`error_${plugin.error.replace(/-/g, '_')}`) : plugin.error
+    ? plugin.error === PLUGIN_REFUSED_ERROR ? tThirdParty('plugin_refused')
+      : ERROR_CODES.has(plugin.error) ? t(`error_${plugin.error.replace(/-/g, '_')}`) : plugin.error
     : null;
 
   return (
@@ -238,16 +241,16 @@ function PluginCard({ plugin, isExpanded, isForceEnabled, controlsDisabled, onTo
         >
           <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
             <span className="truncate text-sm font-medium text-foreground">{plugin.name}</span>
-            <span className={cn('rounded-full px-1.5 py-0.5 text-[10px] font-medium', STATUS_COLORS[plugin.status])}>
+            <span className={cn('rounded-full px-1.5 py-0.5 text-[0.625rem] font-medium', STATUS_COLORS[plugin.status])}>
               {t(`status_${plugin.status}`)}
             </span>
             {isForceEnabled && (
-              <span className="flex items-center gap-0.5 rounded-full bg-amber-100 px-1.5 py-0.5 text-[10px] font-medium text-amber-700 dark:bg-amber-900/30 dark:text-amber-400">
+              <span className="flex items-center gap-0.5 rounded-full bg-amber-100 px-1.5 py-0.5 text-[0.625rem] font-medium text-amber-700 dark:bg-amber-900/30 dark:text-amber-400">
                 <Lock className="h-2.5 w-2.5" /> {t('badge_forced')}
               </span>
             )}
             <span className={cn(
-              'flex items-center gap-0.5 rounded-full px-1.5 py-0.5 text-[10px] font-medium',
+              'flex items-center gap-0.5 rounded-full px-1.5 py-0.5 text-[0.625rem] font-medium',
               isManaged
                 ? 'bg-cyan-100 text-cyan-700 dark:bg-cyan-900/30 dark:text-cyan-400'
                 : 'bg-muted text-muted-foreground',
@@ -255,14 +258,14 @@ function PluginCard({ plugin, isExpanded, isForceEnabled, controlsDisabled, onTo
               {isManaged && <Server className="h-2.5 w-2.5" />} {isManaged ? t('badge_managed') : t('badge_yours')}
             </span>
             {awaiting && (
-              <span className="rounded-full bg-orange-100 px-1.5 py-0.5 text-[10px] font-medium text-orange-700 dark:bg-orange-900/30 dark:text-orange-400">
+              <span className="rounded-full bg-orange-100 px-1.5 py-0.5 text-[0.625rem] font-medium text-orange-700 dark:bg-orange-900/30 dark:text-orange-400">
                 {t('badge_awaiting')}
               </span>
             )}
           </div>
           <div className="mt-0.5 flex items-center gap-2">
             <span className="truncate text-xs text-muted-foreground">{plugin.author}</span>
-            <span className="text-xs text-muted-foreground/70">v{plugin.version}</span>
+            <span className="text-xs text-muted-foreground">v{plugin.version}</span>
           </div>
         </button>
 
@@ -403,7 +406,7 @@ function PluginSettingField({ fieldKey, schema: raw, value, onChange, translate 
         <div data-search-label={schema.label} className="flex items-center justify-between gap-3">
           <div>
             <span className="text-xs text-foreground">{schema.label}</span>
-            {schema.description && <p className="text-[10px] text-muted-foreground">{schema.description}</p>}
+            {schema.description && <p className="text-[0.625rem] text-muted-foreground">{schema.description}</p>}
           </div>
           <ToggleSwitch checked={value as boolean} onChange={(v) => onChange(v)} ariaLabel={schema.label} />
         </div>
@@ -414,7 +417,7 @@ function PluginSettingField({ fieldKey, schema: raw, value, onChange, translate 
         <div data-search-label={schema.label} className="flex items-center justify-between gap-3">
           <div>
             <label htmlFor={inputId} className="text-xs text-foreground">{schema.label}</label>
-            {schema.description && <p className="text-[10px] text-muted-foreground">{schema.description}</p>}
+            {schema.description && <p className="text-[0.625rem] text-muted-foreground">{schema.description}</p>}
           </div>
           <select
             id={inputId}
@@ -433,7 +436,7 @@ function PluginSettingField({ fieldKey, schema: raw, value, onChange, translate 
       return (
         <div data-search-label={schema.label}>
           <label htmlFor={inputId} className="text-xs text-foreground">{schema.label}</label>
-          {schema.description && <p className="text-[10px] text-muted-foreground">{schema.description}</p>}
+          {schema.description && <p className="text-[0.625rem] text-muted-foreground">{schema.description}</p>}
           <input
             id={inputId}
             type="text"
@@ -449,7 +452,7 @@ function PluginSettingField({ fieldKey, schema: raw, value, onChange, translate 
         <div data-search-label={schema.label} className="flex items-center justify-between gap-3">
           <div>
             <label htmlFor={inputId} className="text-xs text-foreground">{schema.label}</label>
-            {schema.description && <p className="text-[10px] text-muted-foreground">{schema.description}</p>}
+            {schema.description && <p className="text-[0.625rem] text-muted-foreground">{schema.description}</p>}
           </div>
           <input
             id={inputId}

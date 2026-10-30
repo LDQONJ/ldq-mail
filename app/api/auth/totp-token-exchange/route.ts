@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
 import { logger } from '@/lib/logger';
 import { refreshTokenCookieName, refreshTokenServerCookieName } from '@/lib/oauth/tokens';
-import { getCookieOptions } from '@/lib/oauth/cookie-config';
+import { getCookieOptions, getSignInCookieOptions } from '@/lib/oauth/cookie-config';
 import { readFileEnv } from '@/lib/read-file-env';
 import { configManager } from '@/lib/admin/config-manager';
 import { isPublicHttpUrl } from '@/lib/security/url-guard';
@@ -14,6 +14,7 @@ import { rejectCrossOriginRequest } from '@/lib/security/same-origin';
 import { stalwartPasswordLogin } from '@/lib/auth/stalwart-password-login';
 import { loginClientAddress } from '@/lib/auth/client-address';
 import { LOGIN_BUDGET_RETRY_AFTER_SECONDS, reserveLoginAttempt } from '@/lib/auth/verify-budget';
+import { writeSignInStamp } from '@/lib/auth/session-age';
 
 /**
  * Exchange a password + (optional) TOTP code for OAuth tokens.
@@ -208,11 +209,14 @@ async function storeAndRespond(
   rememberMe: boolean,
 ): Promise<NextResponse> {
   const cookieStore = await cookies();
+  // A sign-in: the maximum session length counts from here (lib/auth/session-age.ts).
+  const signedInAt = Date.now();
   if (tokens.refresh_token) {
     const cookieName = refreshTokenCookieName(slot);
     // Without "Remember me" the sign-in ends with the browser session.
-    const { maxAge: _maxAge, ...sessionOptions } = getCookieOptions();
-    cookieStore.set(cookieName, tokens.refresh_token, rememberMe ? getCookieOptions() : sessionOptions);
+    const options = getSignInCookieOptions(rememberMe);
+    cookieStore.set(cookieName, tokens.refresh_token, options);
+    writeSignInStamp(cookieStore, slot, { signedInAt, refreshToken: tokens.refresh_token }, options);
   }
   const serverCookieName = refreshTokenServerCookieName(slot);
   if (serverId) {
@@ -225,5 +229,6 @@ async function storeAndRespond(
     access_token: tokens.access_token,
     expires_in: tokens.expires_in || 3600,
     has_refresh_token: !!tokens.refresh_token,
+    signed_in_at: signedInAt,
   });
 }

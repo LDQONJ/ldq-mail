@@ -17,6 +17,7 @@ vi.mock('@/lib/logger', () => ({
 
 vi.mock('@/lib/oauth/cookie-config', () => ({
   getCookieOptions: () => ({ httpOnly: true, secure: true, sameSite: 'lax', path: '/', maxAge: 2592000 }),
+  getSignInCookieOptions: (remember: boolean) => ({ httpOnly: true, secure: true, sameSite: 'lax', path: '/', ...(remember ? { maxAge: 2592000 } : {}) }),
 }));
 
 const getTokenEndpoint = vi.fn();
@@ -555,6 +556,17 @@ describe('oauth token route - sign-out (#905)', () => {
     expect(fetchMock).toHaveBeenCalledWith(KEYCLOAK.revocation_endpoint, expect.objectContaining({ method: 'POST' }));
     for (const name of ['jmap_rt', 'jmap_at', 'jmap_idt']) expect(cookieStore.get(name)).toBeUndefined();
     expect(cookieStore.deletedPaths.get('jmap_idt')).toBe('/api/auth/token');
+  });
+
+  it('keeps the grant at the provider when revocation is turned off (#1388)', async () => {
+    configValues.oauthRevokeOnSignOut = false;
+    seedSlot(0);
+
+    await callRoute('DELETE', { slot: '0' });
+
+    expect(fetchMock).not.toHaveBeenCalled();
+    // Signed out all the same: the browser holds no token afterwards.
+    for (const name of ['jmap_rt', 'jmap_at', 'jmap_idt']) expect(cookieStore.get(name)).toBeUndefined();
   });
 
   it('identifies the client alone when no id token was kept', async () => {

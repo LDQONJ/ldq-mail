@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { Loader2, Lock, Plus, Trash2, ArrowUp, ArrowDown } from '@/components/icons';
+import { Loader2, Plus, Trash2, ArrowUp, ArrowDown } from '@/components/icons';
 import { iconForName } from '@/components/icons';
 import type { SettingsPolicy, FeatureGates, PushRelayOption, AdminSidebarApp } from '@/lib/admin/types';
 import { DEFAULT_FEATURE_GATES, DEFAULT_POLICY } from '@/lib/admin/types';
@@ -17,18 +17,20 @@ import {
   resolveDefaultRelayUrl,
 } from '@/lib/push-relays';
 import { SettingsSection, SettingItem, ToggleSwitch, SectionNav } from '@/components/settings/settings-section';
+import type { GlossaryId } from '@/components/ui/term';
 import { Button } from '@/components/ui/button';
 import { AdminPageHeader } from '@/components/admin/page-header';
 import { AdminSaveBar } from '@/components/admin/save-bar';
 import { Badge } from '@/components/admin/badge';
-import { Flash, useFlash } from '@/components/admin/flash-message';
+import { useAdminFeedback } from '@/components/admin/feedback';
 import { inputClass } from '@/components/admin/config-items';
+import { LockedSettingsSection, PolicyDefaultsSection } from '@/components/admin/policy/user-settings-policy';
 
 // `allMailViewEnabled` is deprecated (folded into `crossAllViewEnabled`, normalized
 // forward on policy load), so it is hidden from the admin UI.
 const EXCLUDED_FEATURE_GATES: (keyof FeatureGates)[] = ['pluginsEnabled', 'pluginsUploadEnabled', 'themesEnabled', 'userThemesEnabled', 'allMailViewEnabled'];
 
-const FEATURE_GATE_LABELS: Partial<Record<keyof FeatureGates, { label: string; description: string }>> = {
+const FEATURE_GATE_LABELS: Partial<Record<keyof FeatureGates, { label: string; description: string; term?: GlossaryId }>> = {
   sidebarAppsEnabled: { label: 'Sidebar Apps', description: 'Allow custom web apps in navigation rail' },
   settingsExportEnabled: { label: 'Settings Export/Import', description: 'Allow users to export and import settings JSON' },
   customKeywordsEnabled: { label: 'Custom Keywords', description: 'Allow user-created labels and tags' },
@@ -36,13 +38,13 @@ const FEATURE_GATE_LABELS: Partial<Record<keyof FeatureGates, { label: string; d
   calendarEnabled: { label: 'Calendar', description: 'Enable calendar features and views' },
   calendarTasksEnabled: { label: 'Calendar Tasks', description: 'Show task panel in calendar view' },
   contactsEnabled: { label: 'Contacts', description: 'Enable contacts/address book features' },
-  smimeEnabled: { label: 'S/MIME', description: 'Enable certificate management and email signing' },
+  smimeEnabled: { label: 'S/MIME', description: 'Enable certificate management and email signing', term: 'smime' },
   externalContentEnabled: { label: 'External Content', description: 'Allow users to choose external content loading policy' },
   debugModeEnabled: { label: 'Debug Mode', description: 'Allow users to enable debug/diagnostic mode' },
   folderIconsEnabled: { label: 'Folder Icons', description: 'Allow custom folder icon picker' },
   hoverActionsConfigEnabled: { label: 'Hover Actions Config', description: 'Allow users to customize email hover actions' },
   tabTitleSubjectEnabled: { label: 'Subject in Tab Title', description: 'Show the open message\'s subject in the browser tab title. Browsers also keep the title in history and screen shares show it; turn this off when mailboxes hold confidential correspondence, and the tab shows the folder instead.' },
-  filesEnabled: { label: 'Files (WebDAV)', description: 'Enable file storage via WebDAV. WARNING: Large uploads can cause Stalwart/RocksDB instability. Not recommended for production.' },
+  filesEnabled: { label: 'Files (WebDAV)', description: 'Enable file storage via WebDAV. WARNING: Large uploads can cause Stalwart/RocksDB instability. Not recommended for production.', term: 'webdav' },
   crossUnreadViewEnabled: { label: 'Unified Mailbox: Unread', description: 'Allow an "Unread" entry in the Unified Mailbox section that lists unread mail across the account and its shared folders (or every account when the cross-account sub-option is on). Honors the user\'s folder selection. Requires the matching per-user toggle in Settings → Appearance.' },
   crossStarredViewEnabled: { label: 'Unified Mailbox: Starred', description: 'Allow a "Starred" entry in the Unified Mailbox section that lists flagged/starred mail across the account and its shared folders (or every account when the cross-account sub-option is on). Honors the user\'s folder selection. Requires the matching per-user toggle in Settings → Appearance.' },
   crossAllViewEnabled: { label: 'Unified Mailbox: All Mail', description: 'Allow an "All mail" entry in the Unified Mailbox section that lists all mail across the account and its shared folders (or every account when the cross-account sub-option is on). Honors the user\'s folder selection. Requires the matching per-user toggle in Settings → Appearance.' },
@@ -54,34 +56,10 @@ const FEATURE_GATE_LABELS: Partial<Record<keyof FeatureGates, { label: string; d
   tagsAboveSharedEnabled: { label: 'Tags Above Shared Mailboxes', description: 'List the Tags in the sidebar above the shared mailboxes instead of below them. Turn this on when users have many shared mailboxes and work with tags: expanded, the shared mailboxes push the tags out of sight.' },
 };
 
-const RESTRICTABLE_SETTINGS = [
-  { key: 'fontSize', label: 'Font Size', category: 'Appearance', type: 'enum', allowedValues: ['small', 'medium', 'large'] },
-  { key: 'density', label: 'Density', category: 'Appearance', type: 'enum', allowedValues: ['compact', 'regular', 'spacious'] },
-  { key: 'interfaceLayout', label: 'Interface Layout', category: 'Appearance', type: 'enum', allowedValues: ['default', 'mountain-view'] },
-  { key: 'animationsEnabled', label: 'Animations', category: 'Appearance', type: 'boolean' },
-  { key: 'markAsReadDelay', label: 'Mark as Read Delay', category: 'Email', type: 'number' },
-  { key: 'deleteAction', label: 'Delete Action', category: 'Email', type: 'enum', allowedValues: ['trash', 'trash-and-read', 'permanent'] },
-  { key: 'showPreview', label: 'Show Preview', category: 'Email', type: 'boolean' },
-  { key: 'mailLayout', label: 'Mail Layout', category: 'Email', type: 'enum', allowedValues: ['split', 'focus', 'horizontal'] },
-  { key: 'emailsPerPage', label: 'Emails Per Page', category: 'Email', type: 'number' },
-  { key: 'externalContentPolicy', label: 'External Content Policy', category: 'Email', type: 'enum', allowedValues: ['allow', 'block', 'ask'] },
-  { key: 'sendConfirmation', label: 'Send Confirmation', category: 'Composer', type: 'boolean' },
-  { key: 'defaultReplyMode', label: 'Default Reply Mode', category: 'Composer', type: 'enum', allowedValues: ['reply', 'reply-all'] },
-  { key: 'autoSelectReplyIdentity', label: 'Auto-select Reply Identity', category: 'Composer', type: 'boolean' },
-  { key: 'replyIdentityMatch', label: 'Reply Identity Matching', category: 'Composer', type: 'enum', allowedValues: ['exact', 'domain'] },
-  { key: 'plainTextMode', label: 'Plain Text Only', category: 'Composer', type: 'boolean' },
-  { key: 'sessionTimeout', label: 'Session Timeout', category: 'Privacy', type: 'number' },
-  { key: 'emailNotificationsEnabled', label: 'Email Notifications', category: 'Notifications', type: 'boolean' },
-  { key: 'calendarNotificationsEnabled', label: 'Calendar Notifications', category: 'Notifications', type: 'boolean' },
-  { key: 'pushNotifyInboxOnly', label: 'Inbox-only Push Notifications', category: 'Notifications', type: 'boolean' },
-  { key: 'debugMode', label: 'Debug Mode', category: 'Advanced', type: 'boolean' },
-];
-
 const PAGE = adminPageDef('policy');
 
-const fieldLabelClass = 'mb-1 block text-[11px] font-medium text-muted-foreground';
+const fieldLabelClass = 'mb-1 block text-[0.6875rem] font-medium text-muted-foreground';
 const cardClass = 'rounded-md border border-border bg-muted/30 p-3';
-const subLabelClass = 'mt-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground';
 
 /** Mirrors the sanitizer's URL rule so the admin sees the drop before saving. */
 function isValidDefaultAppUrl(raw: string): boolean {
@@ -98,7 +76,7 @@ export function PolicyPage() {
   const [savedPolicy, setSavedPolicy] = useState<SettingsPolicy>({ ...DEFAULT_POLICY });
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-  const [message, setMessage] = useFlash();
+  const setMessage = useAdminFeedback();
   const [dirty, setDirty] = useState(false);
 
   useEffect(() => { fetchPolicy(); }, []);
@@ -220,31 +198,9 @@ export function PolicyPage() {
     setMessage(null);
   }
 
-  function toggleLocked(settingKey: string) {
-    setPolicy(prev => {
-      const existing = prev.restrictions[settingKey] || {};
-      const newRestrictions = { ...prev.restrictions };
-      if (existing.locked) {
-        delete newRestrictions[settingKey];
-      } else {
-        newRestrictions[settingKey] = { ...existing, locked: true };
-      }
-      return { ...prev, restrictions: newRestrictions };
-    });
-    setDirty(true);
-    setMessage(null);
-  }
-
-  function toggleHidden(settingKey: string) {
-    setPolicy(prev => {
-      const existing = prev.restrictions[settingKey] || {};
-      const newRestrictions = { ...prev.restrictions };
-      newRestrictions[settingKey] = { ...existing, hidden: !existing.hidden };
-      if (!newRestrictions[settingKey].hidden && !newRestrictions[settingKey].locked) {
-        delete newRestrictions[settingKey];
-      }
-      return { ...prev, restrictions: newRestrictions };
-    });
+  /** Locks and defaults, for Everyone or a scope (components/admin/policy). */
+  function changePolicy(change: (prev: SettingsPolicy) => SettingsPolicy) {
+    setPolicy(change);
     setDirty(true);
     setMessage(null);
   }
@@ -283,7 +239,6 @@ export function PolicyPage() {
 
   useAdminUnsavedChanges('policy', dirty);
 
-  const categories = [...new Set(RESTRICTABLE_SETTINGS.map(s => s.category))];
   const defaultRelayUrl = resolveDefaultRelayUrl(policy);
   const defaultSidebarApps = policy.defaultSidebarApps ?? [];
 
@@ -291,7 +246,6 @@ export function PolicyPage() {
     <div>
       <AdminPageHeader title={PAGE.label} description={PAGE.description} />
 
-      <Flash message={message} onDismiss={() => setMessage(null)} />
 
       {loading ? (
         <div className="flex items-center justify-center py-10 text-sm text-muted-foreground">
@@ -311,9 +265,9 @@ export function PolicyPage() {
               .map(key => {
                 const meta = FEATURE_GATE_LABELS[key];
                 if (!meta) return null;
-                const { label, description } = meta;
+                const { label, description, term } = meta;
                 return (
-                  <SettingItem key={key} label={label} description={description}>
+                  <SettingItem key={key} label={label} description={description} term={term}>
                     <ToggleSwitch checked={!!policy.features[key]} onChange={() => toggleFeature(key)} />
                   </SettingItem>
                 );
@@ -366,6 +320,7 @@ export function PolicyPage() {
                   <div className="sm:col-span-4">
                     <label className={fieldLabelClass}>Name</label>
                     <input
+                      aria-label="Name"
                       type="text"
                       autoComplete="off"
                       spellCheck={false}
@@ -379,6 +334,7 @@ export function PolicyPage() {
                     <label className={fieldLabelClass}>Relay URL</label>
                     <div className="flex items-center gap-2">
                       <input
+                        aria-label="Relay URL"
                         type="url"
                         inputMode="url"
                         autoComplete="off"
@@ -460,6 +416,7 @@ export function PolicyPage() {
                     <div className="sm:col-span-4">
                       <label className={fieldLabelClass}>Name</label>
                       <input
+                        aria-label="Name"
                         type="text"
                         autoComplete="off"
                         spellCheck={false}
@@ -473,6 +430,7 @@ export function PolicyPage() {
                     <div className="sm:col-span-5">
                       <label className={fieldLabelClass}>URL</label>
                       <input
+                        aria-label="URL"
                         type="url"
                         inputMode="url"
                         autoComplete="off"
@@ -484,7 +442,7 @@ export function PolicyPage() {
                         className={cn(inputClass, 'w-full', urlInvalid && 'border-destructive')}
                       />
                       {urlInvalid && (
-                        <p className="mt-1 text-[11px] text-destructive">Enter a valid http or https URL</p>
+                        <p className="mt-1 text-[0.6875rem] text-destructive">Enter a valid http or https URL</p>
                       )}
                     </div>
                     <div className="sm:col-span-3">
@@ -495,6 +453,7 @@ export function PolicyPage() {
                       </label>
                       <div className="flex items-center gap-2">
                         <input
+                          aria-label="Icon"
                           type="text"
                           autoComplete="off"
                           spellCheck={false}
@@ -508,7 +467,7 @@ export function PolicyPage() {
                           className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md border border-border bg-background text-muted-foreground"
                           title={AppIcon ? app.icon : 'Unknown icon - falls back to Globe'}
                         >
-                          {AppIcon ? <AppIcon className="h-4 w-4" /> : <span className="text-[10px]">?</span>}
+                          {AppIcon ? <AppIcon className="h-4 w-4" /> : <span className="text-[0.625rem]">?</span>}
                         </span>
                       </div>
                     </div>
@@ -583,36 +542,9 @@ export function PolicyPage() {
             })}
           </SettingsSection>
 
-          <SettingsSection
-            id="restrictions"
-            title="Locked settings"
-            description="Lock a setting so users cannot change it, or hide it from their settings entirely."
-          >
-            {categories.map(category => (
-              <div key={category}>
-                <p className={subLabelClass}>{category}</p>
-                {RESTRICTABLE_SETTINGS.filter(s => s.category === category).map(setting => {
-                  const restriction = policy.restrictions[setting.key] || {};
-                  return (
-                    <SettingItem key={setting.key} label={setting.label}>
-                      <div className="flex items-center gap-3">
-                        <label className="flex cursor-pointer items-center gap-1.5 text-xs text-muted-foreground">
-                          <input type="checkbox" checked={!!restriction.locked} onChange={() => toggleLocked(setting.key)}
-                            className="rounded border-input" />
-                          <Lock className="h-3 w-3" /> Lock
-                        </label>
-                        <label className="flex cursor-pointer items-center gap-1.5 text-xs text-muted-foreground">
-                          <input type="checkbox" checked={!!restriction.hidden} onChange={() => toggleHidden(setting.key)}
-                            className="rounded border-input" />
-                          Hide
-                        </label>
-                      </div>
-                    </SettingItem>
-                  );
-                })}
-              </div>
-            ))}
-          </SettingsSection>
+          <LockedSettingsSection policy={policy} onChange={changePolicy} />
+
+          <PolicyDefaultsSection policy={policy} onChange={changePolicy} />
         </div>
       )}
 

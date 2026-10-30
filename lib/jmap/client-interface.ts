@@ -1,3 +1,6 @@
+import type { ShareChange, ShareChangeResult, ShareTarget } from "./share-batch";
+import type { ShareKind } from "./share-rights";
+import type { ArchiveListResult, ArchiveQueryPage, RestoreResult } from "@/lib/recovery/archived-items";
 import type { Attachment, Email, Mailbox, MailboxRights, StateChange, AccountStates, CollectionChanges, ShareNotification, BusyPeriod, CalendarParticipantIdentity, CalendarEventNotification, Thread, Identity, EmailAddress, ContactCard, AddressBook, AddressBookRights, VacationResponse, Calendar, CreateCalendarOptions, CalendarRights, CalendarEvent, CalendarEventFilter, CalendarTask, FileNode, FileNodeRights, Principal, PrincipalAvailability, PrincipalListing, PushSubscription, EmailPushConfig, ScheduledEmail, SendEmailResult, SharedAccount } from "./types";
 import type { SieveScript, SieveCapabilities } from "./sieve-types";
 import type { FileNameRules } from "@/lib/file-name-rules";
@@ -148,6 +151,8 @@ export interface IJMAPClient {
   // ── Push / state ──────────────────────────────────────────────
   setupPushNotifications(): boolean;
   closePushNotifications(): void;
+  /** Whether this client holds one of the tab's live event streams (vs. slow-polling or none). */
+  hasSSEStream(): boolean;
   onConnectionChange(callback: (connected: boolean) => void): void;
   onRateLimit(callback: (rateLimited: boolean, retryAfterMs: number) => void): void;
   isRateLimited(): boolean;
@@ -230,6 +235,12 @@ export interface IJMAPClient {
   supportsMailboxSharing?(accountId?: string): boolean;
   getMailboxShareWith?(mailboxId: string, accountId?: string): Promise<Record<string, MailboxRights> | null>;
   setMailboxShare?(mailboxId: string, principalId: string, rights: MailboxRights | null, accountId?: string): Promise<void>;
+  // Many items at once, for the Delegates page (lib/jmap/share-batch.ts). Optional (demo client).
+  getShareTargets?(include?: { calendars?: boolean; contacts?: boolean; files?: boolean }): Promise<{ targets: ShareTarget[]; failed: ShareKind[] }>;
+  /** The server keeps "mark as read" and keywords as one folder right (Stalwart 1.0). */
+  sharesSeenWithKeywords?(accountId?: string): boolean;
+  applyShareChanges?(changes: ShareChange[]): Promise<ShareChangeResult[]>;
+  findPrincipalByEmail?(email: string): Promise<{ principal: Principal | null; status: "ok" | "forbidden" | "error"; directoryQueriesOff?: boolean }>;
 
   // ── Emails ────────────────────────────────────────────────────
   // `pinnedFirst` sorts emails carrying the $pinned keyword to the top
@@ -289,6 +300,8 @@ export interface IJMAPClient {
     limit?: number;
     onProgress?: (scanned: number, total: number) => void;
     signal?: AbortSignal;
+    /** Another account of this login, e.g. a group account (default: the own one). */
+    accountId?: string;
   }): Promise<{ keywords: Record<string, number>; scanned: number; total: number; complete: boolean }>;
   /** Per-tab unread counts for message-list category tabs (filter = resolved tab fragment, null = unfiltered). */
   getCategoryUnreadCounts(mailboxId: string, tabs: Array<{ id: string; filter: Record<string, unknown> | null }>, accountId?: string): Promise<Record<string, number>>;
@@ -343,6 +356,7 @@ export interface IJMAPClient {
   migrateKeyword(oldKeyword: string, newKeyword: string): Promise<KeywordMigration>;
   deleteEmail(emailId: string, accountId?: string): Promise<void>;
   moveToTrash(emailId: string, trashMailboxId: string, accountId?: string, markAsRead?: boolean): Promise<void>;
+  /** Resolves only when every ID is destroyed; IncompleteDeleteError carries partial confirmations. */
   batchDeleteEmails(emailIds: string[], accountId?: string): Promise<void>;
   batchMoveEmails(emailIds: string[], toMailboxId: string, accountId?: string, markAsRead?: boolean): Promise<void>;
   batchArchiveEmails(
@@ -359,6 +373,12 @@ export interface IJMAPClient {
    * least one mailbox, so the server refuses this for a message only in it.
    */
   removeEmailsFromMailbox(emailIds: string[], mailboxId: string, accountId?: string): Promise<void>;
+  /**
+   * Put messages back where they were before a move, delete to Trash,
+   * archive or "remove from folder": each one's whole `mailboxIds`, and its
+   * read state when `seen` is given. Backs the toasts' Undo.
+   */
+  restoreEmails(emails: Array<{ id: string; mailboxIds: Record<string, boolean>; seen?: boolean }>, accountId?: string): Promise<void>;
   emptyMailbox(mailboxId: string, accountId?: string): Promise<number>;
   moveMailboxContents(fromMailboxId: string, toMailboxId: string, accountId?: string, markAsRead?: boolean): Promise<number>;
   markMailboxAsRead(mailboxId: string, accountId?: string): Promise<number>;
@@ -607,6 +627,14 @@ export interface IJMAPClient {
   getPrincipals(targetAccountId?: string, options?: { throwOnError?: boolean }): Promise<Principal[]>;
   // The same list with how complete it is. Optional (demo client).
   listPrincipals?(targetAccountId?: string, options?: { throwOnError?: boolean }): Promise<PrincipalListing>;
+  /** Principal type by id ("individual", "group"); null when unknown. Optional (demo client). */
+  getPrincipalTypes?(ids: string[]): Promise<Record<string, string> | null>;
+  // Bulwark data in Inbox metadata (lib/jmap/bulwark-metadata.ts). Optional (demo client).
+  supportsBulwarkMetadata?(accountId?: string): boolean;
+  getBulwarkMetadata?(accountId?: string, options?: { private?: boolean }): Promise<Record<string, unknown> | null>;
+  setBulwarkMetadata?(accountId: string | undefined, key: string, value: unknown, options?: { private?: boolean }): Promise<void>;
+  advertisesBulwarkMetadata?(accountId?: string): boolean;
+  patchBulwarkMetadata?(accountId: string | undefined, key: string, patches: Array<{ path: string[]; value: unknown }>): Promise<{ newState?: string }>;
   setCalendarShare(calendarId: string, principalId: string, rights: CalendarRights | null, targetAccountId?: string): Promise<void>;
   setAddressBookShare(addressBookId: string, principalId: string, rights: AddressBookRights | null, targetAccountId?: string): Promise<void>;
   setFileNodeShare(fileNodeId: string, principalId: string, rights: FileNodeRights | null, targetAccountId?: string): Promise<void>;
@@ -637,6 +665,12 @@ export interface IJMAPClient {
   getFileNodes(ids: string[] | null, properties?: string[]): Promise<FileNode[]>;
   createFileDirectory(name: string, parentId: string | null): Promise<FileNode>;
   createFileNode(name: string, blobId: string, type: string, size: number, parentId: string | null): Promise<FileNode>;
+  /**
+   * Blob/copy (RFC 8620 §6.3): copies blobs from one account of this session
+   * into another, on the server. Returns the new id of each copied blob;
+   * throws when one was not copied.
+   */
+  copyBlobs(fromAccountId: string, blobIds: string[], toAccountId: string): Promise<Record<string, string>>;
   updateFileNode(id: string, updates: Partial<Pick<FileNode, 'name' | 'parentId'>>): Promise<void>;
   updateFileNodes(updates: Record<string, Partial<Pick<FileNode, 'name' | 'parentId'>>>): Promise<{ updated: string[]; notUpdated: Record<string, string> }>;
   destroyFileNodes(ids: string[]): Promise<{ destroyed: string[]; notDestroyed: string[] }>;
@@ -659,4 +693,16 @@ export interface IJMAPClient {
    * copy: the source message is left where it is.
    */
   copyEmailAcrossAccounts(emailId: string, fromAccountId: string, toAccountId: string, destMailboxId: string, options?: { keepOriginal?: boolean }): Promise<string>;
+
+  // Recover deleted items: Stalwart Enterprise's archive (lib/recovery/archived-items.ts). Optional (demo client).
+  /** Whether the account is on Stalwart at all; says nothing about the license. */
+  advertisesArchivedItems?(accountId?: string): boolean;
+  /** One page of x:ArchivedItem/query (newest first) in a request of its own; throws with the JMAP error type (`forbidden` without a license). */
+  queryArchivedItemIds?(accountId?: string, options?: { position?: number; limit?: number; calculateTotal?: boolean }): Promise<ArchiveQueryPage>;
+  /** The account's deleted messages inside the days window, in pages, with where "Show older" goes on. Throws like queryArchivedItemIds. */
+  listArchivedEmails?(accountId?: string, options?: { days?: number; startPosition?: number }): Promise<ArchiveListResult>;
+  /** Whether at least one deleted message is inside the days window (the Trash link). Throws like queryArchivedItemIds. */
+  hasArchivedEmail?(accountId?: string, options?: { days?: number }): Promise<boolean>;
+  /** Asks the server to put these messages back in the Inbox; every id gets a result, nothing throws. */
+  restoreArchivedItems?(ids: string[], accountId?: string): Promise<RestoreResult[]>;
 }

@@ -2,7 +2,7 @@
 
 import { useState, useRef, useCallback, useMemo, useEffect } from 'react';
 import { useTranslations } from 'next-intl';
-import { Check, GripVertical, Plus, Star, AlertCircle, ChevronRight } from '@/components/icons';
+import { Check, GripVertical, Plus, Star, AlertCircle, ChevronRight, ChevronUp, ChevronDown } from '@/components/icons';
 import { useAuthStore } from '@/stores/auth-store';
 import { useEmailStore } from '@/stores/email-store';
 import { useAccountStore, type AccountEntry } from '@/stores/account-store';
@@ -16,6 +16,7 @@ import { getMaxAccounts } from '@/lib/account-utils';
 import { formatFileSize, cn } from '@/lib/utils';
 import { toUnicodeEmail } from '@/lib/idn';
 import { IS_LITE } from '@/lib/lite';
+import { isPasswordSession } from '@/lib/auth/password-session';
 import { usePolicyStore } from '@/stores/policy-store';
 import { AccountArchiveSettings } from './account-archive-settings';
 import { DisplayNameSection } from './account-security-settings';
@@ -44,9 +45,11 @@ export function AccountSettings() {
   const archiveEnabled = usePolicyStore((s) => s.isFeatureEnabled('accountArchiveEnabled')) && !IS_LITE && !isDemoMode;
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
   // The display name is editable on Stalwart (the principal's name) for
-  // password sign-ins; OAuth and token sessions cannot manage the principal.
+  // password sign-ins; identity-provider and token sessions cannot manage
+  // the principal.
   const { isStalwart, probe, fetchPrincipal } = useAccountSecurityStore();
-  const canEditDisplayName = isStalwart === true && authMode !== 'oauth' && authMode !== 'token';
+  const activeAccount = useAccountStore((s) => (activeAccountId ? s.getAccountById(activeAccountId) : undefined));
+  const canEditDisplayName = isStalwart === true && isPasswordSession(authMode, activeAccount);
   // Wait for `client` before probing, as the Security page does: on reload
   // the persisted session flips authenticated before the client reconnects.
   useEffect(() => {
@@ -151,13 +154,13 @@ export function AccountSettings() {
 
         {/* Email Address */}
         <SettingItem label={t('email.label')}>
-          <span className="text-sm text-foreground">{email ? toUnicodeEmail(email) : tCommon('unknown')}</span>
+          <span dir={email ? 'ltr' : undefined} className="text-sm text-foreground">{email ? toUnicodeEmail(email) : tCommon('unknown')}</span>
         </SettingItem>
 
         {/* Username / Login (show when it differs from email) */}
         {username && username !== email && (
           <SettingItem label={t('username_label')}>
-            <span className="text-sm text-foreground">{toUnicodeEmail(username)}</span>
+            <span dir="ltr" className="text-sm text-foreground">{toUnicodeEmail(username)}</span>
           </SettingItem>
         )}
 
@@ -399,7 +402,7 @@ function AccountRow({
             <Star className="w-3 h-3 text-amber-500 flex-shrink-0 fill-amber-500" aria-label={labels.default} />
           )}
         </div>
-        <p className="text-xs text-muted-foreground truncate">
+        <p dir="ltr" className="text-xs text-muted-foreground truncate rtl:text-right">
           {toUnicodeEmail(account.email || account.username)}
         </p>
         {account.hasError && (
@@ -429,9 +432,7 @@ function AccountRow({
           title={labels.moveUp}
           aria-label={labels.moveUp}
         >
-          <svg className="w-3.5 h-3.5" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-            <path d="M4 10l4-4 4 4" />
-          </svg>
+          <ChevronUp className="w-3.5 h-3.5" aria-hidden="true" />
         </button>
         <button
           type="button"
@@ -441,9 +442,7 @@ function AccountRow({
           title={labels.moveDown}
           aria-label={labels.moveDown}
         >
-          <svg className="w-3.5 h-3.5" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-            <path d="M4 6l4 4 4-4" />
-          </svg>
+          <ChevronDown className="w-3.5 h-3.5" aria-hidden="true" />
         </button>
       </div>
     </div>

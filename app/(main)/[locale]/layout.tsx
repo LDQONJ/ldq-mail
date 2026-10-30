@@ -10,7 +10,13 @@ import { ProtocolLaunchHandlerProvider } from "@/components/protocol/protocol-la
 import { ProInterfaceRedirect } from "@/components/pro/pro-interface-redirect";
 import { ImpersonationReconciler } from "@/components/impersonation/impersonation-reconciler";
 import { PluginDialogHost } from "@/components/plugins/plugin-dialog-host";
+import { ExternalRecipientConfirmHost } from "@/components/email/external-recipient-confirm";
+import { PluginPageNavigator } from "@/components/plugins/plugin-page-navigator";
+import { PaneCycleHost } from "@/components/layout/pane-cycle";
+import { FocusRescueHost } from "@/components/layout/focus-rescue";
 import { CommandPaletteHost } from "@/components/command-palette/command-palette";
+import { AccessibilityQuickPanelHost } from "@/components/accessibility/accessibility-quick-panel";
+import { TotpReauthDialog } from "@/components/totp-reauth-dialog";
 import { PluginConnectDialog } from "@/components/plugins/plugin-connect-dialog";
 import { QuickRuleHost } from "@/components/filters/quick-rule-host";
 import { PluginConsentDialog } from "@/components/plugins/plugin-consent-dialog";
@@ -19,6 +25,8 @@ import { PluginOAuthCallbackListener } from "@/components/providers/plugin-oauth
 import { PWAInstallPrompt } from "@/components/pwa-install-prompt";
 import { PushNotificationPrompt } from "@/components/push-notification-prompt";
 import { AccountArchiveRestorePrompt } from "@/components/account-archive-prompt";
+import { SessionTimeoutGuard } from "@/components/session/session-timeout-guard";
+import { AccountTemplateSync } from "@/components/templates/account-template-sync";
 import { IS_LITE } from "@/lib/lite";
 import { setRequestLocale } from "next-intl/server";
 import { locales } from "@/i18n/routing";
@@ -43,11 +51,16 @@ export default async function LocaleLayout({
   // the tree render without request headers (static export).
   setRequestLocale(locale);
 
+  // Lite leaves the catalog out: a prop here is baked into every exported page
+  // (the HTML and three RSC payloads per route and locale), which pushed the
+  // Stalwart zip past its size limit. IntlProvider loads it as a chunk instead.
   let messages;
-  try {
-    messages = (await import(`@/locales/${locale}/common.json`)).default;
-  } catch {
-    notFound();
+  if (!IS_LITE) {
+    try {
+      messages = (await import(`@/locales/${locale}/common.json`)).default;
+    } catch {
+      notFound();
+    }
   }
 
   return (
@@ -61,14 +74,22 @@ export default async function LocaleLayout({
                   <ProInterfaceRedirect />
                   <ImpersonationReconciler />
                   <PushBindingsHost />
+                  <SessionTimeoutGuard />
+                  <AccountTemplateSync />
                   {children}
                   <PluginDialogHost />
+                  <ExternalRecipientConfirmHost />
                   <CommandPaletteHost />
+                  <AccessibilityQuickPanelHost />
+                  <PaneCycleHost />
+                  <FocusRescueHost />
+                  <TotpReauthDialog />
                   <PluginConnectDialog />
                   <QuickRuleHost />
                   <PluginConsentDialog />
                   <PluginOAuthCallbackListener />
                   <PluginAppEvents />
+                  <PluginPageNavigator />
                   <PWAInstallPrompt />
                   <PushNotificationPrompt />
                   {/* Lite is a static bundle: no server keeps an archive there. */}

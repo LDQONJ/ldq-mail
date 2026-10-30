@@ -1,12 +1,15 @@
 "use client";
 
-import { useState, useEffect, useCallback, useRef, useMemo } from "react";
+import { useState, useEffect, useCallback, useRef, useMemo, useId } from "react";
 import { useTranslations, useLocale } from "next-intl";
 import { toast } from "@/stores/toast-store";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { LinkifiedText } from "@/components/ui/linkified-text";
-import { X, Trash2, Check, Users, CalendarDays, Copy, Pencil, Clock, MapPin, Video, Repeat, Bell, AlignLeft, AlertTriangle } from "@/components/icons";
+import { X, Trash2, Users, CalendarDays, CopyPlus, Pencil, Clock, MapPin, Video, Repeat, Bell, AlignLeft, AlertTriangle, MoreVertical } from "@/components/icons";
+import { IconButton } from "@/components/ui/icon-button";
+import { findMeetingLink, locationAction, mapsUrl, primaryLocationName } from "@/lib/event-links";
+import { ParticipantStatusBadge, RsvpButtons } from "./rsvp-buttons";
 import { format, parseISO, addHours, isSameDay } from "date-fns";
 import type { CalendarEvent, Calendar, CalendarParticipant, CalendarEventAlert, CalendarRecurrenceRule } from "@/lib/jmap/types";
 import { AlertListEditor, AlertSummary, formatEventAlertsLabel } from "./alert-list-editor";
@@ -36,6 +39,7 @@ import { buildDuplicateEventData } from "@/lib/calendar-duplicate";
 import { useFormatEventDate } from "@/hooks/use-format-event-date";
 import { useIsPaneScoped } from "@/hooks/use-pane-context";
 import { useContactNameResolver } from "@/hooks/use-contact-name-resolver";
+import { confirmInvitationRecipients } from "@/lib/outgoing/external-recipients";
 import {
   calendarFormHooks,
   calendarHooks,
@@ -43,6 +47,10 @@ import {
 } from "@/lib/plugin-hooks";
 import type { CalendarEventView, ConflictWarning } from "@/lib/plugin-types";
 import { eventToView } from "@/lib/plugin-projection";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
+import { useConfirmDialog } from "@/hooks/use-confirm-dialog";
+import { useFocusTrap } from "@/hooks/use-focus-trap";
+import { useCvdColor } from "@/hooks/use-cvd-color";
 
 export interface PendingEventPreview {
   start: Date;
@@ -73,6 +81,10 @@ interface EventModalProps {
   onRsvp?: (eventId: string, participantId: string, status: CalendarParticipant['participationStatus']) => void;
   onClose: () => void;
   onPreviewChange?: (preview: PendingEventPreview | null) => void;
+  /** Opens the event's action menu (export, copy, ...) under the ⋮ of the event view. */
+  onMore?: (anchor: HTMLElement) => void;
+  /** Told whether the form holds changes that aren't saved, so the page can ask before it drops them. */
+  onDirtyChange?: (dirty: boolean) => void;
   currentUserEmails?: string[];
   isSubscriptionCalendar?: (calendarId: string) => boolean;
   /** The server's maxParticipantsPerEvent, for a warning; null when not advertised. */
@@ -248,12 +260,19 @@ export function EventModal({
   onRsvp,
   onClose,
   onPreviewChange,
+  onMore,
+  onDirtyChange,
   currentUserEmails = [],
   isSubscriptionCalendar,
   maxParticipants = null,
   isMobile = false,
 }: EventModalProps) {
   const t = useTranslations("calendar");
+  const paint = useCvdColor();
+  // Ids that tie each visible label to its field.
+  const labelIdBase = useId();
+  const labelFor = (key: string) => `${labelIdBase}-${key}`;
+  const tCommon = useTranslations("common");
   const locale = useLocale();
   const timeFormat = useSettingsStore((s) => s.timeFormat);
   const timeDisplayFmt = timeFormat === "12h" ? "h:mm a" : "HH:mm";
@@ -467,7 +486,6 @@ export function EventModal({
     setPreservedAlerts(preserved);
     setUseDefaultAlerts(false);
   }, [defaultAlerts]);
-  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   // Set synchronously, so a second save in the same tick is refused too.
   const savingRef = useRef(false);
@@ -500,6 +518,49 @@ export function EventModal({
   const [attendees, setAttendees] = useState<EditorAttendee[]>(initialAttendees);
   const [sendInvitations, setSendInvitations] = useState(true);
   const participantInputRef = useRef<ParticipantInputHandle>(null);
+
+  // What the form holds against what it opened with: a form with changes
+  // asks before X, Cancel or Escape drop them (R5).
+  const formState = useMemo(() => ({
+    title, description, location, virtualLocation, startDate, startTime, endDate, endTime, allDay,
+    calendarId, recurrence, customRule, useDefaultAlerts, alertRows, preservedAlerts, attendees, sendInvitations,
+  }), [title, description, location, virtualLocation, startDate, startTime, endDate, endTime, allDay,
+    calendarId, recurrence, customRule, useDefaultAlerts, alertRows, preservedAlerts, attendees, sendInvitations]);
+  const [initialForm] = useState(formState);
+  const isDirty = mode === "edit" && JSON.stringify(formState) !== JSON.stringify(initialForm);
+  useEffect(() => { onDirtyChange?.(isDirty); }, [isDirty, onDirtyChange]);
+  useEffect(() => () => onDirtyChange?.(false), [onDirtyChange]);
+
+  const resetForm = useCallback(() => {
+    const f = initialForm;
+    setTitle(f.title); setDescription(f.description); setLocation(f.location); setVirtualLocation(f.virtualLocation);
+    setStartDate(f.startDate); setStartTime(f.startTime); setEndDate(f.endDate); setEndTime(f.endTime); setAllDay(f.allDay);
+    setCalendarId(f.calendarId); setRecurrence(f.recurrence); setCustomRule(f.customRule); setShowRecurrenceEditor(false);
+    setUseDefaultAlerts(f.useDefaultAlerts); setAlertRows(f.alertRows); setPreservedAlerts(f.preservedAlerts); setRefreshDefaults(false);
+    setAttendees(f.attendees); setSendInvitations(f.sendInvitations);
+  }, [initialForm]);
+
+  const { dialogProps: discardDialogProps, confirm: confirmDiscard } = useConfirmDialog();
+  const askingRef = useRef(false);
+  // Runs `then` at once when nothing would be lost, else after "Discard".
+  const whenDiscarded = useCallback((then: () => void) => {
+    if (!isDirty) { then(); return; }
+    if (askingRef.current) return;
+    askingRef.current = true;
+    void confirmDiscard({
+      title: t("discard.title"),
+      message: t("discard.message"),
+      confirmText: t("discard.confirm"),
+      cancelText: t("discard.keep"),
+      variant: "destructive",
+    }).then((ok) => {
+      askingRef.current = false;
+      if (ok) then();
+    });
+  }, [isDirty, confirmDiscard, t]);
+  const requestClose = useCallback(() => whenDiscarded(onClose), [whenDiscarded, onClose]);
+  // Leaving the form of an existing event goes back to its summary.
+  const backToView = useCallback(() => whenDiscarded(() => { resetForm(); setMode("view"); }), [whenDiscarded, resetForm]);
 
   // The event window the attendees' free/busy is checked against. Parsed in
   // local time like the save path; an all-day event spans its whole days.
@@ -836,6 +897,14 @@ export function EventModal({
       }
 
       const shouldSendScheduling = userIsOrganizer && effectiveAttendees.length > 0 && sendInvitations;
+      // Invitations are mail too: newly invited people outside the
+      // organisation get the same confirm as a message (Back keeps the
+      // editor open, nothing saved).
+      if (shouldSendScheduling) {
+        const known = new Set(initialAttendees.map((a) => a.email.trim().toLowerCase()));
+        const invited = effectiveAttendees.map((a) => a.email).filter((email) => email && !known.has(email.trim().toLowerCase()));
+        if (!(await confirmInvitationRecipients(invited))) return;
+      }
       await onSave(data, shouldSendScheduling, {
         initialAttendees,
         attendees: effectiveAttendees,
@@ -859,15 +928,38 @@ export function EventModal({
     onDuplicate(buildDuplicateEventData(event));
   }, [event, onDuplicate]);
 
-  const modalRef = useRef<HTMLDivElement>(null);
+  const titleRef = useRef<HTMLInputElement>(null);
+  const primaryRef = useRef<HTMLButtonElement>(null);
+  const initialFocusTarget = useCallback(
+    (): HTMLElement | null => (mode === "edit" ? titleRef.current : primaryRef.current),
+    [mode],
+  );
+  // Full screen on the phone: a modal that holds the focus.
+  const modalRef = useFocusTrap({ isActive: !!isMobile, initialFocus: initialFocusTarget });
+
+  // Beside the grid on wide screens: the focus moves in on open and with
+  // each switch between summary and form, and goes back on close.
+  useEffect(() => {
+    if (isMobile) return;
+    initialFocusTarget()?.focus();
+  }, [isMobile, initialFocusTarget]);
+  useEffect(() => {
+    if (isMobile) return;
+    const opener = document.activeElement instanceof HTMLElement ? document.activeElement : null;
+    return () => {
+      const active = document.activeElement;
+      if (opener?.isConnected && (!active || active === document.body)) opener.focus();
+    };
+  }, [isMobile]);
 
   useEffect(() => {
     const handleKey = (e: KeyboardEvent) => {
       if (e.key === "Escape") {
+        if (askingRef.current) return;
         if (mode === "edit" && isEdit) {
-          setMode("view");
+          backToView();
         } else {
-          onClose();
+          requestClose();
         }
       }
       if ((e.ctrlKey || e.metaKey) && e.key === "Enter") {
@@ -877,155 +969,31 @@ export function EventModal({
     };
     window.addEventListener("keydown", handleKey);
     return () => window.removeEventListener("keydown", handleKey);
-  }, [onClose, handleSave, canEditBody, mode, isEdit]);
-
-  useEffect(() => {
-    const modal = modalRef.current;
-    if (!modal) return;
-    const focusableEls = modal.querySelectorAll<HTMLElement>(
-      'input, select, textarea, button, [tabindex]:not([tabindex="-1"])'
-    );
-    const firstEl = focusableEls[0];
-    const lastEl = focusableEls[focusableEls.length - 1];
-
-    const handler = (e: KeyboardEvent) => {
-      if (e.key !== "Tab") return;
-      if (e.shiftKey && document.activeElement === firstEl) {
-        e.preventDefault();
-        lastEl?.focus();
-      } else if (!e.shiftKey && document.activeElement === lastEl) {
-        e.preventDefault();
-        firstEl?.focus();
-      }
-    };
-    modal.addEventListener("keydown", handler);
-    firstEl?.focus();
-    return () => modal.removeEventListener("keydown", handler);
-  }, []);
+  }, [requestClose, backToView, handleSave, canEditBody, mode, isEdit]);
 
   const hasParticipants = attendees.length > 0 || (event?.participants && Object.keys(event.participants).length > 0);
 
-  if (rsvpMode && event) {
-    const startD = getEventStartDate(event);
-    const endD = getEventEndDate(event);
-    const locationName = event.locations ? Object.values(event.locations)[0]?.name : null;
-    const participants = getParticipantList(event, { resolveName: resolveContactName });
-
-    return (
-      <div ref={modalRef} role="dialog" aria-modal={isMobile || undefined} aria-label={event.title || t("events.no_title")} className={isMobile ? mobileRootClass : "flex flex-col h-full bg-background"}>
-        <div className="flex items-center justify-between px-6 py-4 border-b border-border flex-shrink-0">
-          <h2 className="text-lg font-semibold truncate">{event.title || t("events.no_title")}</h2>
-          <button onClick={onClose} className="p-1.5 rounded-md hover:bg-muted transition-colors duration-150 text-muted-foreground hover:text-foreground" aria-label={t("form.cancel")}>
-            <X className="w-5 h-5" />
-          </button>
-        </div>
-
-        <div className="flex-1 overflow-y-auto">
-          <div className="px-6 py-4 space-y-3">
-            <div className="flex items-start gap-3 rounded-lg border border-blue-200 dark:border-blue-800 bg-blue-50 dark:bg-blue-950/50 px-4 py-3">
-              <CalendarDays className="w-5 h-5 text-blue-600 dark:text-blue-400 mt-0.5 flex-shrink-0" />
-              <div className="text-sm">
-                <p className="font-medium text-blue-900 dark:text-blue-200">
-                  {t("participants.invited_by", { name: organizerInfo?.name || organizerInfo?.email || t("participants.organizer") })}
-                </p>
-                <p className="text-blue-700 dark:text-blue-400 mt-0.5">
-                  {t("participants.respond_below")}
-                </p>
-              </div>
-            </div>
-
-            {(() => {
-              const displayEnd = getEventDisplayEndDate(event);
-              const multiDay = !isSameDay(startD, displayEnd);
-              if (multiDay && event.showWithoutTime) {
-                return (
-                  <div className="text-sm">
-                    <div className="font-medium">{formatEventDate(startD)} –</div>
-                    <div className="font-medium">{formatEventDate(displayEnd)}</div>
-                  </div>
-                );
-              }
-              if (multiDay) {
-                return (
-                  <div className="text-sm">
-                    <div>
-                      <span className="font-medium">{formatEventDate(startD)}</span>
-                      <span className="text-muted-foreground ms-2">{format(startD, timeDisplayFmt)}</span>
-                    </div>
-                    <div>
-                      <span className="font-medium">{formatEventDate(endD)}</span>
-                      <span className="text-muted-foreground ms-2">{format(endD, timeDisplayFmt)}</span>
-                    </div>
-                  </div>
-                );
-              }
-              return (
-                <div className="text-sm">
-                  <span className="font-medium">{formatEventDate(startD)}</span>
-                  {!event.showWithoutTime && (
-                    <span className="text-muted-foreground ms-2">
-                      {format(startD, timeDisplayFmt)} – {format(endD, timeDisplayFmt)}
-                    </span>
-                  )}
-                </div>
-              );
-            })()}
-
-            {event.description && (
-              <p className="text-sm text-muted-foreground whitespace-pre-line break-words">
-                <LinkifiedText text={event.description} />
-              </p>
-            )}
-
-            {locationName && (
-              <p className="text-sm text-muted-foreground">{locationName}</p>
-            )}
-
-            {participants.length > 0 && (
-              <div className="space-y-1">
-                <div className="flex items-center gap-1.5 text-sm font-medium">
-                  <Users className="w-4 h-4" />
-                  {t("participants.title")}
-                </div>
-                <div className="space-y-1 ps-5">
-                  {participants.map(p => (
-                    <div key={p.id} className="flex items-center justify-between text-sm">
-                      <span className="truncate">
-                        {p.name || p.email}
-                        {p.isOrganizer && (
-                          <span className="text-muted-foreground ms-1">({t("participants.organizer").toLowerCase()})</span>
-                        )}
-                      </span>
-                      <StatusBadge status={p.status} t={t} />
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {eventDetailProps && <PluginSlot name="calendar-event-detail" className="w-full" extraProps={eventDetailProps} />}
-          </div>
-        </div>
-
-        <div className="px-6 py-4 border-t border-border flex-shrink-0">
-          <RsvpBar status={userCurrentStatus} onRespond={handleRsvp} t={t} />
-        </div>
-      </div>
-    );
-  }
-
-  // View mode: read-only display of event details with Edit button
-  if (mode === "view" && event) {
+  // View mode: read-only display of event details with Edit button. An
+  // invitation the user can only answer is shown by the same view, with a
+  // banner on top and the answer buttons below - one layout for every event,
+  // like the card's.
+  if ((mode === "view" || rsvpMode) && event) {
     const startD = getEventStartDate(event);
     const durMin = parseDuration(event.duration);
     const endD = getEventEndDate(event);
-    const locationName = event.locations ? Object.values(event.locations)[0]?.name || null : null;
-    const virtualLoc = event.virtualLocations ? Object.values(event.virtualLocations)[0]?.uri || null : null;
+    const locationName = primaryLocationName(event) ?? null;
+    // Invitations (Teams above all) leave virtualLocations empty and bury the
+    // join URL in the description; it counts as the meeting link anyway.
+    const meeting = findMeetingLink(event);
+    const virtualLoc = meeting?.uri ?? null;
+    const locationHref = locationName
+      ? (() => { const action = locationAction(locationName, meeting); return action.kind === "url" ? action.uri : mapsUrl(action.query); })()
+      : null;
     const viewParticipants = getParticipantList(event, { resolveName: resolveContactName });
     const recurrenceLabel = getRecurrenceLabel(event, t, locale);
     const alertLabel = formatEventAlertsLabel(event, calendars, t);
     const eventCalendar = calendars.find(c => event.calendarIds[c.id]);
-    const color = getEventColor(event, eventCalendar);
+    const color = paint(getEventColor(event, eventCalendar));
 
     return (
       <div ref={modalRef} role="dialog" aria-modal={isMobile || undefined} aria-label={event.title || t("events.no_title")} className={isMobile ? mobileRootClass : "flex flex-col h-full bg-background"}>
@@ -1037,20 +1005,39 @@ export function EventModal({
           <div className="min-w-0 flex-1">
             <div className="flex items-center gap-2">
               <span className="w-2.5 h-2.5 rounded-full flex-shrink-0" style={{ backgroundColor: color }} />
-              <h2 className="text-lg font-semibold truncate">{event.title || t("events.no_title")}</h2>
+              <h2 className="text-lg font-semibold truncate" title={event.title || t("events.no_title")}>{event.title || t("events.no_title")}</h2>
             </div>
             {eventCalendar && (
               <p className="text-xs text-muted-foreground mt-0.5 ps-[18px]">{eventCalendar.name}</p>
             )}
           </div>
-          <button onClick={onClose} className="p-1.5 rounded-md hover:bg-muted transition-colors duration-150 flex-shrink-0 mt-0.5 text-muted-foreground hover:text-foreground" aria-label={t("form.cancel")}>
-            <X className="w-5 h-5" />
-          </button>
+          {onMore && (
+            <IconButton label={t("toolbar.more")} aria-haspopup="menu" className="flex-shrink-0 mt-0.5" onClick={(e) => onMore(e.currentTarget)}>
+              <MoreVertical />
+            </IconButton>
+          )}
+          <IconButton label={tCommon("close")} onClick={onClose} className="flex-shrink-0 mt-0.5 text-muted-foreground">
+            <X />
+          </IconButton>
         </div>
 
         {/* Content */}
         <div className="flex-1 overflow-y-auto">
           <div className="px-6 py-4 space-y-3">
+            {rsvpMode && (
+            <div className="flex items-start gap-3 rounded-lg border border-primary/30 bg-primary/5 px-4 py-3">
+              <CalendarDays className="w-5 h-5 text-primary mt-0.5 flex-shrink-0" />
+              <div className="text-sm">
+                <p className="font-medium text-foreground">
+                  {t("participants.invited_by", { name: organizerInfo?.name || organizerInfo?.email || t("participants.organizer") })}
+                </p>
+                <p className="text-muted-foreground mt-0.5">
+                  {t("participants.respond_below")}
+                </p>
+              </div>
+            </div>
+            )}
+
             {/* Date & Time */}
             <div className="flex items-start gap-2.5">
               <Clock className="w-4 h-4 text-muted-foreground mt-0.5 flex-shrink-0" />
@@ -1111,13 +1098,12 @@ export function EventModal({
             {locationName && (
               <div className="flex items-start gap-2.5">
                 <MapPin className="w-4 h-4 text-muted-foreground mt-0.5 flex-shrink-0" />
-                {/^https?:\/\//i.test(locationName) ? (
-                  <a href={locationName} target="_blank" rel="noreferrer" className="text-sm text-primary hover:underline truncate" title={locationName}>
-                    {(() => { try { return new URL(locationName).hostname; } catch { return locationName; } })()}
-                  </a>
-                ) : (
-                  <span className="text-sm text-foreground">{locationName}</span>
-                )}
+                {/* A URL opens as a link, a postal address in the maps, as on the card. */}
+                <a href={locationHref ?? undefined} target="_blank" rel="noreferrer" className="text-sm text-primary hover:underline min-w-0 break-words" title={locationName}>
+                  {/^https?:\/\//i.test(locationName)
+                    ? (() => { try { return new URL(locationName).hostname; } catch { return locationName; } })()
+                    : locationName}
+                </a>
               </div>
             )}
 
@@ -1142,13 +1128,13 @@ export function EventModal({
                   <div className="mt-1 space-y-0.5">
                     {viewParticipants.map((p) => (
                       <div key={p.id} className="flex items-center justify-between gap-2 text-xs">
-                        <span className="truncate text-foreground">
+                        <span className="truncate text-foreground" title={p.email}>
                           {p.name || p.email}
                           {p.isOrganizer && (
-                            <span className="text-muted-foreground ms-1">({t("participants.organizer").toLowerCase()})</span>
+                            <span className="text-muted-foreground ms-1">({t("participants.organizer_role")})</span>
                           )}
                         </span>
-                        <StatusBadge status={p.status} t={t} />
+                        <ParticipantStatusBadge status={p.status} />
                       </div>
                     ))}
                   </div>
@@ -1197,36 +1183,22 @@ export function EventModal({
         )}
 
         {/* Action Bar */}
-        <div className="px-6 py-3 border-t border-border flex-shrink-0 flex items-center justify-between">
+        <div className="px-6 py-3 border-t border-border flex-shrink-0 flex items-center justify-between gap-2">
           <div className="flex items-center gap-1">
             {onDelete && canEditBody && (
-              showDeleteConfirm ? (
-                <div className="flex items-center gap-2">
-                  <span className="text-sm text-destructive">{t("form.delete_confirm")}</span>
-                  <Button variant="outline" size="sm" onClick={() => { onDelete(event.id, hasParticipants || undefined); onClose(); }} className="text-destructive border-destructive/30">
-                    {t("events.delete")}
-                  </Button>
-                  <Button variant="ghost" size="sm" onClick={() => setShowDeleteConfirm(false)}>
-                    {t("form.cancel")}
-                  </Button>
-                </div>
-              ) : (
-                <Button variant="ghost" size="sm" onClick={() => setShowDeleteConfirm(true)} className="text-destructive">
-                  <Trash2 className="w-4 h-4 me-1" />
-                  {t("events.delete")}
-                </Button>
-              )
+              <IconButton label={t("events.delete")} onClick={() => onDelete(event.id, hasParticipants || undefined)} className="text-destructive hover:text-destructive">
+                <Trash2 />
+              </IconButton>
             )}
-            {onDuplicate && !showDeleteConfirm && (
-              <Button variant="ghost" size="sm" onClick={handleDuplicate} aria-label={t("events.duplicate")}>
-                <Copy className="w-4 h-4 me-1" />
-                {t("events.duplicate")}
-              </Button>
+            {onDuplicate && (
+              <IconButton label={t("events.duplicate")} onClick={handleDuplicate}>
+                <CopyPlus />
+              </IconButton>
             )}
           </div>
-          {!showDeleteConfirm && canEditBody && (
-            <Button onClick={() => setMode("edit")}>
-              <Pencil className="w-4 h-4 me-1" />
+          {canEditBody && (
+            <Button ref={primaryRef} size="xs" onClick={() => setMode("edit")} className="whitespace-nowrap">
+              <Pencil className="me-1" />
               {t("events.edit")}
             </Button>
           )}
@@ -1241,39 +1213,42 @@ export function EventModal({
         <h2 className="text-lg font-semibold">
           {isEdit ? t("events.edit") : t("events.create")}
         </h2>
-        <button onClick={onClose} className="p-1.5 rounded-md hover:bg-muted transition-colors duration-150 text-muted-foreground hover:text-foreground" aria-label={t("form.cancel")}>
-          <X className="w-5 h-5" />
-        </button>
+        <IconButton label={tCommon("close")} onClick={requestClose} className="flex-shrink-0 text-muted-foreground">
+          <X />
+        </IconButton>
       </div>
 
       <div className="flex-1 overflow-y-auto">
         <div className="px-6 py-4 space-y-4">
           <div>
-            <label className="text-sm font-medium mb-1 block">{t("form.title")}</label>
+            <label htmlFor={labelFor("title")} className="text-sm font-medium mb-1 block">{t("form.title")}</label>
             <Input
+              id={labelFor("title")}
+              ref={titleRef}
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               placeholder={t("form.title")}
               maxLength={500}
-              autoFocus
             />
           </div>
 
           <div>
-            <label className="text-sm font-medium mb-1 block">{t("form.description")}</label>
+            <label htmlFor={labelFor("description")} className="text-sm font-medium mb-1 block">{t("form.description")}</label>
             <textarea
+              id={labelFor("description")}
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               placeholder={t("form.description")}
               rows={3}
               maxLength={10000}
-              className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-ring"
+              className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm resize-none focus:outline-hidden"
             />
           </div>
 
           <div>
-            <label className="text-sm font-medium mb-1 block">{t("form.location")}</label>
+            <label htmlFor={labelFor("location")} className="text-sm font-medium mb-1 block">{t("form.location")}</label>
             <Input
+              id={labelFor("location")}
               value={location}
               onChange={(e) => setLocation(e.target.value)}
               placeholder={t("form.location")}
@@ -1282,13 +1257,14 @@ export function EventModal({
           </div>
 
           <div>
-            <label className="text-sm font-medium mb-1 block">
+            <label htmlFor={labelFor("meeting_link")} className="text-sm font-medium mb-1 block">
               <span className="flex items-center gap-1.5">
-                <Video className="w-4 h-4" />
+                <Video className="w-4 h-4" aria-hidden="true" />
                 {t("form.meeting_link")}
               </span>
             </label>
             <Input
+              id={labelFor("meeting_link")}
               type="url"
               value={virtualLocation}
               onChange={(e) => setVirtualLocation(e.target.value)}
@@ -1317,15 +1293,16 @@ export function EventModal({
           </div>
 
           <div>
-            <label className="text-sm font-medium mb-1 block">
+            <label htmlFor={labelFor("participants")} className="text-sm font-medium mb-1 block">
               <span className="flex items-center gap-1.5">
-                <Users className="w-4 h-4" />
+                <Users className="w-4 h-4" aria-hidden="true" />
                 {t("participants.title")}
               </span>
             </label>
             {/* The organizer decides who is invited; an attendee's save
                 keeps the list as it came. */}
             <ParticipantInput
+              id={labelFor("participants")}
               ref={participantInputRef}
               participants={attendees}
               onAdd={handleAddAttendee}
@@ -1336,7 +1313,7 @@ export function EventModal({
                 it, Stalwart 1.0 refuses to save more participants - the
                 organizer entry a save adds counts too. */}
             {maxParticipants != null && attendees.length > 0 && attendees.length + 1 > maxParticipants && (
-              <p role="status" className="mt-1.5 flex items-start gap-1.5 text-xs text-warning">
+              <p role="status" className="mt-1.5 flex items-start gap-1.5 text-xs text-amber-600 dark:text-amber-400">
                 <AlertTriangle className="mt-px h-3.5 w-3.5 flex-shrink-0" />
                 {t("participants.limit_warning", { max: maxParticipants })}
               </p>
@@ -1369,42 +1346,46 @@ export function EventModal({
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
             <div>
-              <label className="text-sm font-medium mb-1 block">{t("form.start_date")}</label>
+              <label htmlFor={labelFor("start_date")} className="text-sm font-medium mb-1 block">{t("form.start_date")}</label>
               <input
+                id={labelFor("start_date")}
                 type="date"
                 value={startDate}
                 onChange={(e) => handleStartDateChange(e.target.value)}
-                className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+                className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus:outline-hidden"
               />
             </div>
             {!allDay && (
               <div>
-                <label className="text-sm font-medium mb-1 block">{t("form.start_time")}</label>
+                <label htmlFor={labelFor("start_time")} className="text-sm font-medium mb-1 block">{t("form.start_time")}</label>
                 <input
+                  id={labelFor("start_time")}
                   type="time"
                   value={startTime}
                   onChange={(e) => handleStartTimeChange(e.target.value)}
-                  className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+                  className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus:outline-hidden"
                 />
               </div>
             )}
             <div>
-              <label className="text-sm font-medium mb-1 block">{t("form.end_date")}</label>
+              <label htmlFor={labelFor("end_date")} className="text-sm font-medium mb-1 block">{t("form.end_date")}</label>
               <input
+                id={labelFor("end_date")}
                 type="date"
                 value={endDate}
                 onChange={(e) => setEndDate(e.target.value)}
-                className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+                className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus:outline-hidden"
               />
             </div>
             {!allDay && (
               <div>
-                <label className="text-sm font-medium mb-1 block">{t("form.end_time")}</label>
+                <label htmlFor={labelFor("end_time")} className="text-sm font-medium mb-1 block">{t("form.end_time")}</label>
                 <input
+                  id={labelFor("end_time")}
                   type="time"
                   value={endTime}
                   onChange={(e) => setEndTime(e.target.value)}
-                  className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+                  className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus:outline-hidden"
                 />
               </div>
             )}
@@ -1420,7 +1401,7 @@ export function EventModal({
                       ? 'text-sm rounded-md border border-destructive/50 bg-destructive/10 text-destructive px-3 py-2'
                       : w.severity === 'info'
                         ? 'text-sm rounded-md border border-border bg-muted/40 text-muted-foreground px-3 py-2'
-                        : 'text-sm rounded-md border border-yellow-500/50 bg-yellow-500/10 text-yellow-700 dark:text-yellow-300 px-3 py-2'
+                        : 'text-sm rounded-md border border-warning/50 bg-warning/10 text-amber-600 dark:text-amber-400 px-3 py-2'
                   }
                   title={w.message}
                 >
@@ -1432,11 +1413,12 @@ export function EventModal({
 
           {selectableCalendars.length > 1 && (
             <div>
-              <label className="text-sm font-medium mb-1 block">{t("form.calendar_select")}</label>
+              <label htmlFor={labelFor("calendar_select")} className="text-sm font-medium mb-1 block">{t("form.calendar_select")}</label>
               <select
+                id={labelFor("calendar_select")}
                 value={calendarId}
                 onChange={(e) => setCalendarId(e.target.value)}
-                className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+                className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus:outline-hidden"
               >
                 {selectableCalendars.map((cal) => (
                   <option key={cal.id} value={cal.id}>
@@ -1448,9 +1430,10 @@ export function EventModal({
           )}
 
           <div>
-            <label className="text-sm font-medium mb-1 block">{t("recurrence.title")}</label>
+            <label htmlFor={labelFor("title-1")} className="text-sm font-medium mb-1 block">{t("recurrence.title")}</label>
             <div className="flex items-center gap-2">
               <select
+                id={labelFor("title-1")}
                 value={recurrence}
                 onChange={(e) => {
                   const value = e.target.value as RecurrenceOption;
@@ -1463,7 +1446,7 @@ export function EventModal({
                     setShowRecurrenceEditor(false);
                   }
                 }}
-                className="flex-1 min-w-0 rounded-md border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+                className="flex-1 min-w-0 rounded-md border border-input bg-background px-3 py-2 text-sm focus:outline-hidden"
               >
                 <option value="none">{t("recurrence.none")}</option>
                 <option value="daily">{t("recurrence.daily")}</option>
@@ -1549,85 +1532,38 @@ export function EventModal({
         </div>
       </div>
 
-      <div className="flex items-center justify-between px-6 py-4 border-t border-border flex-shrink-0 flex-wrap gap-y-2">
-        <div className="flex items-center gap-1 w-full">
-          {isEdit && onDelete && (
-            showDeleteConfirm ? (
-              <div className="flex items-center gap-2 flex-wrap">
-                <div>
-                  <span className="text-sm text-red-600 dark:text-red-400">
-                    {t("form.delete_confirm")}
-                  </span>
-                  {hasParticipants && (
-                    <p className="text-xs text-muted-foreground mt-0.5">
-                      {t("participants.cancel_notification")}
-                    </p>
-                  )}
-                </div>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => { onDelete(event!.id, hasParticipants || undefined); onClose(); }}
-                  className="text-red-600 dark:text-red-400 border-red-300 dark:border-red-700 w-full"
-                >
-                  {t("events.delete")}
-                </Button>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => setShowDeleteConfirm(false)}
-                  className="w-full"
-                >
-                  {t("form.cancel")}
-                </Button>
-              </div>
-            ) : (
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => setShowDeleteConfirm(true)}
-                className="text-red-600 dark:text-red-400 w-full"
-              >
-                <Trash2 className="w-4 h-4 me-1" />
-                {t("events.delete")}
-              </Button>
-            )
-          )}
-          {isEdit && onDuplicate && !showDeleteConfirm && (
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={handleDuplicate}
-              aria-label={t("events.duplicate")}
-              className="w-full"
-            >
-              <Copy className="w-4 h-4 me-1" />
-              {t("events.duplicate")}
-            </Button>
-          )}
-        </div>
+      <div className="flex items-center gap-2 px-6 py-4 border-t border-border flex-shrink-0">
+        {isEdit && onDelete && (
+          <IconButton size="icon" label={t("events.delete")} onClick={() => onDelete(event!.id, hasParticipants || undefined)} className="text-destructive hover:text-destructive">
+            <Trash2 className="w-4 h-4" />
+          </IconButton>
+        )}
+        {isEdit && onDuplicate && (
+          <IconButton size="icon" label={t("events.duplicate")} onClick={handleDuplicate}>
+            <CopyPlus className="w-4 h-4" />
+          </IconButton>
+        )}
 
-        {!showDeleteConfirm && (
-        <div className="flex gap-2 w-full">
+        <div className="flex gap-2 ms-auto">
           <Button
             variant="outline"
-            onClick={isEdit ? () => setMode("view") : onClose}
-            className="w-full"
+            onClick={isEdit ? backToView : requestClose}
+            className="whitespace-nowrap"
           >
             {t("form.cancel")}
           </Button>
           <Button
             onClick={handleSave}
             disabled={!title.trim() || isSaving}
-            className="w-full"
+            className="whitespace-nowrap"
           >
             {/* While a save is in flight the button was disabled with no visible change, so a
                 slow request (mobile, VPN) looked like a dead button for the whole timeout. */}
             {isSaving ? t("subscription.saving") : t("form.save")}
           </Button>
         </div>
-        )}
       </div>
+      <ConfirmDialog {...discardDialogProps} />
     </div>
   );
 }
@@ -1643,65 +1579,9 @@ function RsvpBar({ status, onRespond, t }: {
   t: ReturnType<typeof useTranslations>;
 }) {
   return (
-    <div className="flex items-center justify-between">
+    <div className="flex items-center justify-between gap-2 flex-wrap">
       <span className="text-sm font-medium">{t("participants.rsvp_label")}</span>
-      <div className="flex gap-2">
-        <Button
-          size="sm"
-          variant={status === "accepted" ? "default" : "outline"}
-          onClick={() => onRespond("accepted")}
-          className={status === "accepted"
-            ? "bg-success hover:bg-success/80 text-success-foreground"
-            : "text-success border-success/30 hover:bg-success/10"}
-        >
-          {status === "accepted" && <Check className="w-4 h-4 me-1" />}
-          {t("participants.accepted")}
-        </Button>
-        <Button
-          size="sm"
-          variant={status === "tentative" ? "default" : "outline"}
-          onClick={() => onRespond("tentative")}
-          className={status === "tentative"
-            ? "bg-warning hover:bg-warning/80 text-warning-foreground"
-            : "border border-warning/30 text-warning hover:bg-warning/10"}
-        >
-          {status === "tentative" && <Check className="w-4 h-4 me-1" />}
-          {t("participants.tentative")}
-        </Button>
-        <Button
-          size="sm"
-          variant={status === "declined" ? "default" : "ghost"}
-          onClick={() => onRespond("declined")}
-          className={status === "declined"
-            ? "bg-destructive hover:bg-destructive/80 text-destructive-foreground"
-            : "text-destructive hover:bg-destructive/10"}
-        >
-          {status === "declined" && <Check className="w-4 h-4 me-1" />}
-          {t("participants.declined")}
-        </Button>
-      </div>
+      <RsvpButtons status={status} onRespond={onRespond} />
     </div>
   );
-}
-
-function StatusBadge({ status, t }: {
-  status: CalendarParticipant['participationStatus'];
-  t: ReturnType<typeof useTranslations>;
-}) {
-  // The organizer is marked by the "(组织者)" suffix on the name; the badge
-  // shows their participation status (organizers default to accepted) rather
-  // than repeating the organizer label.
-  const colors: Record<string, string> = {
-    accepted: "text-success",
-    declined: "text-destructive",
-    tentative: "text-warning",
-    "needs-action": "text-muted-foreground",
-  };
-  const labels: Record<string, string> = {
-    accepted: "participants.accepted",
-    declined: "participants.declined",
-    tentative: "participants.tentative",
-    "needs-action": "participants.needs_action",
-  };
-  return <span className={`text-xs ${colors[status] || ""}`}>{t(labels[status] || labels["needs-action"])}</span>;
 }

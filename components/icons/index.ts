@@ -13,6 +13,7 @@ export type { TablerIcon as AppIcon, IconProps as AppIconProps } from '@tabler/i
 export { iconForName, toStoredIconName, toTablerName, POPULAR_ICON_NAMES, loadAllIconNames, TABLER_ICON_PREFIX } from './named';
 
 export {
+  IconAccessible as Accessibility,
   IconActivity as Activity,
   IconAlertCircle as AlertCircle,
   IconAlertTriangle as AlertTriangle,
@@ -110,6 +111,7 @@ export {
   IconWorld as Globe,
   IconGridDots as Grid3x3,
   IconGripVertical as GripVertical,
+  IconHandStop as Hand,
   IconServer2 as HardDrive,
   IconH1 as Heading1,
   IconH2 as Heading2,
@@ -170,6 +172,8 @@ export {
   IconLayoutSidebarRightCollapse as PanelRightClose,
   IconLayoutSidebarRightExpand as PanelRightOpen,
   IconPaperclip as Paperclip,
+  IconPlayerPause as Pause,
+  IconPlayerStop as Stop,
   IconPencil as PenLine,
   IconEdit as PenSquare,
   IconVector as PenTool,
@@ -201,7 +205,7 @@ export {
   IconScissors as Scissors,
   IconFileText as ScrollText,
   IconSearch as Search,
-  IconSearchOff as SearchX,
+  IconZoomCancel as SearchX,
   IconSend as Send,
   IconServer as Server,
   IconSettings as Settings,

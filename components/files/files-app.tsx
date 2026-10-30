@@ -1,13 +1,15 @@
 "use client";
 
-import { useState, useEffect, useRef, useCallback, useMemo } from "react";
+import { useState, useEffect, useRef, useCallback, useMemo, useId } from "react";
+import { useFocusTrap } from "@/hooks/use-focus-trap";
 import { useTranslations } from "next-intl";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { useConfirmDialog } from "@/hooks/use-confirm-dialog";
 import { useAuthStore, redirectToLogin, saveRedirectAfterLogin } from '@/stores/auth-store';
 import { useAccountStore } from "@/stores/account-store";
 import { useEmailStore } from "@/stores/email-store";
-import { useFileStore, isSharedLocation, linkedPreviewResource, resourceServerRef, resourceToView, type UploadReport } from "@/stores/file-store";
+import { useFileStore, deletesToTrash, isSharedLocation, linkedPreviewResource, resourceServerRef, resourceToView, type UploadReport } from "@/stores/file-store";
+import { isTrashLocation } from "@/lib/files-trash";
 import { fileErrorKind, isPartialCopy } from "@/lib/file-errors";
 import { toast } from "@/stores/toast-store";
 import { cn, formatFileSize } from "@/lib/utils";
@@ -16,6 +18,7 @@ import { SidebarAppsModal } from "@/components/layout/sidebar-apps-modal";
 import { InlineAppView } from "@/components/layout/inline-app-view";
 import { useSidebarApps } from "@/hooks/use-sidebar-apps";
 import { useIsEmbedded } from "@/hooks/use-is-embedded";
+import { AppMain, SkipLink } from "@/components/layout/app-landmarks";
 import { useIsFocusedProTab } from "@/hooks/use-pane-context";
 import { useIsMobile } from "@/hooks/use-media-query";
 import { useRefreshGesture } from "@/hooks/use-refresh-gesture";
@@ -25,7 +28,8 @@ import type { FileNodeRights } from "@/lib/jmap/types";
 import { ImagePreviewModal } from "@/components/files/image-preview-modal";
 import { FilePreviewModal } from "@/components/files/file-preview-modal";
 import { WopiEditor } from "@/components/files/wopi-editor";
-import { useWopiStatus, canWopiOpen } from "@/hooks/use-wopi-status";
+import { useWopiStatus, canWopiOpen, fileExtension } from "@/hooks/use-wopi-status";
+import { apiFetch } from "@/lib/browser-navigation";
 import { AppTopBannerSlot } from "@/components/plugins/app-top-banner-slot";
 import { AlertTriangle, Loader2 } from "@/components/icons";
 import { isFilePreviewable } from "@/lib/file-preview";
@@ -49,6 +53,7 @@ export function FilesApp({ linkSegments: routeSegments }: FilesAppProps = {}) {
   const linkSegments = useLiteLinkSegments('files', routeSegments);
   const t = useTranslations("files");
   const tSidebar = useTranslations("sidebar");
+  const tShell = useTranslations("shell");
   useDocumentTitle(tSidebar("files"));
   const tDeepLink = useTranslations("deep_link");
   const filesEnabled = usePolicyStore((s) => s.isFeatureEnabled('filesEnabled'));
@@ -85,10 +90,12 @@ export function FilesApp({ linkSegments: routeSegments }: FilesAppProps = {}) {
     downloadResource,
     getImageUrl,
     getFileContent,
-    createTextFile,
+    createFile,
     duplicateResource,
     downloadResources,
+    downloadZip,
     moveToFolderId,
+    moveNode,
     cutResources,
     copyResources,
     pasteResources,
@@ -109,6 +116,11 @@ export function FilesApp({ linkSegments: routeSegments }: FilesAppProps = {}) {
     lastAction,
     shareResource,
     openSharedNode,
+    trashResources,
+    trashNode,
+    restoreResources,
+    purgeResources,
+    emptyTrash,
   } = useFileStore();
 
   const isMobile = useIsMobile();
@@ -397,42 +409,6 @@ export function FilesApp({ linkSegments: routeSegments }: FilesAppProps = {}) {
     }
   }, [uploadFolder, t, maxSizeUpload, showUploadReport, failureReason]);
 
-  const handleDelete = useCallback(async (name: string) => {
-    const confirmed = await confirmDialog({
-      title: t("delete_confirm_title"),
-      message: t("delete_confirm_message", { name }),
-      confirmText: t("delete"),
-      variant: "destructive",
-    });
-    if (!confirmed) return;
-
-    try {
-      if (!await deleteResource(name)) return;
-      toast.success(t("delete_success"));
-    } catch (err) {
-      console.error("Failed to delete:", err);
-      toast.error(t("delete_error"), failureReason(err));
-    }
-  }, [deleteResource, confirmDialog, t, failureReason]);
-
-  const handleBatchDelete = useCallback(async (names: string[]) => {
-    const confirmed = await confirmDialog({
-      title: t("delete_confirm_title"),
-      message: t("batch_delete_confirm_message", { count: names.length }),
-      confirmText: t("delete"),
-      variant: "destructive",
-    });
-    if (!confirmed) return;
-
-    try {
-      if (!await deleteResources(names)) return;
-      toast.success(t("batch_delete_success", { count: names.length }));
-    } catch (err) {
-      console.error("Failed to batch delete:", err);
-      toast.error(t("delete_error"), failureReason(err));
-    }
-  }, [deleteResources, confirmDialog, t, failureReason]);
-
   const handleUndo = useCallback(async () => {
     try {
       await undoLastAction();
@@ -442,6 +418,93 @@ export function FilesApp({ linkSegments: routeSegments }: FilesAppProps = {}) {
       toast.error(t("undo_error"), failureReason(err));
     }
   }, [undoLastAction, t, failureReason]);
+
+  // Delete (R3): in the own drive items go to the trash, with Undo and no
+  // question; in the trash and in a drive someone shared they are gone for
+  // good, so that asks first.
+  const currentParentIdForDelete = useFileStore((s) => s.currentParentId);
+  const handleDeleteNames = useCallback(async (names: string[]) => {
+    if (names.length === 0) return;
+    if (isTrashLocation(currentParentIdForDelete)) {
+      const confirmed = await confirmDialog({
+        title: t("delete_forever_title", { count: names.length }),
+        message: names.length === 1
+          ? t("delete_forever_message", { name: names[0] })
+          : t("delete_forever_message_count", { count: names.length }),
+        confirmText: t("delete_forever"),
+        variant: "destructive",
+      });
+      if (!confirmed) return;
+      try {
+        const count = await purgeResources(names);
+        if (count > 0) toast.success(t("deleted_forever", { count }));
+      } catch (err) {
+        console.error("Failed to delete:", err);
+        toast.error(t("delete_error"), failureReason(err));
+      }
+      return;
+    }
+    if (deletesToTrash(currentParentIdForDelete)) {
+      try {
+        const count = await trashResources(names);
+        if (count > 0) {
+          toast.success(t("moved_to_trash", { count }), {
+            action: { label: t("undo"), onClick: handleUndo },
+          });
+        }
+      } catch (err) {
+        console.error("Failed to delete:", err);
+        toast.error(t("delete_error"), failureReason(err));
+      }
+      return;
+    }
+    const confirmed = await confirmDialog({
+      title: t("delete_forever_title", { count: names.length }),
+      message: names.length === 1
+        ? t("delete_forever_message", { name: names[0] })
+        : t("delete_forever_message_count", { count: names.length }),
+      confirmText: t("delete_forever"),
+      variant: "destructive",
+    });
+    if (!confirmed) return;
+    try {
+      if (names.length === 1 ? !await deleteResource(names[0]) : !await deleteResources(names)) return;
+      toast.success(t("deleted_forever", { count: names.length }));
+    } catch (err) {
+      console.error("Failed to delete:", err);
+      toast.error(t("delete_error"), failureReason(err));
+    }
+  }, [currentParentIdForDelete, confirmDialog, t, purgeResources, trashResources, deleteResource, deleteResources, handleUndo, failureReason]);
+  const handleDelete = useCallback((name: string) => handleDeleteNames([name]), [handleDeleteNames]);
+  const handleBatchDelete = handleDeleteNames;
+
+  const handleRestore = useCallback(async (names: string[]) => {
+    try {
+      const count = await restoreResources(names);
+      if (count > 0) toast.success(t("restored", { count }));
+    } catch (err) {
+      console.error("Failed to restore:", err);
+      toast.error(t("restore_error"), failureReason(err));
+    }
+  }, [restoreResources, t, failureReason]);
+
+  const trashCount = useFileStore((s) => s.trashCount);
+  const handleEmptyTrash = useCallback(async () => {
+    const confirmed = await confirmDialog({
+      title: t("empty_trash_title"),
+      message: t("empty_trash_message", { count: trashCount }),
+      confirmText: t("empty_trash"),
+      variant: "destructive",
+    });
+    if (!confirmed) return;
+    try {
+      await emptyTrash();
+      toast.success(t("trash_emptied"));
+    } catch (err) {
+      console.error("Failed to empty the trash:", err);
+      toast.error(t("empty_trash_error"), failureReason(err));
+    }
+  }, [confirmDialog, t, trashCount, emptyTrash, failureReason]);
 
   const handleRename = useCallback(async (oldName: string, newName: string) => {
     try {
@@ -479,15 +542,50 @@ export function FilesApp({ linkSegments: routeSegments }: FilesAppProps = {}) {
     }
   }, [downloadResources, t]);
 
-  const handleCreateTextFile = useCallback(async (name: string) => {
+  // A folder (or a selection with folders) comes as a zip built here; a
+  // progress toast shows how far it is and can cancel it.
+  const handleDownloadZip = useCallback(async (ids: string[], zipName: string) => {
+    const controller = new AbortController();
+    const toastId = toast.progress(t("zipping", { name: zipName }), {
+      progress: 0,
+      action: { label: t("cancel"), onClick: () => controller.abort() },
+    });
     try {
-      await createTextFile(name);
+      await downloadZip(ids, zipName, {
+        signal: controller.signal,
+        onProgress: ({ progress, current }) => toast.update(toastId, { progress, message: current }),
+      });
+      toast.dismiss(toastId);
+    } catch (err) {
+      toast.dismiss(toastId);
+      if (err instanceof DOMException && err.name === "AbortError") {
+        toast.info(t("download_canceled"));
+        return;
+      }
+      console.error("Failed to download the zip:", err);
+      toast.error(t("zip_error", { name: zipName }), failureReason(err));
+    }
+  }, [downloadZip, t, failureReason]);
+
+  // A document format the editor can create starts from a blank template
+  // and opens in the editor (#1393); any other name is an empty text file.
+  const handleCreateFile = useCallback(async (name: string) => {
+    try {
+      const ext = fileExtension(name);
+      let template: Blob | undefined;
+      if (wopiStatus?.newExtensions.includes(ext)) {
+        const res = await apiFetch(`/api/wopi/template?ext=${encodeURIComponent(ext)}`);
+        if (!res.ok) throw new Error(`Template for .${ext} unavailable (${res.status})`);
+        template = await res.blob();
+      }
+      const created = await createFile(name, template);
       toast.success(t("create_file_success"));
+      if (template && created && isOfficeEditable(created)) setEditFile(created);
     } catch (err) {
       console.error("Failed to create file:", err);
       toast.error(t("create_file_error"), failureReason(err));
     }
-  }, [createTextFile, t, failureReason]);
+  }, [createFile, wopiStatus, isOfficeEditable, t, failureReason]);
 
   const handleDuplicate = useCallback(async (name: string) => {
     try {
@@ -510,6 +608,18 @@ export function FilesApp({ linkSegments: routeSegments }: FilesAppProps = {}) {
       toast.error(t("move_error"), failureReason(err));
     }
   }, [moveToFolderId, t, handleUndo, failureReason]);
+
+  const handleMoveNode = useCallback(async (id: string, targetId: string | null) => {
+    try {
+      if (!await moveNode(id, targetId)) return;
+      toast.success(t("move_success", { count: 1 }), {
+        action: { label: t("undo"), onClick: handleUndo },
+      });
+    } catch (err) {
+      console.error("Failed to move:", err);
+      toast.error(t("move_error"), failureReason(err));
+    }
+  }, [moveNode, t, handleUndo, failureReason]);
 
   const handlePaste = useCallback(async () => {
     try {
@@ -541,26 +651,39 @@ export function FilesApp({ linkSegments: routeSegments }: FilesAppProps = {}) {
       });
     } catch (err) {
       console.error("Failed to rename:", err);
-      toast.error(t("rename_error"));
+      toast.error(t("rename_error"), failureReason(err));
     }
-  }, [renameNode, t, handleUndo]);
+  }, [renameNode, t, handleUndo, failureReason]);
 
   const handleDeleteNode = useCallback(async (id: string, name: string) => {
+    // A folder of the own drive goes to the trash; one of a shared drive is gone for good.
+    if (deletesToTrash(id)) {
+      try {
+        if (!await trashNode(id)) return;
+        toast.success(t("moved_to_trash", { count: 1 }), {
+          action: { label: t("undo"), onClick: handleUndo },
+        });
+      } catch (err) {
+        console.error("Failed to delete:", err);
+        toast.error(t("delete_error"), failureReason(err));
+      }
+      return;
+    }
     const confirmed = await confirmDialog({
-      title: t("delete_confirm_title"),
-      message: t("delete_confirm_message", { name }),
-      confirmText: t("delete"),
+      title: t("delete_forever_title", { count: 1 }),
+      message: t("delete_forever_message", { name }),
+      confirmText: t("delete_forever"),
       variant: "destructive",
     });
     if (!confirmed) return;
     try {
       if (!await deleteNode(id)) return;
-      toast.success(t("delete_success"));
+      toast.success(t("deleted_forever", { count: 1 }));
     } catch (err) {
       console.error("Failed to delete:", err);
-      toast.error(t("delete_error"));
+      toast.error(t("delete_error"), failureReason(err));
     }
-  }, [deleteNode, confirmDialog, t]);
+  }, [deleteNode, trashNode, confirmDialog, handleUndo, t, failureReason]);
 
   const handleDownloadNode = useCallback(async (id: string) => {
     try {
@@ -600,6 +723,29 @@ export function FilesApp({ linkSegments: routeSegments }: FilesAppProps = {}) {
 
   // The previewed file as plugins see it (file-preview-section).
   const previewedName = previewFile ?? previewImage;
+  // ←/→ in a preview go through the folder's other previewable files.
+  const previewNeighbours = useMemo(() => {
+    if (!previewedName) return undefined;
+    const names = resources
+      .filter((r) => !r.isDirectory && !r.isSymlink && (isImageFile(r.name) || isFilePreviewable(r.name)))
+      .map((r) => r.name);
+    const i = names.indexOf(previewedName);
+    if (i === -1) return undefined;
+    return {
+      previous: names[i - 1] ?? null,
+      next: names[i + 1] ?? null,
+      onGo: (name: string) => {
+        addRecentFile(name, resources.find((r) => r.name === name)?.id ?? name);
+        if (isImageFile(name)) {
+          setPreviewFile(null);
+          setPreviewImage(name);
+        } else {
+          setPreviewImage(null);
+          setPreviewFile(name);
+        }
+      },
+    };
+  }, [previewedName, resources, addRecentFile]);
   const previewedView = useMemo(() => {
     const resource = previewedName ? resources.find((r) => r.name === previewedName) : undefined;
     return resource ? resourceToView(resource, currentPath) : null;
@@ -654,6 +800,7 @@ export function FilesApp({ linkSegments: routeSegments }: FilesAppProps = {}) {
 
   return (
     <div className={cn("flex flex-col overflow-hidden pt-[env(safe-area-inset-top)]", mvShell ? "bg-[var(--mv-canvas)]" : "bg-background", isEmbedded ? "h-full" : "h-dvh")}>
+      {!isEmbedded && <SkipLink>{tShell("skip_to_content")}</SkipLink>}
       <AppTopBannerSlot />
       {refreshIndicator}
       {mvShell && (
@@ -689,17 +836,17 @@ export function FilesApp({ linkSegments: routeSegments }: FilesAppProps = {}) {
           <div className="flex-1 min-w-0 flex flex-col">
             <div className="flex-1 min-h-0 flex flex-col">
               {!filesEnabled ? (
-                <div className="flex items-center justify-center h-full">
+                <AppMain embedded={isEmbedded} heading={tSidebar("files")} className="flex items-center justify-center h-full">
                   <div className="max-w-lg text-center space-y-3 px-4">
-                    <AlertTriangle className="w-10 h-10 text-yellow-500 mx-auto" />
+                    <AlertTriangle className="w-10 h-10 text-amber-600 dark:text-amber-400 mx-auto" />
                     <p className="text-sm font-medium">{t("disabled_title")}</p>
                     <p className="text-xs text-muted-foreground">{t("disabled_description")}</p>
                   </div>
-                </div>
+                </AppMain>
               ) : supportsFiles === false ? (
-                <div className="flex items-center justify-center h-full">
+                <AppMain embedded={isEmbedded} heading={tSidebar("files")} className="flex items-center justify-center h-full">
                   <p className="text-sm text-muted-foreground">{t("not_available")}</p>
-                </div>
+                </AppMain>
               ) : (
                 <FileBrowser
                   currentPath={currentPath}
@@ -716,9 +863,12 @@ export function FilesApp({ linkSegments: routeSegments }: FilesAppProps = {}) {
                   onCancelUpload={cancelUpload}
                   onDelete={handleDelete}
                   onBatchDelete={handleBatchDelete}
+                  onRestore={handleRestore}
+                  onEmptyTrash={() => void handleEmptyTrash()}
                   onRename={handleRename}
                   onDownload={handleDownload}
                   onBatchDownload={handleBatchDownload}
+                  onDownloadZip={handleDownloadZip}
                   onRefresh={refresh}
                   onToggleSelect={toggleSelect}
                   onClearSelection={clearSelection}
@@ -727,11 +877,13 @@ export function FilesApp({ linkSegments: routeSegments }: FilesAppProps = {}) {
                   onCopy={copyResources}
                   onPaste={handlePaste}
                   onMoveTo={handleMoveTo}
+                  onMoveNode={handleMoveNode}
                   onPreviewImage={handlePreviewImage}
                   onPreviewFile={handlePreviewFile}
                   isOfficeEditable={isOfficeEditable}
                   onEditFile={setEditFile}
-                  onCreateTextFile={handleCreateTextFile}
+                  onCreateFile={handleCreateFile}
+                  newFileFormats={wopiStatus?.newExtensions}
                   onDuplicate={handleDuplicate}
                   getImageUrl={getImageUrl}
                   favorites={favorites}
@@ -776,6 +928,7 @@ export function FilesApp({ linkSegments: routeSegments }: FilesAppProps = {}) {
           onDownload={handleDownload}
           getImageUrl={getImageUrl}
           file={previewedView}
+          neighbours={previewNeighbours}
         />
       )}
 
@@ -787,6 +940,7 @@ export function FilesApp({ linkSegments: routeSegments }: FilesAppProps = {}) {
           onDownload={() => handleDownload(previewFile)}
           getFileContent={() => getFileContent(previewFile)}
           file={previewedView}
+          neighbours={previewNeighbours}
         />
       )}
 
@@ -806,6 +960,7 @@ export function FilesApp({ linkSegments: routeSegments }: FilesAppProps = {}) {
             target={{ kind: "file", id: node.id, name: editResource.name }}
             accountId={node.accountId ?? filesAccountId}
             slot={slot}
+            closeOnBack
             onClose={() => {
               setEditFile(null);
               // The editor may have saved new content - pick up size/mtime.
@@ -817,32 +972,63 @@ export function FilesApp({ linkSegments: routeSegments }: FilesAppProps = {}) {
 
       {/* Legacy file migration progress (issue #379) */}
       {migrationProgress && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm">
-          <div className="w-[22rem] max-w-[90vw] rounded-lg border border-border bg-background p-6 shadow-xl">
-            <div className="flex items-center gap-3">
-              <Loader2 className="w-5 h-5 text-primary animate-spin shrink-0" />
-              <div>
-                <p className="text-sm font-medium">{t("migration_title")}</p>
-                <p className="text-xs text-muted-foreground">{t("migration_description")}</p>
-              </div>
-            </div>
-            <div className="mt-4 h-1.5 bg-primary/20 rounded-full overflow-hidden">
-              <div
-                className="h-full bg-primary rounded-full transition-all duration-300"
-                style={{ width: migrationProgress.total > 0
-                  ? `${(migrationProgress.current / migrationProgress.total) * 100}%`
-                  : '0%' }}
-              />
-            </div>
-            <p className="mt-2 text-xs text-muted-foreground tabular-nums text-end">
-              {migrationProgress.current} / {migrationProgress.total}
-            </p>
-          </div>
-        </div>
+        <MigrationOverlay
+          title={t("migration_title")}
+          description={t("migration_description")}
+          current={migrationProgress.current}
+          total={migrationProgress.total}
+        />
       )}
 
       <SidebarAppsModal isOpen={showAppsModal} onClose={closeAppsModal} />
       <ConfirmDialog {...confirmDialogProps} />
+      </div>
+    </div>
+  );
+}
+
+/**
+ * The legacy file migration (#379) blocks the Files app until it is done: a
+ * modal with no buttons that holds the focus, so a screen reader reads its
+ * title, and a progress bar it can follow.
+ */
+function MigrationOverlay({ title, description, current, total }: { title: string; description: string; current: number; total: number }) {
+  const id = useId();
+  const panelRef = useFocusTrap({ isActive: true, restoreFocus: true, initialFocus: () => panelRef.current });
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm">
+      <div
+        ref={panelRef}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby={`${id}-title`}
+        aria-describedby={`${id}-description`}
+        className="w-[22rem] max-w-[90vw] rounded-lg border border-border bg-background p-6 shadow-xl outline-none"
+      >
+        <div className="flex items-center gap-3">
+          <Loader2 className="w-5 h-5 text-primary animate-spin shrink-0" aria-hidden="true" />
+          <div>
+            <p id={`${id}-title`} className="text-sm font-medium">{title}</p>
+            <p id={`${id}-description`} className="text-xs text-muted-foreground">{description}</p>
+          </div>
+        </div>
+        <div
+          role="progressbar"
+          aria-labelledby={`${id}-title`}
+          aria-valuemin={0}
+          aria-valuemax={total}
+          aria-valuenow={current}
+          aria-valuetext={`${current} / ${total}`}
+          className="mt-4 h-1.5 bg-primary/20 rounded-full overflow-hidden"
+        >
+          <div
+            className="h-full bg-primary rounded-full transition-all duration-300"
+            style={{ width: total > 0 ? `${(current / total) * 100}%` : '0%' }}
+          />
+        </div>
+        <p className="mt-2 text-xs text-muted-foreground tabular-nums text-end" aria-hidden="true">
+          {current} / {total}
+        </p>
       </div>
     </div>
   );

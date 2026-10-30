@@ -837,6 +837,19 @@ export interface AppInfoView {
   demoMode: boolean;
 }
 
+/**
+ * Features of Bulwark itself that replace what a plugin did, as
+ * `api.host.features` tells the plugin (no permission needed). A plugin
+ * that does the same job steps back while one is true. Missing on hosts
+ * older than 1.19.0, so read it as `api.host?.features?.x === true`.
+ */
+export interface HostFeaturesView {
+  /** The admin turned on the "External" label on mail from outside the organisation (organisation.externalMail.senderLabel). */
+  externalSenderLabel: boolean;
+  /** The admin turned on the confirm before sending outside the organisation (organisation.externalMail.recipientWarning). */
+  externalRecipientWarning: boolean;
+}
+
 /** One setting `api.app.searchSettings` found, in the user's language. */
 export interface SettingsSearchResult {
   /** The settings page's id: account, appearance, composing, vacation, ... */
@@ -895,6 +908,8 @@ export interface EmailListBadge {
   color?: string;
   /** Tooltip / aria-label */
   title?: string;
+  /** Name of a host icon (see components/icons) shown before the label, e.g. "check" or "user". */
+  icon?: string;
 }
 
 // ─── Message-list category tabs (Gmail-style inbox tabs) ─────
@@ -1206,13 +1221,19 @@ export interface ConflictWarning {
  * opens it in the reader, as a click on a row of the list does. Any other
  * click reaches the plugin that returned the entry as `onAction`, with
  * `surface: 'search-results'`, the entry's `key` as `actionId` and the
- * search's `query` in the context. Plain text only; see
+ * search's `query` in the context. Plain text only, but the snippet may
+ * mark what matched as SearchSnippet/get does; see
  * lib/plugin-search-results.ts for the limits.
  */
 export interface ExternalSearchResult {
   /** Unique among the plugin's entries for this search; comes back as actionId. */
   key: string;
   title: string;
+  /**
+   * May wrap what matched in `<mark>`…`</mark>`, highlighted as the list's
+   * own search snippets; `&`, `<`, `>` meant as text escaped as `&amp;`,
+   * `&lt;`, `&gt;`. No other markup: any other tag shows as text.
+   */
   snippet: string;
   /** Group heading, e.g. "CRM", "Slack"; the plugin's name when missing. */
   source?: string;
@@ -1337,6 +1358,8 @@ export const ALL_PERMISSIONS = [
   'auth:observe',
   'auth:emit',
   'account:read',
+  // Look people up in the server's directory (api.user.findPeople).
+  'directory:read',
   'http:post', 'http:fetch',
   'ui:observe', 'ui:toolbar', 'ui:app-top-banner', 'ui:email-banner', 'ui:email-footer', 'ui:contact-cryptokeys',
   'ui:email-details',

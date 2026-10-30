@@ -268,6 +268,8 @@ export interface MailboxRights {
   mayDelete: boolean;
   maySubmit: boolean;
   mayShare?: boolean;
+  /** Stalwart 1.0: may change the mailbox's shared metadata (urn:ietf:params:jmap:metadata). */
+  maySetMetadata?: boolean;
 }
 
 export interface Thread {
@@ -659,6 +661,9 @@ export interface Calendar {
   // shared calendar (see lib/shared-calendar-colors). When true, the override
   // wins over per-event colors so the whole shared calendar paints uniformly.
   colorIsLocalOverride?: boolean;
+  // The server's own color, kept next to a local override so the sidebar can
+  // tell whether dropping the override brings it back or picks a new one.
+  serverColor?: string | null;
   // True when the calendar holds only tasks (VTODO) and no events, so it is
   // hidden from the event calendar UI while remaining available to the tasks
   // view (#761). Undefined means "not determined" (treated as not tasks-only).

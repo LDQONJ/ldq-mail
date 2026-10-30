@@ -29,6 +29,15 @@ describe('KeywordSettings', () => {
     expect(screen.getByText('$label:blue')).toBeInTheDocument();
   });
 
+  // MO-06: the tag order was drag-only.
+  it('moves a tag down with its Move down button', () => {
+    render(<KeywordSettings />);
+    const [first, second] = useSettingsStore.getState().emailKeywords.map((k) => k.id);
+    fireEvent.click(screen.getAllByTestId('move-down')[0]);
+    const ids = useSettingsStore.getState().emailKeywords.map((k) => k.id);
+    expect(ids.slice(0, 2)).toEqual([second, first]);
+  });
+
   it('renders add keyword button', () => {
     render(<KeywordSettings />);
     expect(screen.getByText('add_keyword')).toBeInTheDocument();
@@ -87,6 +96,17 @@ describe('KeywordSettings', () => {
     fireEvent.click(deleteButtons[0]);
     expect(useSettingsStore.getState().emailKeywords).toHaveLength(DEFAULT_KEYWORDS.length - 1);
     expect(useSettingsStore.getState().emailKeywords.find((k) => k.id === 'red')).toBeUndefined();
+  });
+
+  // A list of "Edit" / "Delete" with nothing else said which tag a screen
+  // reader user was on; each button is named after its tag now, as a full
+  // size icon button (32px, 44px hit area on touch).
+  it('names each tag row button after its tag', () => {
+    render(<KeywordSettings />);
+    expect(screen.getAllByRole('button', { name: 'edit_tag' })).toHaveLength(DEFAULT_KEYWORDS.length);
+    const deletes = screen.getAllByRole('button', { name: 'delete_tag' });
+    expect(deletes).toHaveLength(DEFAULT_KEYWORDS.length);
+    expect(deletes[0].className).toContain('h-8 w-8');
   });
 
   it('shows edit form when edit button clicked', () => {
@@ -388,5 +408,21 @@ describe('KeywordSettings unrecognized tags', () => {
 
     expect(await screen.findByText('unrecognized.error')).toBeInTheDocument();
     expect(screen.queryByText('unrecognized.none')).not.toBeInTheDocument();
+  });
+});
+
+// SET-20: Escape cancels editing a tag, as it does for folders, calendars
+// and address books.
+describe('KeywordSettings editing', () => {
+  it('cancels the edit form on Escape without saving', () => {
+    useSettingsStore.setState({ emailKeywords: [...DEFAULT_KEYWORDS], nestedTags: false });
+    render(<KeywordSettings />);
+    fireEvent.click(screen.getAllByTitle('edit')[0]);
+    const input = screen.getByDisplayValue(DEFAULT_KEYWORDS[0].label);
+    fireEvent.change(input, { target: { value: 'Changed' } });
+    fireEvent.keyDown(input, { key: 'Escape' });
+
+    expect(screen.queryByDisplayValue('Changed')).toBeNull();
+    expect(useSettingsStore.getState().emailKeywords[0].label).toBe(DEFAULT_KEYWORDS[0].label);
   });
 });

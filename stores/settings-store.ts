@@ -13,7 +13,19 @@ import { settingsHooks } from '@/lib/plugin-hooks';
 import { generateAccountId } from '@/lib/account-utils';
 import { subscriptionOwnerFor } from '@/lib/calendar-subscription-sync';
 import type { FolderCountMode } from '@/lib/folder-counts';
+import { DEFAULT_FILES_SETTINGS, normalizeFilesSettings, type FilesSettings } from '@/lib/files-settings';
 import { orderForMailbox, sanitizeSortLevels, type MessageListOrderScope, type SortLevel } from '@/lib/message-list-order';
+import { EMPTY_SIGNATURE_DETAILS, sanitizeSignatureDetails, type SignatureDetails } from '@/lib/org-signature';
+import {
+  ACCESSIBILITY_DEFAULTS,
+  ACCESSIBILITY_KEYS,
+  UNLOCKABLE_SETTING_KEYS,
+  applyAccessibilityTo,
+  isAllowedAccessibilityValue,
+  toastDurationAtLeast,
+  type AccessibilitySettings,
+  type FontSize,
+} from '@/lib/accessibility-settings';
 import {
   DEFAULT_SUB_ADDRESS_DELIMITER,
   isValidSubAddressDelimiter,
@@ -55,7 +67,25 @@ let blockedSyncAccountId: string | null = null;
 // device settings and the first sign-in adopts them.
 const SETTINGS_OWNER_KEY = 'settings-sync-owner';
 
-function readSettingsOwner(): string | null {
+// Accounts whose settings load from the server has finished (with or
+// without a copy) since this page loaded.
+const settledLoads = new Set<string>();
+
+/** Whether this account's settings load has finished in this page. */
+export function isSettingsLoadSettled(accountId: string): boolean {
+  return settledLoads.has(accountId);
+}
+
+const settledListeners = new Set<(accountId: string) => void>();
+
+/** Called whenever an account's settings load finishes (with or without a copy). */
+export function onSettingsLoadSettled(listener: (accountId: string) => void): () => void {
+  settledListeners.add(listener);
+  return () => settledListeners.delete(listener);
+}
+
+/** The account whose server copy the local settings (and template list) mirror; null if none. */
+export function readSettingsOwner(): string | null {
   try {
     return typeof window === 'undefined' ? null : window.localStorage.getItem(SETTINGS_OWNER_KEY);
   } catch {
@@ -88,14 +118,21 @@ interface SettingsSyncJob {
 // bindings uninitialized depending on which module loads first. Instead,
 // template-store registers itself here during its own module init.
 interface TemplateSyncBridge {
-  getSyncedState: () => {
+  /**
+   * The templates of the account `accountId` (the one being synced, or the
+   * active one). `storedInAccount`: they live in the account's own server
+   * storage (JMAP metadata, Stalwart 1.0), so a sync push leaves them out
+   * and the stored blob drops them (`templatesInMetadata`).
+   */
+  getSyncedState: (opts?: { accountId?: string }) => {
     templates: EmailTemplate[];
     deletedTemplateIds: Record<string, string>;
+    storedInAccount?: boolean;
   };
   applySyncedState: (
     templates: unknown,
     deletedTemplateIds: unknown,
-    opts: { merge: boolean }
+    opts: { merge: boolean; accountId?: string }
   ) => void;
 }
 
@@ -128,9 +165,11 @@ function templateStateKey(templates: unknown, deletedTemplateIds: unknown): stri
  * Whether the local template state differs from what a server blob carries,
  * so the blob needs a push. False when there is nothing local to push.
  */
-function localTemplatesAhead(serverSettings: Record<string, unknown> | null): boolean {
-  const local = templateSyncBridge?.getSyncedState();
+function localTemplatesAhead(serverSettings: Record<string, unknown> | null, accountId?: string): boolean {
+  const local = templateSyncBridge?.getSyncedState({ accountId });
   if (!local) return false;
+  // Templates kept in the account leave the blob: push once to drop them.
+  if (local.storedInAccount) return !!serverSettings && Array.isArray(serverSettings.templates);
   if (local.templates.length === 0 && Object.keys(local.deletedTemplateIds).length === 0) return false;
   if (!serverSettings) return true;
   return templateStateKey(local.templates, local.deletedTemplateIds) !==
@@ -230,7 +269,7 @@ function toKeywordViews(keywords: KeywordDefinition[]): { id: string; name: stri
   return keywords.map((k) => ({ id: k.id, name: k.label, color: k.color }));
 }
 
-export type FontSize = 'small' | 'medium' | 'large';
+export type { FontSize } from '@/lib/accessibility-settings';
 export type Density = 'extra-compact' | 'compact' | 'regular' | 'comfortable';
 /**
  * Which interface layout drives the shell's geometry. `default` is the app's
@@ -281,8 +320,10 @@ export type MailLayout = 'split' | 'focus' | 'horizontal';
  * decides what is drawn; read `mailLayout` itself only where the saved
  * preference is being shown or edited.
  */
-export function effectiveMailLayout(mailLayout: MailLayout, interfaceLayout: InterfaceLayout): MailLayout {
-  return interfaceLayout === 'mountain-view' ? 'focus' : mailLayout;
+export function effectiveMailLayout(mailLayout: MailLayout, interfaceLayout: InterfaceLayout, simpleMode = false): MailLayout {
+  // Simple mode (Settings > Accessibility) is one column: the list, then the
+  // message in its place.
+  return interfaceLayout === 'mountain-view' || simpleMode ? 'focus' : mailLayout;
 }
 
 /**
@@ -478,7 +519,7 @@ export const DEV_KEYWORDS: KeywordDefinition[] = [
 
 const USING_MOCK_SERVER = process.env.NEXT_PUBLIC_DEV_MOCK_JMAP === 'true';
 
-interface SettingsState {
+interface SettingsState extends AccessibilitySettings {
   // Appearance
   fontSize: FontSize;
   density: Density;
@@ -487,7 +528,6 @@ interface SettingsState {
   // The folded sections of the "Unread first" inbox; per device.
   mvUnreadSectionCollapsed: boolean;
   mvEverythingElseCollapsed: boolean;
-  animationsEnabled: boolean;
   // Message-list ordering (#718): prioritised sort levels mapped onto the JMAP
   // Email/query sort; empty = chronological. Scope: Inbox only or every folder.
   messageListOrder: SortLevel[];
@@ -538,6 +578,7 @@ interface SettingsState {
   sendDelaySeconds: SendDelaySeconds;
   signaturePosition: SignaturePosition; // Position of the signature relative to quoted text in replies/forwards
   signatureSeparatorEnabled: boolean; // Prefix the signature with the RFC 3676 "-- " delimiter
+  signatureDetails: SignatureDetails; // Title, department, phone, mobile for the organisation signature (lib/org-signature.ts)
   requestReadReceiptDefault: boolean; // Pre-check "request read receipt" in the composer
   readReceiptResponse: ReadReceiptResponse; // How to respond to incoming read-receipt requests
 
@@ -555,6 +596,8 @@ interface SettingsState {
 
   // Calendar
   showTimeInMonthView: boolean;
+  /** Events as a light tint of their colour with a bar at the start (the Outlook look), not solid blocks. */
+  calendarTintedEvents: boolean;
   showWeekNumbers: boolean;
   /** Scroll continuously through months/weeks/days (#759) instead of one period at a time. */
   calendarFreeScroll: boolean;
@@ -586,6 +629,9 @@ interface SettingsState {
   // Sort (and group) the contact list by surname instead of given name so
   // family members sit together (#963).
   sortContactsByLastName: boolean;
+
+  // Files: view, sort and icons (Settings > Files)
+  filesSettings: FilesSettings;
 
   // Email Notifications
   emailNotificationsEnabled: boolean;
@@ -682,6 +728,9 @@ interface SettingsState {
   // Ask for confirmation when sending a message with an empty subject
   emptySubjectWarningEnabled: boolean;
 
+  // Ask for confirmation when sending a message with unfilled placeholders
+  placeholderWarningEnabled: boolean;
+
   // "@" in the message body offers the recipients and inserts a first name
   recipientMentionsEnabled: boolean;
   // Where an "@" puts a picked contact who isn't a recipient yet; 'off'
@@ -743,9 +792,10 @@ interface SettingsState {
    * Applies the admin policy (#1248): `policy.defaults` to every setting the
    * user has not chosen, and a locked restriction's value to its setting
    * whatever the user chose. Runs when the policy loads and after every
-   * import, reset and server load.
+   * import, reset and server load. With the `previous` policy, values it
+   * imposed and the current one no longer does go back to the default.
    */
-  applyAdminPolicy: () => void;
+  applyAdminPolicy: (previous?: SettingsPolicy) => void;
   /** `forSync` builds the snapshot pushed to the server; it is not a user export. */
   exportSettings: (opts?: { forSync?: boolean; subscriptionOwner?: string }) => string;
   importSettings: (json: string, opts?: { serverAccountId?: string; keepCrossAccountViews?: boolean; subscriptionOwner?: string }) => boolean;
@@ -798,7 +848,8 @@ const DEFAULT_SETTINGS = {
   mvInboxType: 'unread-first' as MvInboxType,
   mvUnreadSectionCollapsed: false,
   mvEverythingElseCollapsed: false,
-  animationsEnabled: true,
+  // Settings > Accessibility (lib/accessibility-settings.ts)
+  ...ACCESSIBILITY_DEFAULTS,
   messageListOrder: [] as SortLevel[],
   messageListOrderScope: 'inbox' as MessageListOrderScope,
 
@@ -847,6 +898,7 @@ const DEFAULT_SETTINGS = {
   sendDelaySeconds: 0 as SendDelaySeconds,
   signaturePosition: 'below_quote' as SignaturePosition,
   signatureSeparatorEnabled: true,
+  signatureDetails: EMPTY_SIGNATURE_DETAILS,
   requestReadReceiptDefault: false,
   readReceiptResponse: 'ask' as ReadReceiptResponse,
 
@@ -860,6 +912,7 @@ const DEFAULT_SETTINGS = {
 
   // Calendar
   showTimeInMonthView: false,
+  calendarTintedEvents: false,
   showWeekNumbers: false,
   calendarFreeScroll: true,
   calendarHoverPreview: 'delay-500ms' as CalendarHoverPreview,
@@ -882,6 +935,9 @@ const DEFAULT_SETTINGS = {
   // Contacts Display
   groupContactsByLetter: true,
   sortContactsByLastName: false,
+
+  // Files
+  filesSettings: DEFAULT_FILES_SETTINGS,
 
   // Email Notifications
   emailNotificationsEnabled: true,
@@ -975,6 +1031,7 @@ const DEFAULT_SETTINGS = {
   ] as string[],
 
   emptySubjectWarningEnabled: true,
+  placeholderWarningEnabled: true,
   recipientMentionsEnabled: true,
   mentionAddsRecipientTo: 'to' as MentionAddsRecipientTo,
 
@@ -1040,14 +1097,33 @@ function isAllowedPolicyValue(key: string, value: unknown, restriction?: Setting
   if (key === 'sendDelaySeconds' && ![0, 10, 30, 60].includes(value as number)) return false;
   if (key === 'subAddressDelimiter' && !isValidSubAddressDelimiter(value as string)) return false;
   if (key === 'messageListOrderScope' && value !== 'inbox' && value !== 'all') return false;
+  if (!isAllowedAccessibilityValue(key, value)) return false;
   if (restriction && typeof restriction === 'object') {
     if (Array.isArray(restriction.allowedValues) && !restriction.allowedValues.includes(value)) return false;
+    // 0 keeps toasts until they're closed, which meets any minimum.
+    if (key === 'toastDuration' && typeof restriction.min === 'number') {
+      return toastDurationAtLeast(value as number, restriction.min);
+    }
     if (typeof value === 'number') {
       if (typeof restriction.min === 'number' && value < restriction.min) return false;
       if (typeof restriction.max === 'number' && value > restriction.max) return false;
     }
   }
   return true;
+}
+
+/**
+ * A policy.json written for builds before Reduce motion (v9) presets or
+ * locks `animationsEnabled`; it now means the same `reduceMotion` value.
+ */
+function withLegacyPolicyKeys<T>(record: Record<string, T>): Record<string, T> {
+  if (!hasOwn(record, 'animationsEnabled') || hasOwn(record, 'reduceMotion')) return record;
+  const { animationsEnabled: legacy, ...rest } = record as Record<string, unknown>;
+  const toMotion = (v: unknown) => (v === false ? 'on' : v === true ? 'system' : v);
+  const mapped = isPlainRecord(legacy)
+    ? { ...legacy, ...(hasOwn(legacy, 'value') ? { value: toMotion(legacy.value) } : {}) }
+    : toMotion(legacy);
+  return { ...rest, reduceMotion: mapped } as Record<string, T>;
 }
 
 /**
@@ -1073,8 +1149,8 @@ export function adminPolicyPatch(
   policy: Partial<Pick<SettingsPolicy, 'defaults' | 'restrictions'>>,
 ): Record<string, unknown> {
   const explicit = new Set(Array.isArray(state.explicitSettings) ? (state.explicitSettings as string[]) : []);
-  const defaults = isPlainRecord(policy.defaults) ? policy.defaults : {};
-  const restrictions: Record<string, SettingRestriction> = isPlainRecord(policy.restrictions) ? policy.restrictions : {};
+  const defaults = withLegacyPolicyKeys(isPlainRecord(policy.defaults) ? policy.defaults : {});
+  const restrictions = withLegacyPolicyKeys<SettingRestriction>(isPlainRecord(policy.restrictions) ? policy.restrictions : {});
   const restrictionFor = (key: string) => (hasOwn(restrictions, key) ? restrictions[key] : undefined);
   const patch: Record<string, unknown> = {};
   for (const [key, value] of Object.entries(defaults)) {
@@ -1085,8 +1161,45 @@ export function adminPolicyPatch(
     if (!isPlainRecord(restriction) || restriction.locked !== true) continue;
     const value = hasOwn(restriction, 'value') ? restriction.value : hasOwn(defaults, key) ? defaults[key] : undefined;
     if (!isAllowedPolicyValue(key, value, restriction)) continue;
+    // Text size, contrast, motion and the other reading aids can't be
+    // locked: a lock on one of them works as a default the user may change.
+    if (UNLOCKABLE_SETTING_KEYS.has(key) && explicit.has(key)) continue;
     if (state[key] !== value) patch[key] = value;
     else delete patch[key];
+  }
+  return patch;
+}
+
+/**
+ * What goes back to the built-in default when a policy stops applying a
+ * value: a default or lock that the previous policy had and the next one
+ * doesn't (another account's scopes, or the admin removed it). Only for
+ * settings the user hasn't chosen and that still hold the imposed value.
+ * Exported for tests.
+ */
+export function adminPolicyReleasePatch(
+  state: Record<string, unknown>,
+  previous: Partial<Pick<SettingsPolicy, 'defaults' | 'restrictions'>>,
+  next: Partial<Pick<SettingsPolicy, 'defaults' | 'restrictions'>>,
+): Record<string, unknown> {
+  const explicit = new Set(Array.isArray(state.explicitSettings) ? (state.explicitSettings as string[]) : []);
+  const imposed = (policy: typeof previous) => {
+    const out = new Map<string, unknown>();
+    const defaults = isPlainRecord(policy.defaults) ? policy.defaults : {};
+    const restrictions = isPlainRecord(policy.restrictions) ? (policy.restrictions as Record<string, SettingRestriction>) : {};
+    for (const [key, value] of Object.entries(defaults)) out.set(key, value);
+    for (const [key, restriction] of Object.entries(restrictions)) {
+      if (!isPlainRecord(restriction) || restriction.locked !== true) continue;
+      out.set(key, hasOwn(restriction, 'value') ? restriction.value : hasOwn(defaults, key) ? defaults[key] : undefined);
+    }
+    return out;
+  };
+  const before = imposed(previous);
+  const after = imposed(next);
+  const patch: Record<string, unknown> = {};
+  for (const [key, value] of before) {
+    if (after.has(key) || explicit.has(key) || !isPolicySettingKey(key)) continue;
+    if (state[key] === value && value !== builtInDefault(key)) patch[key] = builtInDefault(key);
   }
   return patch;
 }
@@ -1119,11 +1232,10 @@ export const useSettingsStore = create<SettingsState>()(
       };
 
       const applyVisualSettings = () => {
-        const { fontSize, density, interfaceLayout, animationsEnabled } = get();
-        applyFontSize(fontSize);
-        applyDensity(density, interfaceLayout);
-        applyInterfaceLayout(interfaceLayout, density);
-        applyAnimations(animationsEnabled);
+        const state = get();
+        applyAccessibility(state);
+        applyDensity(state.density, state.interfaceLayout);
+        applyInterfaceLayout(state.interfaceLayout, state.density);
       };
 
       /** Sets what the admin policy changes; true when anything changed. */
@@ -1140,9 +1252,10 @@ export const useSettingsStore = create<SettingsState>()(
       const applySetting = <K extends keyof SettingsState>(key: K, value: SettingsState[K]) => {
         set({ [key]: value } as Partial<SettingsState>);
 
-        // Apply font size to document root
-        if (key === 'fontSize') {
-          applyFontSize(value as FontSize);
+        // Text size, contrast, motion and the other visual accessibility
+        // settings live on <html> (lib/accessibility-settings.ts).
+        if (key === 'fontSize' || ACCESSIBILITY_DOM_KEYS.has(key)) {
+          applyAccessibility(get());
         }
 
         // Apply density to document root
@@ -1156,22 +1269,19 @@ export const useSettingsStore = create<SettingsState>()(
           applyInterfaceLayout(value as InterfaceLayout, get().density);
         }
 
-        // Apply animations to document root
-        if (key === 'animationsEnabled') {
-          applyAnimations(value as boolean);
-        }
       };
 
-      const buildExport = (opts?: { subscriptionOwner?: string }): string => {
+      const buildExport = (opts?: { forSync?: boolean; subscriptionOwner?: string }): string => {
         const state = get();
-        const templateSync = templateSyncBridge?.getSyncedState();
+        const templateSync = templateSyncBridge?.getSyncedState({
+          accountId: opts?.forSync && syncUsername && syncServerUrl ? generateAccountId(syncUsername, syncServerUrl) : undefined,
+        });
         const subscriptionSync = calendarSubscriptionSyncBridge?.getSyncedState();
         const settings = {
           fontSize: state.fontSize,
           density: state.density,
           interfaceLayout: state.interfaceLayout,
           mvInboxType: state.mvInboxType,
-          animationsEnabled: state.animationsEnabled,
           messageListOrder: state.messageListOrder,
           messageListOrderScope: state.messageListOrderScope,
           dateFormat: state.dateFormat,
@@ -1214,6 +1324,7 @@ export const useSettingsStore = create<SettingsState>()(
           sendDelaySeconds: state.sendDelaySeconds,
           signaturePosition: state.signaturePosition,
           signatureSeparatorEnabled: state.signatureSeparatorEnabled,
+          signatureDetails: state.signatureDetails,
           requestReadReceiptDefault: state.requestReadReceiptDefault,
           readReceiptResponse: state.readReceiptResponse,
           sessionTimeout: state.sessionTimeout,
@@ -1234,8 +1345,10 @@ export const useSettingsStore = create<SettingsState>()(
           sharedCalendarColors: state.sharedCalendarColors,
           groupContactsByLetter: state.groupContactsByLetter,
           sortContactsByLastName: state.sortContactsByLastName,
+          filesSettings: state.filesSettings,
           expandedFilterView: state.expandedFilterView,
           showTimeInMonthView: state.showTimeInMonthView,
+          calendarTintedEvents: state.calendarTintedEvents,
           showWeekNumbers: state.showWeekNumbers,
           calendarFreeScroll: state.calendarFreeScroll,
           calendarHoverPreview: state.calendarHoverPreview,
@@ -1275,6 +1388,7 @@ export const useSettingsStore = create<SettingsState>()(
           attachmentReminderEnabled: state.attachmentReminderEnabled,
           attachmentReminderKeywords: state.attachmentReminderKeywords,
           emptySubjectWarningEnabled: state.emptySubjectWarningEnabled,
+          placeholderWarningEnabled: state.placeholderWarningEnabled,
           recipientMentionsEnabled: state.recipientMentionsEnabled,
           mentionAddsRecipientTo: state.mentionAddsRecipientTo,
           hideInlineImageAttachments: state.hideInlineImageAttachments,
@@ -1288,18 +1402,25 @@ export const useSettingsStore = create<SettingsState>()(
           debugCategories: state.debugCategories,
           settingsSyncDisabled: state.settingsSyncDisabled,
           explicitSettings: state.explicitSettings,
+          emailAlwaysLightMode: state.emailAlwaysLightMode,
+          showToolbarLabels: state.showToolbarLabels,
+          ...Object.fromEntries(ACCESSIBILITY_KEYS.map((key) => [key, state[key]])),
           // Cross-store settings
           theme: useThemeStore.getState().theme,
           themeChosen: useThemeStore.getState().themeChosen,
           locale: useLocaleStore.getState().locale,
           // Omitted entirely (rather than emitted empty) if the bridge has
           // not registered, so an importing device leaves its templates alone.
-          ...(templateSync
-            ? {
-                templates: templateSync.templates,
-                deletedTemplateIds: templateSync.deletedTemplateIds,
-              }
-            : {}),
+          // Templates the account keeps itself are left out of a sync push;
+          // the flag has the stored blob drop its old copy (mergeStoredTemplates).
+          ...(templateSync && opts?.forSync && templateSync.storedInAccount
+            ? { templatesInMetadata: true }
+            : templateSync
+              ? {
+                  templates: templateSync.templates,
+                  deletedTemplateIds: templateSync.deletedTemplateIds,
+                }
+              : {}),
           // Omitted entirely if the bridge has not registered, so an importing
           // device leaves its calendar subscriptions alone.
           ...(subscriptionSync
@@ -1337,8 +1458,12 @@ export const useSettingsStore = create<SettingsState>()(
         });
       },
 
-      applyAdminPolicy: () => {
-        if (applyAdminPolicyPatch()) applyVisualSettings();
+      applyAdminPolicy: (previous) => {
+        const released = previous
+          ? adminPolicyReleasePatch(get() as unknown as Record<string, unknown>, previous, usePolicyStore.getState().policy)
+          : {};
+        if (Object.keys(released).length > 0) set(released as Partial<SettingsState>);
+        if (applyAdminPolicyPatch() || Object.keys(released).length > 0) applyVisualSettings();
       },
 
       resetToDefaults: () => {
@@ -1369,6 +1494,7 @@ export const useSettingsStore = create<SettingsState>()(
           if (typeof settings.protocolOpenMode !== 'string' && typeof settings.protocolMailtoOpenMode === 'string') {
             settings.protocolOpenMode = settings.protocolMailtoOpenMode;
           }
+          migrateAnimationsSetting(settings);
 
           // Apply settings, noting which keys were taken over for the
           // onSettingsImport hook.
@@ -1390,6 +1516,11 @@ export const useSettingsStore = create<SettingsState>()(
                 put(key, { sendDelaySeconds: 0 });
                 return;
               }
+              // An enum the page doesn't know (an older or newer export, a
+              // hand-edited file) keeps the current value.
+              if (!isAllowedAccessibilityValue(key, settings[key])) {
+                return;
+              }
               // Validity of the zone id itself is checked at use time
               // (lib/timezone resolveTimeZone falls back to the browser zone),
               // so only reject non-strings here.
@@ -1409,8 +1540,16 @@ export const useSettingsStore = create<SettingsState>()(
               if (key === 'hiddenSharedMailAccounts' && !isPlainRecord(settings[key])) {
                 return;
               }
+              if (key === 'signatureDetails') {
+                put(key, { signatureDetails: sanitizeSignatureDetails(settings[key]) });
+                return;
+              }
               if (key === 'notificationMutes') {
                 put(key, { notificationMutes: normalizeNotificationMutes(settings[key]) });
+                return;
+              }
+              if (key === 'filesSettings') {
+                put(key, { filesSettings: normalizeFilesSettings(settings[key]) });
                 return;
               }
               // The list order is sent to the server as a sort array, so an
@@ -1493,7 +1632,7 @@ export const useSettingsStore = create<SettingsState>()(
           templateSyncBridge?.applySyncedState(
             settings.templates,
             settings.deletedTemplateIds,
-            { merge: Boolean(opts?.serverAccountId) }
+            { merge: Boolean(opts?.serverAccountId), accountId: opts?.serverAccountId }
           );
           calendarSubscriptionSyncBridge?.applySyncedState(
             settings.icalSubscriptions,
@@ -1708,7 +1847,7 @@ export const useSettingsStore = create<SettingsState>()(
             // previous account left in this browser (#1185).
             if (heldByOther) resetSyncedState({ keepCrossAccountViews });
             writeSettingsOwner(accountId);
-            pushTemplatesAfterLoad = localTemplatesAhead(null);
+            pushTemplatesAfterLoad = localTemplatesAhead(null, accountId);
             return false;
           }
           if (settings && typeof settings === 'object') {
@@ -1726,7 +1865,7 @@ export const useSettingsStore = create<SettingsState>()(
             });
             isLoadingFromServer = false;
             writeSettingsOwner(accountId);
-            pushTemplatesAfterLoad = localTemplatesAhead(settings);
+            pushTemplatesAfterLoad = localTemplatesAhead(settings, accountId);
             syncLog('Settings loaded from server successfully');
             void settingsHooks.onSettingsSync.emit({ direction: 'pulled' });
             // The per-account preferred sender identity (#507) is re-applied by
@@ -1740,6 +1879,9 @@ export const useSettingsStore = create<SettingsState>()(
           syncError('Failed to load settings from server:', error);
           isLoadingFromServer = false;
           return failWithoutForeignState();
+        } finally {
+          settledLoads.add(accountId);
+          for (const listener of settledListeners) listener(accountId);
         }
       },
 
@@ -1754,7 +1896,7 @@ export const useSettingsStore = create<SettingsState>()(
     },
     {
       name: 'settings-storage',
-      version: 8,
+      version: 9,
       migrate: migrateSettings,
       onRehydrateStorage: () => {
         return (state) => {
@@ -1779,10 +1921,9 @@ export const useSettingsStore = create<SettingsState>()(
             if (state.messageListOrderScope !== 'inbox' && state.messageListOrderScope !== 'all') {
               state.messageListOrderScope = 'inbox';
             }
-            applyFontSize(state.fontSize);
+            applyAccessibility(state);
             applyDensity(state.density, state.interfaceLayout);
             applyInterfaceLayout(state.interfaceLayout, state.density);
-            applyAnimations(state.animationsEnabled);
           }
         };
       },
@@ -1859,20 +2000,38 @@ export function migrateSettings(persisted: unknown, version: number): SettingsSt
         if (version < 8 || !Array.isArray(state.explicitSettings)) {
           state.explicitSettings = legacyExplicitSettings(state);
         }
+        migrateAnimationsSetting(state);
         return state as unknown as SettingsState;
 }
 
-// Helper functions to apply settings to DOM
-function applyFontSize(size: FontSize) {
-  if (typeof document === 'undefined') return;
+/**
+ * v9: the Animations on/off switch became Reduce motion (System / On /
+ * Off). Off meant "no animations"; On let the OS setting decide, which is
+ * what System does now. Imports and server copies from older builds still
+ * carry the old key and go through this too.
+ */
+export function migrateAnimationsSetting(state: Record<string, unknown>): void {
+  if (typeof state.animationsEnabled === 'boolean') {
+    if (state.reduceMotion === undefined) state.reduceMotion = state.animationsEnabled ? 'system' : 'on';
+    delete state.animationsEnabled;
+  }
+  if (Array.isArray(state.explicitSettings)) {
+    state.explicitSettings = (state.explicitSettings as unknown[]).map((key) => (key === 'animationsEnabled' ? 'reduceMotion' : key));
+  }
+}
 
-  const root = document.documentElement;
-  const sizeMap = {
-    small: '14px',
-    medium: '16px',
-    large: '18px',
-  };
-  root.style.setProperty('--font-size-base', sizeMap[size]);
+// Helper functions to apply settings to DOM
+
+/** The settings applyAccessibilityTo() writes onto <html>. */
+const ACCESSIBILITY_DOM_KEYS: ReadonlySet<string> = new Set([
+  'contrast', 'reduceTransparency', 'underlineLinks', 'appFont', 'lineSpacing', 'letterSpacing', 'wordSpacing',
+  'paragraphSpacing', 'readingWidth', 'reduceMotion', 'focusRing', 'focusAlwaysVisible', 'largeTargets',
+  'largeCursor', 'nativeScrollbars', 'simpleMode', 'unreadCountStyle', 'colorBlindPalette', 'showColorNames',
+]);
+
+function applyAccessibility(state: { fontSize: FontSize } & AccessibilitySettings) {
+  if (typeof document === 'undefined') return;
+  applyAccessibilityTo(document.documentElement, state);
 }
 
 type DensityVars = Record<string, string>;
@@ -1956,22 +2115,6 @@ function applyInterfaceLayout(layout: InterfaceLayout, density: Density) {
   applyDensity(density, layout);
 }
 
-function applyAnimations(enabled: boolean) {
-  if (typeof document === 'undefined') return;
-
-  const root = document.documentElement;
-  if (enabled) {
-    root.style.removeProperty('--transition-duration');
-    delete root.dataset.animations;
-  } else {
-    root.style.setProperty('--transition-duration', '0s');
-    // The variable alone reached nothing that animates: the panes slide on
-    // Tailwind transitions and the menus on keyframes. globals.css stops
-    // them all under this attribute, as it does for prefers-reduced-motion.
-    root.dataset.animations = 'off';
-  }
-}
-
 // Tag definitions change from the settings editor, from plugins (host-api
 // writes the store directly) and from imports and server loads. Watching the
 // list catches every path once instead of hooking each writer.
@@ -1984,14 +2127,15 @@ useSettingsStore.subscribe((state, prev) => {
 // Initialize settings on load
 if (typeof window !== 'undefined') {
   const store = useSettingsStore.getState();
-  applyFontSize(store.fontSize);
+  applyAccessibility(store);
   applyDensity(store.density, store.interfaceLayout);
   applyInterfaceLayout(store.interfaceLayout, store.density);
-  applyAnimations(store.animationsEnabled);
 
   // The service worker shows push notifications without this store, so it
   // reads the sound preference from its own Cache store (#1289).
-  const pushSound = (s: SettingsState) => s.emailNotificationsEnabled && s.emailNotificationSound;
+  // Do not disturb can't keep a push from showing (browsers require one per
+  // push), but it keeps it silent.
+  const pushSound = (s: SettingsState) => s.emailNotificationsEnabled && s.emailNotificationSound && !s.doNotDisturb;
   let lastPushSound = pushSound(store);
   void writePushPreferences({ sound: lastPushSound });
   useSettingsStore.subscribe((state) => {
@@ -2005,7 +2149,7 @@ if (typeof window !== 'undefined') {
   // full scope once signed in), so its defaults apply whenever it changes.
   usePolicyStore.subscribe((policyState, prev) => {
     if (policyState.policy === prev.policy) return;
-    useSettingsStore.getState().applyAdminPolicy();
+    useSettingsStore.getState().applyAdminPolicy(prev.policy);
   });
 
   const triggerSync = () => {
