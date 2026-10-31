@@ -246,6 +246,41 @@ describe('Avatar', () => {
     }
   });
 
+  it('switches to dark background when a transparent favicon has a white logo', () => {
+    useFaviconRefreshStore.setState({ refreshedAt: 0 });
+    const origGetContext = HTMLCanvasElement.prototype.getContext;
+    HTMLCanvasElement.prototype.getContext = function (type: string) {
+      if (type === '2d') {
+        return {
+          drawImage: vi.fn(),
+          getImageData: vi.fn(() => ({
+            data: new Uint8ClampedArray([
+              0, 0, 0, 0,
+              0, 0, 0, 0,
+              255, 255, 255, 255,
+              255, 255, 255, 255,
+            ]),
+          })),
+        } as unknown as CanvasRenderingContext2D;
+      }
+      return null;
+    } as never;
+
+    try {
+      const { container } = render(<Avatar name="WhiteLogo" email="sender@whitelogo.example" />);
+      const img = container.querySelector('img');
+      expect(img).not.toBeNull();
+      Object.defineProperty(img!, 'naturalWidth', { value: 32, configurable: true });
+      Object.defineProperty(img!, 'naturalHeight', { value: 32, configurable: true });
+      fireEvent.load(img!);
+
+      const el = container.firstElementChild as HTMLElement;
+      expect(el.style.backgroundColor).toBe('rgb(30, 41, 59)');
+    } finally {
+      HTMLCanvasElement.prototype.getContext = origGetContext;
+    }
+  });
+
   // #1439: a forged From must not get the real sender's logo or photo.
   describe('sender warning', () => {
     it('shows a shield instead of the favicon and the initials', () => {

@@ -179,8 +179,44 @@ function initialsColor(_background?: string): string {
   return '#ffffff';
 }
 
+/** Cache whether a favicon / brand icon image is predominantly white/light on a transparent background. */
+const lightIconCache = new Map<string, boolean>();
+
+function detectLightIcon(img: HTMLImageElement): boolean {
+  try {
+    const canvas = document.createElement('canvas');
+    const w = Math.min(img.naturalWidth || 32, 32);
+    const h = Math.min(img.naturalHeight || 32, 32);
+    if (w <= 1 || h <= 1) return false;
+    canvas.width = w;
+    canvas.height = h;
+    const ctx = canvas.getContext('2d', { willReadFrequently: true });
+    if (!ctx) return false;
+    ctx.drawImage(img, 0, 0, w, h);
+    const { data } = ctx.getImageData(0, 0, w, h);
+    let transparentPixels = 0;
+    let visiblePixels = 0;
+    let totalLuminance = 0;
+    for (let i = 0; i < data.length; i += 4) {
+      const alpha = data[i + 3];
+      if (alpha < 64) {
+        transparentPixels++;
+      } else {
+        visiblePixels++;
+        // ITU-R BT.601 perceived luminance (0-255)
+        totalLuminance += 0.299 * data[i] + 0.587 * data[i + 1] + 0.114 * data[i + 2];
+      }
+    }
+    // High transparency (>5%) and visible artwork is bright (average luminance > 185)
+    return transparentPixels > (data.length / 4) * 0.05 && visiblePixels > 0 && (totalLuminance / visiblePixels) > 185;
+  } catch {
+    return false;
+  }
+}
+
 export function Avatar({ name, email, contactPhoto, size = "md", className, disableImages = false, disableFavicon = false, fallbackColor, senderWarning, brandDomain }: AvatarProps) {
   const [imgError, setImgError] = useState(false);
+  const [isLightIcon, setIsLightIcon] = useState<boolean>(false);
   // The BIMI logo of this domain answered with no logo (or didn't load).
   const [failedBrand, setFailedBrand] = useState<string | null>(null);
   const [pluginAvatarUrl, setPluginAvatarUrl] = useState<string | null>(null);
@@ -293,6 +329,14 @@ export function Avatar({ name, email, contactPhoto, size = "md", className, disa
   const isFavicon = imgSrc !== null && imgSrc === faviconSrc;
   const isBrand = imgSrc !== null && imgSrc === brandSrc;
 
+  useEffect(() => {
+    if (imgSrc && (isFavicon || isBrand)) {
+      setIsLightIcon(!!lightIconCache.get(imgSrc));
+    } else {
+      setIsLightIcon(false);
+    }
+  }, [imgSrc, isFavicon, isBrand]);
+
   const handleImgError = useCallback(() => {
     if (resolvedContactPhoto && imgSrc === resolvedContactPhoto) {
       setFailedContactPhoto(resolvedContactPhoto);
@@ -342,7 +386,13 @@ export function Avatar({ name, email, contactPhoto, size = "md", className, disa
         className
       )}
       style={{
-        backgroundColor: imgSrc ? (isFavicon || isBrand ? "#ffffff" : "transparent") : initialsBackground,
+        backgroundColor: imgSrc
+        ? isFavicon || isBrand
+          ? isLightIcon
+            ? "#1e293b" // Dark slate background for white/light icons on transparent
+            : "#ffffff" // White background for dark/colored icons on transparent
+          : "transparent"
+        : initialsBackground,
         color: imgSrc ? undefined : initialsColor(initialsBackground),
       }}
       title={name || email}
@@ -360,6 +410,16 @@ export function Avatar({ name, email, contactPhoto, size = "md", className, disa
             const img = e.currentTarget;
             if ((isFavicon || isBrand) && img.naturalWidth <= 1) {
               handleImgError();
+              return;
+            }
+            if ((isFavicon || isBrand) && imgSrc) {
+              if (lightIconCache.has(imgSrc)) {
+                setIsLightIcon(!!lightIconCache.get(imgSrc));
+              } else {
+                const isLight = detectLightIcon(img);
+                lightIconCache.set(imgSrc, isLight);
+                setIsLightIcon(isLight);
+              }
             }
           }}
         />
