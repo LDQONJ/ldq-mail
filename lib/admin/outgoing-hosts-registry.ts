@@ -95,6 +95,18 @@ export const OUTGOING_HOSTS: readonly OutgoingHost[] = [
     lite: false,
   },
   {
+    id: 'bimi',
+    host: '<sender domain> (BIMI)',
+    // The hosts come from the sender's DNS records; no literal in the source.
+    literals: [],
+    files: [],
+    side: 'server',
+    usedBy: 'Brand logos (BIMI) for messages that pass DMARC, looked up by /api/bimi: TXT records at the sender\'s domain, then the logo, mark certificate and CRL they name.',
+    off: 'Users can turn sender icons off in Settings > Message list.',
+    inMode: 'Avatars show no brand logos; /api/bimi answers 403 before any lookup.',
+    lite: false,
+  },
+  {
     id: 'translate',
     host: 'api.mymemory.translated.net',
     files: ['app/api/translate/route.ts'],
@@ -158,6 +170,7 @@ export const NON_REQUEST_HOSTS: readonly { host: string; files: readonly string[
   { host: 'www.youtube-nocookie.com', why: 'example in a comment', files: ['lib/plugin-types.ts'] },
   { host: 'bulwark-webmail.vercel.app', why: 'sample message text', files: ['stores/email-store.ts'] },
   { host: 'randomuser.me', why: 'docs links in a comment of the mock server', files: ['app/api/dev-jmap/[...path]/route.ts'] },
+  { host: 'schema.org', why: 'vocabulary names in booking markup, matched and never requested', files: ['lib/structured-mail/extract.ts'] },
 ];
 
 /**

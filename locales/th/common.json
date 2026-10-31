@@ -1038,7 +1038,6 @@
     "any_size": "ทุกขนาด",
     "larger_than_mb": "ใหญ่กว่า {size} MB",
     "custom_size": "กำหนดขนาดเอง",
-    "done": "เสร็จสิ้น",
     "name_or_address": "ชื่อหรือที่อยู่"
   },
   "global_search": {
@@ -1435,6 +1434,11 @@
       "failed_sent_from": "ข้อความนี้อ้างว่าส่งมาจาก {domain} แต่ส่งมาจาก {host} และไม่ผ่านการตรวจสอบความปลอดภัย อาจเป็นข้อความปลอมแปลง",
       "caution": "โปรดระมัดระวังการคลิกลิงก์หรือเปิดไฟล์แนบในข้อความนี้"
     },
+    "brand_logo": {
+      "verified_label": "โลโก้ที่ยืนยันแล้ว",
+      "verified": "โลโก้นี้ได้รับการยืนยันว่าเป็นของ {organization}",
+      "verified_by": "{issuer} ยืนยันแล้วว่าโลโก้นี้เป็นของ {organization}"
+    },
     "back_to_list": "กลับไปยังรายการอีเมล",
     "view_contact": "ดูข้อมูลผู้ติดต่อ",
     "message_details": "รายละเอียดข้อความ",
@@ -1707,6 +1711,69 @@
       "copy": "คัดลอกรหัส {code}",
       "copied": "คัดลอกรหัสแล้ว!",
       "copy_failed": "คัดลอกไม่สำเร็จ"
+    },
+    "structured_mail": {
+      "kind_flight": "เที่ยวบิน",
+      "kind_train": "รถไฟ",
+      "kind_bus": "รถบัส",
+      "kind_lodging": "โรงแรม",
+      "kind_rentalcar": "รถเช่า",
+      "kind_event": "กิจกรรม",
+      "kind_restaurant": "ร้านอาหาร",
+      "kind_order": "คำสั่งซื้อ",
+      "kind_parcel": "พัสดุ",
+      "region_flight": "การจองเที่ยวบิน",
+      "region_train": "การจองรถไฟ",
+      "region_bus": "การจองรถบัส",
+      "region_lodging": "การจองโรงแรม",
+      "region_rentalcar": "การจองรถเช่า",
+      "region_event": "การจองกิจกรรม",
+      "region_restaurant": "การจองโต๊ะอาหาร",
+      "region_shipment": "คำสั่งซื้อและการจัดส่ง",
+      "status_cancelled": "ยกเลิกแล้ว",
+      "status_pending": "รอการยืนยัน",
+      "status_hold": "กันที่ไว้",
+      "order_status_payment_due": "รอชำระเงิน",
+      "order_status_processing": "กำลังดำเนินการ",
+      "order_status_problem": "มีปัญหา",
+      "order_status_in_transit": "จัดส่งแล้ว",
+      "order_status_pickup_available": "พร้อมให้รับ",
+      "order_status_returned": "ส่งคืนแล้ว",
+      "order_status_delivered": "ส่งถึงแล้ว",
+      "order_status_cancelled": "ยกเลิกแล้ว",
+      "reference": "รหัสการจอง",
+      "order_number": "หมายเลขคำสั่งซื้อ",
+      "tracking_number": "หมายเลขพัสดุ",
+      "copy_reference": "คัดลอกรหัสการจอง {value}",
+      "copy_order_number": "คัดลอกหมายเลขคำสั่งซื้อ {value}",
+      "copy_tracking_number": "คัดลอกหมายเลขพัสดุ {value}",
+      "copied_reference": "คัดลอกรหัสการจองแล้ว",
+      "copied_order_number": "คัดลอกหมายเลขคำสั่งซื้อแล้ว",
+      "copied_tracking_number": "คัดลอกหมายเลขพัสดุแล้ว",
+      "copy_failed": "คัดลอกไปยังคลิปบอร์ดไม่ได้",
+      "passengers": "ผู้โดยสาร",
+      "seats": "ที่นั่ง",
+      "tickets": "ตั๋ว",
+      "link_check_in": "เช็คอิน",
+      "link_manage": "จัดการการจอง",
+      "link_ticket": "ตั๋ว",
+      "link_track": "ติดตามพัสดุ",
+      "link_view_order": "ดูคำสั่งซื้อ",
+      "check_in_label": "เช็คอิน",
+      "check_out_label": "เช็คเอาท์",
+      "from_time": "ตั้งแต่ {time}",
+      "until_time": "ภายใน {time}",
+      "nights": "{count, plural, other {# คืน}}",
+      "pickup": "รับรถ",
+      "dropoff": "คืนรถ",
+      "party_size": "{count, plural, other {โต๊ะสำหรับ # คน}}",
+      "items_more": "และอีก {count} รายการ",
+      "items_count": "{count, plural, other {# รายการ}}",
+      "total": "รวม {total}",
+      "expected_by": "ถึงภายใน {date}",
+      "local_time": "เวลาท้องถิ่น",
+      "local_time_title": "เวลาท้องถิ่นของสถานที่ ไม่ใช่เขตเวลาของคุณ",
+      "route": "{from} ไป {to}"
     },
     "mv_position": "{index} จาก {total}",
     "copy": "คัดลอก",
@@ -2378,6 +2445,10 @@
       "accounts_heading": "บัญชีที่เชื่อมต่อ",
       "account_on": "{label} บน {host}",
       "account_waiting": "{label} บน {host} (ยังลงชื่อเข้าใช้ไม่เสร็จสมบูรณ์)",
+      "forward_heading": "ส่งต่ออีเมลไปยัง",
+      "forward_hint": "ที่อยู่ที่ปลั๊กอินนี้ส่งต่อข้อความไปได้โดยไม่ต้องถาม",
+      "forward_remove": "นำออก",
+      "forward_remove_label": "หยุดส่งต่อไปยัง {address}",
       "disconnect": "ยกเลิกการเชื่อมต่อ",
       "disconnect_failed": "ไม่สามารถยกเลิกการเชื่อมต่อ {label} ได้"
     },
@@ -2648,10 +2719,19 @@
         "title": "ปรับแต่งข้อความที่คุณกำลังเขียน",
         "body": "แทนที่หรือเพิ่มข้อความในขณะที่คุณเขียน เมื่อคุณใช้ปลั๊กอินในหน้าต่างเขียนอีเมล คุณสามารถเลิกทำการเปลี่ยนแปลงแต่ละครั้งได้ และยังคงเป็นผู้ตัดสินใจว่าจะส่งข้อความหรือไม่"
       },
+      "email_forward": {
+        "title": "ส่งต่ออีเมลของคุณ",
+        "body": "ส่งต่อข้อความจากบัญชีของคุณพร้อมไฟล์แนบ โดยไม่ต้องเปิดหน้าเขียนข้อความ ระบบจะถามคุณก่อนส่งต่อไปยังแต่ละที่อยู่เป็นครั้งแรก"
+      },
       "ui_notifications": {
         "title": "แสดงการแจ้งเตือน",
         "body": "แสดงการแจ้งเตือนบนอุปกรณ์ของคุณ หรือภายในแอปหากคุณยังไม่ได้อนุญาตการแจ้งเตือนของอุปกรณ์ โดยแต่ละการแจ้งเตือนจะระบุชื่อปลั๊กอิน"
       }
+    },
+    "forward_approval": {
+      "title": "อนุญาตให้ {plugin} ส่งต่ออีเมลไปยัง {addresses} หรือไม่",
+      "message": "{plugin} ต้องการส่งต่อ “{subject}” พร้อมไฟล์แนบไปยัง {addresses} หากคุณอนุญาต จากนี้ไปปลั๊กอินจะส่งต่ออีเมลไปยังที่อยู่นี้ได้โดยไม่ต้องถาม คุณยกเลิกได้ที่ การตั้งค่า > ส่วนเสริม",
+      "allow": "อนุญาตและส่งต่อ"
     },
     "dialog": {
       "from_plugin": "จากปลั๊กอิน {name}",
@@ -3992,7 +4072,7 @@
     "notifications": {
       "test_sound": "ทดสอบเสียงแจ้งเตือน",
       "sounds": {
-        "default": "ค่าเริ่มต้น (เสียงบี๊บ)",
+        "default": "เสียงบี๊บ",
         "cheerful": "ร่าเริง (Cheerful)",
         "involved": "กระตือรือร้น (Involved)",
         "swift": "รวดเร็ว (Swift Gesture)",
@@ -4375,8 +4455,8 @@
         "unsupported": "บัญชีปัจจุบันไม่รองรับการส่งแบบหน่วงเวลา การตั้งค่านี้จะยังคงถูกบันทึกไว้สำหรับบัญชีอื่น"
       },
       "return_to_list_after_action": {
-        "label": "กลับไปยังรายการหลังจากลบหรือทำเครื่องหมายว่ายังไม่ได้อ่าน",
-        "description": "หลังจากลบหรือทำเครื่องหมายข้อความที่เปิดอยู่ว่ายังไม่ได้อ่าน ให้กลับไปยังรายการข้อความแทนการเปิดข้อความถัดไป"
+        "label": "กลับไปยังรายการหลังจากลบ เก็บถาวร ย้าย หรือทำเครื่องหมายว่ายังไม่ได้อ่าน",
+        "description": "หลังจากลบ เก็บถาวร ย้าย รายงานเป็นจดหมายขยะ หรือทำเครื่องหมายข้อความที่เปิดอยู่ว่ายังไม่ได้อ่าน ให้กลับไปยังรายการข้อความแทนการเปิดข้อความถัดไป"
       },
       "swipe_right_action": {
         "label": "การดำเนินการเมื่อปัดไปทางขวา (มือถือ)",
@@ -5944,6 +6024,37 @@
     "easy_read": "ภาษาที่อ่านง่าย",
     "sign_language": "ภาษามือ",
     "new_tab": "เปิดในแท็บใหม่"
+  },
+  "structured_mail_calendar": {
+    "add_to_calendar": "เพิ่มลงในปฏิทิน",
+    "update_in_calendar": "อัปเดตในปฏิทิน",
+    "remove_from_calendar": "นำออกจากปฏิทิน",
+    "in_calendar": "อยู่ในปฏิทินของคุณ",
+    "view_in_calendar": "เปิดดูในปฏิทิน",
+    "select_calendar": "เลือกปฏิทิน",
+    "added": "เพิ่มลงในปฏิทินของคุณแล้ว",
+    "updated": "อัปเดตปฏิทินแล้ว",
+    "removed": "นำออกจากปฏิทินของคุณแล้ว",
+    "action_failed": "เปลี่ยนแปลงปฏิทินไม่สำเร็จ โปรดลองอีกครั้ง",
+    "blocked": "ปลั๊กอินหยุดการเปลี่ยนแปลงปฏิทินนี้",
+    "title": {
+      "rental_car": "รถเช่า",
+      "rental_car_company": "รถเช่า: {company}"
+    },
+    "description": {
+      "reference": "หมายเลขการจอง: {reference}",
+      "passengers": "ผู้โดยสาร: {names}",
+      "seats": "ที่นั่ง: {seats}",
+      "checkin": "เช็กอิน: {url}",
+      "manage": "จัดการการจอง: {url}",
+      "ticket": "ตั๋ว: {url}",
+      "phone": "โทรศัพท์: {phone}",
+      "car": "รถ: {car}",
+      "tickets": "หมายเลขตั๋ว: {numbers}",
+      "party_size": "จำนวนคน: {count}",
+      "added_from": "เพิ่มจากอีเมลของ {domain}",
+      "added_from_subject": "เพิ่มจากอีเมล “{subject}” ของ {domain}"
+    }
   },
   "register": {
     "title": "Create Email Account",

@@ -499,6 +499,11 @@
       "failed_sent_from": "See kiri väidab, et on saadetud domeenilt {domain}, kuid see saadeti hostilt {host} ega läbinud domeeni {domain} saatjakontrolle. See võib olla võltsitud.",
       "caution": "Ole ettevaatlik linkide, manuste ning paroolide või makseandmete küsimistega."
     },
+    "brand_logo": {
+      "verified_label": "Kinnitatud logo",
+      "verified": "See logo on kinnitatud kui {organization} logo.",
+      "verified_by": "{issuer} kinnitas, et see logo kuulub ettevõttele {organization}."
+    },
     "back_to_list": "Tagasi loetellu",
     "view_contact": "Vaata kontakti",
     "message_details": "Kirja üksikasjad",
@@ -771,6 +776,69 @@
       "copy": "Kopeeri kood {code}",
       "copied": "Kood kopeeritud",
       "copy_failed": "Koodi kopeerimine ebaõnnestus"
+    },
+    "structured_mail": {
+      "kind_flight": "Lend",
+      "kind_train": "Rong",
+      "kind_bus": "Buss",
+      "kind_lodging": "Hotell",
+      "kind_rentalcar": "Rendiauto",
+      "kind_event": "Üritus",
+      "kind_restaurant": "Restoran",
+      "kind_order": "Tellimus",
+      "kind_parcel": "Pakk",
+      "region_flight": "Lennubroneering",
+      "region_train": "Rongibroneering",
+      "region_bus": "Bussibroneering",
+      "region_lodging": "Hotellibroneering",
+      "region_rentalcar": "Rendiauto broneering",
+      "region_event": "Ürituse broneering",
+      "region_restaurant": "Lauabroneering",
+      "region_shipment": "Tellimus ja kohaletoimetamine",
+      "status_cancelled": "Tühistatud",
+      "status_pending": "Ootel",
+      "status_hold": "Reserveeritud",
+      "order_status_payment_due": "Makse ootel",
+      "order_status_processing": "Töötlemisel",
+      "order_status_problem": "Probleem",
+      "order_status_in_transit": "Saadetud",
+      "order_status_pickup_available": "Valmis kättesaamiseks",
+      "order_status_returned": "Tagastatud",
+      "order_status_delivered": "Kohale toimetatud",
+      "order_status_cancelled": "Tühistatud",
+      "reference": "Broneeringu number",
+      "order_number": "Tellimuse number",
+      "tracking_number": "Jälgimisnumber",
+      "copy_reference": "Kopeeri broneeringu number {value}",
+      "copy_order_number": "Kopeeri tellimuse number {value}",
+      "copy_tracking_number": "Kopeeri jälgimisnumber {value}",
+      "copied_reference": "Broneeringu number kopeeritud",
+      "copied_order_number": "Tellimuse number kopeeritud",
+      "copied_tracking_number": "Jälgimisnumber kopeeritud",
+      "copy_failed": "Lõikelauale kopeerimine ebaõnnestus",
+      "passengers": "Reisijad",
+      "seats": "Kohad",
+      "tickets": "Piletid",
+      "link_check_in": "Registreeru",
+      "link_manage": "Halda broneeringut",
+      "link_ticket": "Pilet",
+      "link_track": "Jälgi",
+      "link_view_order": "Vaata tellimust",
+      "check_in_label": "Sisseregistreerimine",
+      "check_out_label": "Väljaregistreerimine",
+      "from_time": "alates {time}",
+      "until_time": "kuni {time}",
+      "nights": "{count, plural, one {# öö} other {# ööd}}",
+      "pickup": "Kättesaamine",
+      "dropoff": "Tagastamine",
+      "party_size": "{count, plural, one {Laud # inimesele} other {Laud # inimesele}}",
+      "items_more": "ja veel {count}",
+      "items_count": "{count, plural, one {# toode} other {# toodet}}",
+      "total": "Kokku {total}",
+      "expected_by": "Saabub hiljemalt {date}",
+      "local_time": "kohalik aeg",
+      "local_time_title": "Kohalik aeg sihtkohas, mitte sinu ajavööndis",
+      "route": "{from} – {to}"
     },
     "mv_position": "{index} / {total}",
     "plugin_panel_show": "Näita pistikprogrammi paneeli",
@@ -1575,7 +1643,7 @@
     "notifications": {
       "test_sound": "Testi teavitusheli",
       "sounds": {
-        "default": "Vaikimisi (piiks)",
+        "default": "Piiks",
         "cheerful": "Rõõmus",
         "involved": "Elav",
         "swift": "Kiire liigutus",
@@ -1958,8 +2026,8 @@
         "unsupported": "Praegune konto ei toeta viivitatud saatmist. Seade salvestatakse siiski teiste kontode jaoks."
       },
       "return_to_list_after_action": {
-        "label": "Naase loendisse pärast kustutamist või lugemata märkimist",
-        "description": "Pärast avatud kirja kustutamist või lugemata märkimist naase kirjade loendisse, selle asemel et avada järgmine kiri."
+        "label": "Naase loendisse pärast kustutamist, arhiveerimist, liigutamist või lugemata märkimist",
+        "description": "Pärast avatud kirja kustutamist, arhiveerimist, liigutamist, rämpspostiks märkimist või lugemata märkimist naase kirjade loendisse, selle asemel et avada järgmine kiri."
       },
       "swipe_right_action": {
         "label": "Paremale pühkimise toiming (mobiil)",
@@ -4943,7 +5011,6 @@
     "any_size": "Iga suurus",
     "larger_than_mb": "Suurem kui {size} MB",
     "custom_size": "Kohandatud suurus",
-    "done": "Valmis",
     "name_or_address": "Nimi või aadress"
   },
   "welcome": {
@@ -5427,6 +5494,10 @@
       "accounts_heading": "Ühendatud kontod",
       "account_on": "{label} serveris {host}",
       "account_waiting": "{label} serveris {host} (sisselogimine pole lõpetatud)",
+      "forward_heading": "Saadab kirju edasi aadressile",
+      "forward_hint": "Aadressid, kuhu see pistikprogramm võib kirju küsimata edasi saata.",
+      "forward_remove": "Eemalda",
+      "forward_remove_label": "Lõpeta edasisaatmine aadressile {address}",
       "disconnect": "Katkesta ühendus",
       "disconnect_failed": "Ühenduse katkestamine ebaõnnestus: {label}"
     },
@@ -5697,10 +5768,19 @@
         "title": "Muuda kirja, mida kirjutad",
         "body": "Asendada või lisada teksti kirjas selle kirjutamise ajal, kui kasutad pistikprogrammi kirjakoostajas. Iga muudatuse saad tagasi võtta ja sina otsustad ikka, kas saata."
       },
+      "email_forward": {
+        "title": "Sinu kirjade edasisaatmine",
+        "body": "Saadab sinu konto kirju koos manustega edasi ilma koostajat avamata. Enne esimest edasisaatmist igale aadressile küsitakse sinult luba."
+      },
       "ui_notifications": {
         "title": "Näita märguandeid",
         "body": "Näidata märguandeid sinu seadmes või rakenduses, kui pole neid lubanud. Iga märguanne nimetab pistikprogrammi."
       }
+    },
+    "forward_approval": {
+      "title": "Kas lubada pistikprogrammil {plugin} saata kirju edasi aadressile {addresses}?",
+      "message": "{plugin} soovib saata kirja „{subject}“ koos manustega edasi aadressile {addresses}. Kui lubad, saab see edaspidi sellele aadressile kirju küsimata edasi saata. Saad selle tagasi võtta jaotises Seaded > Lisad.",
+      "allow": "Luba ja saada edasi"
     },
     "dialog": {
       "from_plugin": "Pistikprogrammilt {name}",
@@ -5943,6 +6023,37 @@
     "easy_read": "Lihtne keel",
     "sign_language": "Viipekeel",
     "new_tab": "avaneb uuel vahekaardil"
+  },
+  "structured_mail_calendar": {
+    "add_to_calendar": "Lisa kalendrisse",
+    "update_in_calendar": "Uuenda kalendris",
+    "remove_from_calendar": "Eemalda kalendrist",
+    "in_calendar": "Sinu kalendris",
+    "view_in_calendar": "Vaata kalendris",
+    "select_calendar": "Vali kalender",
+    "added": "Lisatud sinu kalendrisse",
+    "updated": "Kalender uuendatud",
+    "removed": "Eemaldatud sinu kalendrist",
+    "action_failed": "Kalendrit ei õnnestunud muuta. Proovi uuesti.",
+    "blocked": "Pistikprogramm peatas selle kalendrimuudatuse.",
+    "title": {
+      "rental_car": "Rendiauto",
+      "rental_car_company": "Rendiauto: {company}"
+    },
+    "description": {
+      "reference": "Broneeringu number: {reference}",
+      "passengers": "Reisijad: {names}",
+      "seats": "Kohad: {seats}",
+      "checkin": "Registreerimine: {url}",
+      "manage": "Halda broneeringut: {url}",
+      "ticket": "Pilet: {url}",
+      "phone": "Telefon: {phone}",
+      "car": "Auto: {car}",
+      "tickets": "Piletid: {numbers}",
+      "party_size": "Inimesi: {count}",
+      "added_from": "Lisatud kirjast, mille saatis {domain}",
+      "added_from_subject": "Lisatud kirjast „{subject}“, mille saatis {domain}"
+    }
   },
   "register": {
     "title": "Create Email Account",

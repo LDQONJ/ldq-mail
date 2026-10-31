@@ -499,6 +499,11 @@
       "failed_sent_from": "This message claims to be from {domain}, but it was sent from {host} and failed {domain}'s sender checks. It may be forged.",
       "caution": "Be careful with links, attachments and requests for passwords or payment details."
     },
+    "brand_logo": {
+      "verified_label": "Verified logo",
+      "verified": "This logo is verified as belonging to {organization}.",
+      "verified_by": "{issuer} verified that this logo belongs to {organization}."
+    },
     "back_to_list": "Back to list",
     "view_contact": "View contact",
     "message_details": "Message Details",
@@ -771,6 +776,69 @@
       "copy": "Copy code {code}",
       "copied": "Code copied",
       "copy_failed": "Could not copy the code"
+    },
+    "structured_mail": {
+      "kind_flight": "Flight",
+      "kind_train": "Train",
+      "kind_bus": "Bus",
+      "kind_lodging": "Hotel",
+      "kind_rentalcar": "Rental car",
+      "kind_event": "Event",
+      "kind_restaurant": "Restaurant",
+      "kind_order": "Order",
+      "kind_parcel": "Parcel",
+      "region_flight": "Flight booking",
+      "region_train": "Train booking",
+      "region_bus": "Bus booking",
+      "region_lodging": "Hotel booking",
+      "region_rentalcar": "Rental car booking",
+      "region_event": "Event booking",
+      "region_restaurant": "Restaurant reservation",
+      "region_shipment": "Order and delivery",
+      "status_cancelled": "Cancelled",
+      "status_pending": "Pending",
+      "status_hold": "On hold",
+      "order_status_payment_due": "Payment due",
+      "order_status_processing": "Processing",
+      "order_status_problem": "Problem",
+      "order_status_in_transit": "Shipped",
+      "order_status_pickup_available": "Ready for pickup",
+      "order_status_returned": "Returned",
+      "order_status_delivered": "Delivered",
+      "order_status_cancelled": "Cancelled",
+      "reference": "Booking reference",
+      "order_number": "Order number",
+      "tracking_number": "Tracking number",
+      "copy_reference": "Copy booking reference {value}",
+      "copy_order_number": "Copy order number {value}",
+      "copy_tracking_number": "Copy tracking number {value}",
+      "copied_reference": "Booking reference copied",
+      "copied_order_number": "Order number copied",
+      "copied_tracking_number": "Tracking number copied",
+      "copy_failed": "Could not copy to the clipboard",
+      "passengers": "Passengers",
+      "seats": "Seats",
+      "tickets": "Tickets",
+      "link_check_in": "Check in",
+      "link_manage": "Manage booking",
+      "link_ticket": "Ticket",
+      "link_track": "Track",
+      "link_view_order": "View order",
+      "check_in_label": "Check-in",
+      "check_out_label": "Check-out",
+      "from_time": "from {time}",
+      "until_time": "until {time}",
+      "nights": "{count, plural, one {# night} other {# nights}}",
+      "pickup": "Pick-up",
+      "dropoff": "Return",
+      "party_size": "{count, plural, one {Table for #} other {Table for #}}",
+      "items_more": "and {count} more",
+      "items_count": "{count, plural, one {# item} other {# items}}",
+      "total": "Total {total}",
+      "expected_by": "Arrives by {date}",
+      "local_time": "local time",
+      "local_time_title": "Local time at the place, not your time zone",
+      "route": "{from} to {to}"
     },
     "mv_position": "{index} of {total}",
     "copy": "Copy",
@@ -1580,7 +1648,7 @@
     "notifications": {
       "test_sound": "Test notification sound",
       "sounds": {
-        "default": "Default (Beep)",
+        "default": "Beep",
         "cheerful": "Cheerful",
         "involved": "Involved",
         "swift": "Swift Gesture",
@@ -1963,8 +2031,8 @@
         "unsupported": "The current account does not advertise delayed-send support. The setting is still saved for other accounts."
       },
       "return_to_list_after_action": {
-        "label": "Return to list after delete or mark unread",
-        "description": "After deleting or marking the open message unread, go back to the message list instead of opening the next message."
+        "label": "Return to list after delete, archive, move or mark unread",
+        "description": "After deleting, archiving, moving, reporting as spam or marking the open message unread, go back to the message list instead of opening the next message."
       },
       "swipe_right_action": {
         "label": "Swipe right action (mobile)",
@@ -4948,7 +5016,6 @@
     "any_size": "Any size",
     "larger_than_mb": "Larger than {size} MB",
     "custom_size": "Custom size",
-    "done": "Done",
     "name_or_address": "Name or address"
   },
   "welcome": {
@@ -5432,6 +5499,10 @@
       "accounts_heading": "Connected accounts",
       "account_on": "{label} on {host}",
       "account_waiting": "{label} on {host} (sign-in not finished)",
+      "forward_heading": "Forwards mail to",
+      "forward_hint": "Addresses this plugin may forward messages to without asking.",
+      "forward_remove": "Remove",
+      "forward_remove_label": "Stop forwarding to {address}",
       "disconnect": "Disconnect",
       "disconnect_failed": "Could not disconnect {label}"
     },
@@ -5702,10 +5773,19 @@
         "title": "Change the message you are writing",
         "body": "Replace or add text in a message while you write it, when you use the plugin in the composer. You can undo each change, and you still decide whether to send."
       },
+      "email_forward": {
+        "title": "Forward your mail",
+        "body": "Forward messages from your account with their attachments, without opening the composer. You are asked before the first forward to each address."
+      },
       "ui_notifications": {
         "title": "Show notifications",
         "body": "Show notifications on your device, or in the app if you haven't allowed them. Each one names the plugin."
       }
+    },
+    "forward_approval": {
+      "title": "Let {plugin} forward mail to {addresses}?",
+      "message": "{plugin} wants to forward “{subject}” with its attachments to {addresses}. If you allow it, it can forward mail to this address from now on without asking. You can take this back in Settings > Add-ons.",
+      "allow": "Allow and forward"
     },
     "dialog": {
       "from_plugin": "From the plugin {name}",
@@ -5948,6 +6028,37 @@
     "easy_read": "Easy Read",
     "sign_language": "Sign language",
     "new_tab": "opens in a new tab"
+  },
+  "structured_mail_calendar": {
+    "add_to_calendar": "Add to calendar",
+    "update_in_calendar": "Update in calendar",
+    "remove_from_calendar": "Remove from calendar",
+    "in_calendar": "In your calendar",
+    "view_in_calendar": "View in calendar",
+    "select_calendar": "Choose a calendar",
+    "added": "Added to your calendar",
+    "updated": "Calendar updated",
+    "removed": "Removed from your calendar",
+    "action_failed": "Couldn't change your calendar. Try again.",
+    "blocked": "A plugin stopped this calendar change.",
+    "title": {
+      "rental_car": "Rental car",
+      "rental_car_company": "Rental car: {company}"
+    },
+    "description": {
+      "reference": "Booking reference: {reference}",
+      "passengers": "Passengers: {names}",
+      "seats": "Seats: {seats}",
+      "checkin": "Check in: {url}",
+      "manage": "Manage booking: {url}",
+      "ticket": "Ticket: {url}",
+      "phone": "Phone: {phone}",
+      "car": "Car: {car}",
+      "tickets": "Tickets: {numbers}",
+      "party_size": "Party size: {count}",
+      "added_from": "Added from a mail from {domain}",
+      "added_from_subject": "Added from the mail “{subject}” from {domain}"
+    }
   },
   "register": {
     "title": "Create Email Account",

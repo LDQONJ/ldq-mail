@@ -499,6 +499,11 @@
       "failed_sent_from": "Denne meldingen utgir seg for å være fra {domain}, men den ble sendt fra {host} og besto ikke avsenderkontrollene til {domain}. Den kan være forfalsket.",
       "caution": "Vær forsiktig med lenker, vedlegg og forespørsler om passord eller betalingsopplysninger."
     },
+    "brand_logo": {
+      "verified_label": "Bekreftet logo",
+      "verified": "Denne logoen er bekreftet å tilhøre {organization}.",
+      "verified_by": "{issuer} har bekreftet at denne logoen tilhører {organization}."
+    },
     "back_to_list": "Tilbake til listen",
     "view_contact": "Se kontakt",
     "message_details": "Meldingsdetaljer",
@@ -771,6 +776,69 @@
       "copy": "Kopier kode {code}",
       "copied": "Kode kopiert",
       "copy_failed": "Kunne ikke kopiere koden"
+    },
+    "structured_mail": {
+      "kind_flight": "Fly",
+      "kind_train": "Tog",
+      "kind_bus": "Buss",
+      "kind_lodging": "Hotell",
+      "kind_rentalcar": "Leiebil",
+      "kind_event": "Arrangement",
+      "kind_restaurant": "Restaurant",
+      "kind_order": "Bestilling",
+      "kind_parcel": "Pakke",
+      "region_flight": "Flybestilling",
+      "region_train": "Togbestilling",
+      "region_bus": "Bussbestilling",
+      "region_lodging": "Hotellbestilling",
+      "region_rentalcar": "Leiebilbestilling",
+      "region_event": "Arrangementsbestilling",
+      "region_restaurant": "Bordreservasjon",
+      "region_shipment": "Bestilling og levering",
+      "status_cancelled": "Kansellert",
+      "status_pending": "Venter",
+      "status_hold": "Reservert",
+      "order_status_payment_due": "Betaling mangler",
+      "order_status_processing": "Behandles",
+      "order_status_problem": "Problem",
+      "order_status_in_transit": "Sendt",
+      "order_status_pickup_available": "Klar til henting",
+      "order_status_returned": "Returnert",
+      "order_status_delivered": "Levert",
+      "order_status_cancelled": "Kansellert",
+      "reference": "Bestillingsnummer",
+      "order_number": "Ordrenummer",
+      "tracking_number": "Sporingsnummer",
+      "copy_reference": "Kopier bestillingsnummer {value}",
+      "copy_order_number": "Kopier ordrenummer {value}",
+      "copy_tracking_number": "Kopier sporingsnummer {value}",
+      "copied_reference": "Bestillingsnummer kopiert",
+      "copied_order_number": "Ordrenummer kopiert",
+      "copied_tracking_number": "Sporingsnummer kopiert",
+      "copy_failed": "Kunne ikke kopiere til utklippstavlen",
+      "passengers": "Reisende",
+      "seats": "Seter",
+      "tickets": "Billetter",
+      "link_check_in": "Sjekk inn",
+      "link_manage": "Administrer bestilling",
+      "link_ticket": "Billett",
+      "link_track": "Spor",
+      "link_view_order": "Vis bestilling",
+      "check_in_label": "Innsjekking",
+      "check_out_label": "Utsjekking",
+      "from_time": "fra kl. {time}",
+      "until_time": "innen kl. {time}",
+      "nights": "{count, plural, one {# natt} other {# netter}}",
+      "pickup": "Henting",
+      "dropoff": "Innlevering",
+      "party_size": "{count, plural, one {Bord for # person} other {Bord for # personer}}",
+      "items_more": "og {count} til",
+      "items_count": "{count, plural, one {# vare} other {# varer}}",
+      "total": "Totalt {total}",
+      "expected_by": "Kommer innen {date}",
+      "local_time": "lokal tid",
+      "local_time_title": "Lokal tid på stedet, ikke din tidssone",
+      "route": "{from} til {to}"
     },
     "mv_position": "{index} av {total}",
     "plugin_panel_show": "Vis tilleggspanel",
@@ -1575,7 +1643,7 @@
     "notifications": {
       "test_sound": "Test varslingslyden",
       "sounds": {
-        "default": "Standard (pip)",
+        "default": "Pip",
         "cheerful": "Munter",
         "involved": "Engasjert",
         "swift": "Rask",
@@ -1958,8 +2026,8 @@
         "unsupported": "Denne kontoen støtter ikke forsinket sending. Innstillingen lagres likevel for andre kontoer."
       },
       "return_to_list_after_action": {
-        "label": "Gå tilbake til listen etter sletting eller merking som ulest",
-        "description": "Gå tilbake til meldingslisten i stedet for å åpne neste melding etter at du har slettet den åpne meldingen eller merket den som ulest."
+        "label": "Gå tilbake til listen etter sletting, arkivering, flytting eller merking som ulest",
+        "description": "Gå tilbake til meldingslisten i stedet for å åpne neste melding etter at du har slettet, arkivert, flyttet eller rapportert den åpne meldingen som søppelpost eller merket den som ulest."
       },
       "swipe_right_action": {
         "label": "Handling ved sveip mot høyre (mobil)",
@@ -4943,7 +5011,6 @@
     "any_size": "Alle størrelser",
     "larger_than_mb": "Større enn {size} MB",
     "custom_size": "Egendefinert størrelse",
-    "done": "Ferdig",
     "name_or_address": "Navn eller adresse"
   },
   "welcome": {
@@ -5427,6 +5494,10 @@
       "accounts_heading": "Tilkoblede kontoer",
       "account_on": "{label} på {host}",
       "account_waiting": "{label} på {host} (pålogging ikke fullført)",
+      "forward_heading": "Videresender e-post til",
+      "forward_hint": "Adresser dette programtillegget kan videresende meldinger til uten å spørre.",
+      "forward_remove": "Fjern",
+      "forward_remove_label": "Slutt å videresende til {address}",
       "disconnect": "Koble fra",
       "disconnect_failed": "Kunne ikke koble fra {label}"
     },
@@ -5669,6 +5740,10 @@
         "title": "Endre meldingen du skriver",
         "body": "Erstatte eller legge til tekst i en melding mens du skriver den, når du bruker tillegget i redigeringsvinduet. Du kan angre hver endring, og du bestemmer fortsatt om den skal sendes."
       },
+      "email_forward": {
+        "title": "Videresende e-posten din",
+        "body": "Videresende meldinger fra kontoen din med vedlegg, uten å åpne redigeringsvinduet. Du blir spurt før første videresending til hver adresse."
+      },
       "ui_notifications": {
         "title": "Vise varsler",
         "body": "Vise varsler på enheten din, eller i appen hvis du ikke har tillatt dem. Hvert varsel viser navnet på tillegget."
@@ -5701,6 +5776,11 @@
         "title": "Bruke kontoer du kobler til",
         "body": "Sende forespørsler via {appName}s server med en konto eller nøkkel som du eller administratoren din har satt opp. Tillegget ser aldri passordet, men det kan gjøre alt den kontoen kan gjøre på sin egen server."
       }
+    },
+    "forward_approval": {
+      "title": "Tillate {plugin} å videresende e-post til {addresses}?",
+      "message": "{plugin} vil videresende «{subject}» med vedlegg til {addresses}. Hvis du tillater det, kan den heretter videresende e-post til denne adressen uten å spørre. Du kan trekke det tilbake under Innstillinger > Tillegg.",
+      "allow": "Tillat og videresend"
     },
     "dialog": {
       "from_plugin": "Fra tillegget {name}",
@@ -5943,6 +6023,37 @@
     "easy_read": "Lettlest",
     "sign_language": "Tegnspråk",
     "new_tab": "åpnes i en ny fane"
+  },
+  "structured_mail_calendar": {
+    "add_to_calendar": "Legg til i kalenderen",
+    "update_in_calendar": "Oppdater i kalenderen",
+    "remove_from_calendar": "Fjern fra kalenderen",
+    "in_calendar": "I kalenderen din",
+    "view_in_calendar": "Se i kalenderen",
+    "select_calendar": "Velg en kalender",
+    "added": "Lagt til i kalenderen din",
+    "updated": "Kalenderen er oppdatert",
+    "removed": "Fjernet fra kalenderen din",
+    "action_failed": "Kunne ikke endre kalenderen. Prøv igjen.",
+    "blocked": "Et programtillegg stoppet denne endringen i kalenderen.",
+    "title": {
+      "rental_car": "Leiebil",
+      "rental_car_company": "Leiebil: {company}"
+    },
+    "description": {
+      "reference": "Bestillingsnummer: {reference}",
+      "passengers": "Reisende: {names}",
+      "seats": "Seter: {seats}",
+      "checkin": "Innsjekking: {url}",
+      "manage": "Administrer bestillingen: {url}",
+      "ticket": "Billett: {url}",
+      "phone": "Telefon: {phone}",
+      "car": "Bil: {car}",
+      "tickets": "Billetter: {numbers}",
+      "party_size": "Antall personer: {count}",
+      "added_from": "Lagt til fra en e-post fra {domain}",
+      "added_from_subject": "Lagt til fra e-posten «{subject}» fra {domain}"
+    }
   },
   "register": {
     "title": "Create Email Account",

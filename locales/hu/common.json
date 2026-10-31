@@ -499,6 +499,11 @@
       "failed_sent_from": "Ez az üzenet azt állítja, hogy a(z) {domain} tartományból jött, de a(z) {host} tartományból küldték, és nem ment át a(z) {domain} tartomány feladóellenőrzésén. Lehet, hogy hamisított.",
       "caution": "Légy óvatos a linkekkel, a mellékletekkel, és ha jelszót vagy fizetési adatokat kérnek tőled."
     },
+    "brand_logo": {
+      "verified_label": "Ellenőrzött logó",
+      "verified": "Ez a logó ellenőrzötten a(z) {organization} tulajdona.",
+      "verified_by": "A(z) {issuer} ellenőrizte, hogy ez a logó a(z) {organization} tulajdona."
+    },
     "back_to_list": "Vissza a listához",
     "view_contact": "Névjegy megtekintése",
     "message_details": "Üzenet részletei",
@@ -771,6 +776,69 @@
       "copy": "{code} kód másolása",
       "copied": "Kód másolva",
       "copy_failed": "Nem sikerült másolni a kódot"
+    },
+    "structured_mail": {
+      "kind_flight": "Repülőjárat",
+      "kind_train": "Vonat",
+      "kind_bus": "Busz",
+      "kind_lodging": "Szálloda",
+      "kind_rentalcar": "Bérautó",
+      "kind_event": "Esemény",
+      "kind_restaurant": "Étterem",
+      "kind_order": "Rendelés",
+      "kind_parcel": "Csomag",
+      "region_flight": "Repülőjegy-foglalás",
+      "region_train": "Vonatjegy-foglalás",
+      "region_bus": "Buszjegy-foglalás",
+      "region_lodging": "Szállásfoglalás",
+      "region_rentalcar": "Bérautó-foglalás",
+      "region_event": "Eseményfoglalás",
+      "region_restaurant": "Asztalfoglalás",
+      "region_shipment": "Rendelés és szállítás",
+      "status_cancelled": "Lemondva",
+      "status_pending": "Függőben",
+      "status_hold": "Előfoglalva",
+      "order_status_payment_due": "Fizetésre vár",
+      "order_status_processing": "Feldolgozás alatt",
+      "order_status_problem": "Probléma",
+      "order_status_in_transit": "Feladva",
+      "order_status_pickup_available": "Átvehető",
+      "order_status_returned": "Visszaküldve",
+      "order_status_delivered": "Kézbesítve",
+      "order_status_cancelled": "Lemondva",
+      "reference": "Foglalási szám",
+      "order_number": "Rendelésszám",
+      "tracking_number": "Követési szám",
+      "copy_reference": "{value} foglalási szám másolása",
+      "copy_order_number": "{value} rendelésszám másolása",
+      "copy_tracking_number": "{value} követési szám másolása",
+      "copied_reference": "Foglalási szám másolva",
+      "copied_order_number": "Rendelésszám másolva",
+      "copied_tracking_number": "Követési szám másolva",
+      "copy_failed": "Nem sikerült a vágólapra másolni",
+      "passengers": "Utasok",
+      "seats": "Ülőhelyek",
+      "tickets": "Jegyek",
+      "link_check_in": "Utasfelvétel",
+      "link_manage": "Foglalás kezelése",
+      "link_ticket": "Jegy",
+      "link_track": "Követés",
+      "link_view_order": "Rendelés megtekintése",
+      "check_in_label": "Bejelentkezés",
+      "check_out_label": "Kijelentkezés",
+      "from_time": "{time}-tól",
+      "until_time": "{time}-ig",
+      "nights": "{count, plural, one {# éjszaka} other {# éjszaka}}",
+      "pickup": "Átvétel",
+      "dropoff": "Leadás",
+      "party_size": "{count, plural, one {Asztal # főre} other {Asztal # főre}}",
+      "items_more": "és még {count}",
+      "items_count": "{count, plural, one {# tétel} other {# tétel}}",
+      "total": "Összesen {total}",
+      "expected_by": "Érkezés legkésőbb: {date}",
+      "local_time": "helyi idő",
+      "local_time_title": "Az adott hely helyi ideje, nem a saját időzónád",
+      "route": "{from} – {to}"
     },
     "mv_position": "{index} / {total}",
     "plugin_panel_show": "Bővítménypanel megjelenítése",
@@ -1574,7 +1642,7 @@
     "notifications": {
       "test_sound": "Értesítési hang tesztelése",
       "sounds": {
-        "default": "Alapértelmezett (sípolás)",
+        "default": "Sípolás",
         "cheerful": "Vidám",
         "involved": "Lelkes",
         "swift": "Gyors mozdulat",
@@ -1957,8 +2025,8 @@
         "unsupported": "A jelenlegi fiók nem támogatja a késleltetett küldést. A beállítás más fiókokhoz elmentésre kerül."
       },
       "return_to_list_after_action": {
-        "label": "Visszatérés a listához törlés vagy olvasatlanként jelölés után",
-        "description": "A megnyitott üzenet törlése vagy olvasatlanként való megjelölése után visszatérés az üzenetlistához a következő üzenet megnyitása helyett."
+        "label": "Visszatérés a listához törlés, archiválás, áthelyezés vagy olvasatlanként jelölés után",
+        "description": "A megnyitott üzenet törlése, archiválása, áthelyezése, spamként jelentése vagy olvasatlanként való megjelölése után visszatérés az üzenetlistához a következő üzenet megnyitása helyett."
       },
       "swipe_right_action": {
         "label": "Jobbra húzás művelete (mobil)",
@@ -4942,7 +5010,6 @@
     "any_size": "Bármilyen méret",
     "larger_than_mb": "Nagyobb mint {size} MB",
     "custom_size": "Egyéni méret",
-    "done": "Kész",
     "name_or_address": "Név vagy cím"
   },
   "welcome": {
@@ -5426,6 +5493,10 @@
       "accounts_heading": "Csatlakoztatott fiókok",
       "account_on": "{label} – {host}",
       "account_waiting": "{label} – {host} (a bejelentkezés nincs befejezve)",
+      "forward_heading": "Leveleket továbbít ide",
+      "forward_hint": "Címek, amelyekre ez a bővítmény kérdés nélkül továbbíthat üzeneteket.",
+      "forward_remove": "Eltávolítás",
+      "forward_remove_label": "Továbbítás leállítása ide: {address}",
       "disconnect": "Leválasztás",
       "disconnect_failed": "Nem sikerült leválasztani: {label}"
     },
@@ -5668,6 +5739,10 @@
         "title": "Az éppen írt üzeneted módosítása",
         "body": "Szöveg cseréje vagy hozzáadása az üzenetben írás közben, amikor a bővítményt a szerkesztőben használod. Minden módosítás visszavonható, és továbbra is te döntöd el, elküldöd-e."
       },
+      "email_forward": {
+        "title": "Leveleid továbbítása",
+        "body": "Üzeneteket továbbít a fiókodból a mellékleteikkel együtt, a szerkesztő megnyitása nélkül. Minden címre az első továbbítás előtt megkérdez."
+      },
       "ui_notifications": {
         "title": "Értesítések megjelenítése",
         "body": "Értesítéseket jelenít meg az eszközödön, vagy az alkalmazásban, ha nem engedélyezted őket. Mindegyiken szerepel a bővítmény neve."
@@ -5700,6 +5775,11 @@
         "title": "Az általad csatlakoztatott fiókok használata",
         "body": "Kéréseket küld a(z) {appName} szerverén keresztül egy olyan fiókkal vagy kulccsal, amelyet te vagy a rendszergazdád állított be. A bővítmény soha nem látja a jelszót, de bármit megtehet, amit az a fiók a saját szerverén megtehet."
       }
+    },
+    "forward_approval": {
+      "title": "Engedélyezed, hogy a(z) {plugin} leveleket továbbítson ide: {addresses}?",
+      "message": "A(z) {plugin} továbbítaná a(z) „{subject}” üzenetet a mellékleteivel együtt ide: {addresses}. Ha engedélyezed, mostantól kérdés nélkül továbbíthat leveleket erre a címre. Ezt a Beállítások > Bővítmények alatt vonhatod vissza.",
+      "allow": "Engedélyezés és továbbítás"
     },
     "dialog": {
       "from_plugin": "A(z) {name} bővítménytől",
@@ -5942,6 +6022,37 @@
     "easy_read": "Könnyen érthető",
     "sign_language": "Jelnyelv",
     "new_tab": "új lapon nyílik meg"
+  },
+  "structured_mail_calendar": {
+    "add_to_calendar": "Hozzáadás a naptárhoz",
+    "update_in_calendar": "Frissítés a naptárban",
+    "remove_from_calendar": "Eltávolítás a naptárból",
+    "in_calendar": "A naptáradban",
+    "view_in_calendar": "Megtekintés a naptárban",
+    "select_calendar": "Válassz naptárat",
+    "added": "Hozzáadva a naptáradhoz",
+    "updated": "Naptár frissítve",
+    "removed": "Eltávolítva a naptáradból",
+    "action_failed": "Nem sikerült módosítani a naptárat. Próbáld újra.",
+    "blocked": "Egy bővítmény megakadályozta ezt a naptárváltozást.",
+    "title": {
+      "rental_car": "Bérautó",
+      "rental_car_company": "Bérautó: {company}"
+    },
+    "description": {
+      "reference": "Foglalási szám: {reference}",
+      "passengers": "Utasok: {names}",
+      "seats": "Ülőhelyek: {seats}",
+      "checkin": "Utasfelvétel: {url}",
+      "manage": "Foglalás kezelése: {url}",
+      "ticket": "Jegy: {url}",
+      "phone": "Telefon: {phone}",
+      "car": "Autó: {car}",
+      "tickets": "Jegyek: {numbers}",
+      "party_size": "Létszám: {count}",
+      "added_from": "Hozzáadva egy {domain} által küldött levélből",
+      "added_from_subject": "Hozzáadva a(z) {domain} által küldött „{subject}” levélből"
+    }
   },
   "register": {
     "title": "Create Email Account",

@@ -499,6 +499,11 @@
       "failed_sent_from": "Dit bericht beweert van {domain} te komen, maar is verzonden vanaf {host} en is niet door de afzendercontroles van {domain} gekomen. Het kan vervalst zijn.",
       "caution": "Wees voorzichtig met links, bijlagen en verzoeken om wachtwoorden of betaalgegevens."
     },
+    "brand_logo": {
+      "verified_label": "Geverifieerd logo",
+      "verified": "Dit logo is geverifieerd als logo van {organization}.",
+      "verified_by": "{issuer} heeft geverifieerd dat dit logo van {organization} is."
+    },
     "back_to_list": "Terug naar lijst",
     "view_contact": "Contact bekijken",
     "message_details": "Berichtdetails",
@@ -771,6 +776,69 @@
       "copy": "Code {code} kopiëren",
       "copied": "Code gekopieerd",
       "copy_failed": "Kan de code niet kopiëren"
+    },
+    "structured_mail": {
+      "kind_flight": "Vlucht",
+      "kind_train": "Trein",
+      "kind_bus": "Bus",
+      "kind_lodging": "Hotel",
+      "kind_rentalcar": "Huurauto",
+      "kind_event": "Evenement",
+      "kind_restaurant": "Restaurant",
+      "kind_order": "Bestelling",
+      "kind_parcel": "Pakket",
+      "region_flight": "Vluchtboeking",
+      "region_train": "Treinboeking",
+      "region_bus": "Busboeking",
+      "region_lodging": "Hotelboeking",
+      "region_rentalcar": "Huurautoboeking",
+      "region_event": "Evenementboeking",
+      "region_restaurant": "Restaurantreservering",
+      "region_shipment": "Bestelling en levering",
+      "status_cancelled": "Geannuleerd",
+      "status_pending": "In behandeling",
+      "status_hold": "In optie",
+      "order_status_payment_due": "Betaling open",
+      "order_status_processing": "Wordt verwerkt",
+      "order_status_problem": "Probleem",
+      "order_status_in_transit": "Verzonden",
+      "order_status_pickup_available": "Klaar om op te halen",
+      "order_status_returned": "Geretourneerd",
+      "order_status_delivered": "Bezorgd",
+      "order_status_cancelled": "Geannuleerd",
+      "reference": "Boekingsnummer",
+      "order_number": "Bestelnummer",
+      "tracking_number": "Trackingnummer",
+      "copy_reference": "Boekingsnummer {value} kopiëren",
+      "copy_order_number": "Bestelnummer {value} kopiëren",
+      "copy_tracking_number": "Trackingnummer {value} kopiëren",
+      "copied_reference": "Boekingsnummer gekopieerd",
+      "copied_order_number": "Bestelnummer gekopieerd",
+      "copied_tracking_number": "Trackingnummer gekopieerd",
+      "copy_failed": "Kopiëren naar het klembord is mislukt",
+      "passengers": "Reizigers",
+      "seats": "Stoelen",
+      "tickets": "Tickets",
+      "link_check_in": "Inchecken",
+      "link_manage": "Boeking beheren",
+      "link_ticket": "Ticket",
+      "link_track": "Volgen",
+      "link_view_order": "Bestelling bekijken",
+      "check_in_label": "Inchecken",
+      "check_out_label": "Uitchecken",
+      "from_time": "vanaf {time}",
+      "until_time": "tot {time}",
+      "nights": "{count, plural, one {# nacht} other {# nachten}}",
+      "pickup": "Ophalen",
+      "dropoff": "Inleveren",
+      "party_size": "{count, plural, one {Tafel voor # persoon} other {Tafel voor # personen}}",
+      "items_more": "en nog {count}",
+      "items_count": "{count, plural, one {# artikel} other {# artikelen}}",
+      "total": "Totaal {total}",
+      "expected_by": "Verwacht uiterlijk {date}",
+      "local_time": "lokale tijd",
+      "local_time_title": "Lokale tijd ter plaatse, niet in je eigen tijdzone",
+      "route": "{from} naar {to}"
     },
     "mv_position": "{index} van {total}",
     "plugin_panel_show": "Plug-inpaneel tonen",
@@ -1575,7 +1643,7 @@
     "notifications": {
       "test_sound": "Meldingsgeluid testen",
       "sounds": {
-        "default": "Standaard (Pieptoon)",
+        "default": "Pieptoon",
         "cheerful": "Vrolijk",
         "involved": "Uitgebreid",
         "swift": "Snel gebaar",
@@ -1958,8 +2026,8 @@
         "unsupported": "Het huidige account meldt geen ondersteuning voor vertraagd verzenden. De instelling blijft opgeslagen voor andere accounts."
       },
       "return_to_list_after_action": {
-        "label": "Terug naar lijst na verwijderen of markeren als ongelezen",
-        "description": "Na het verwijderen of als ongelezen markeren van het geopende bericht terugkeren naar de berichtenlijst in plaats van het volgende bericht te openen."
+        "label": "Terug naar lijst na verwijderen, archiveren, verplaatsen of markeren als ongelezen",
+        "description": "Na het verwijderen, archiveren, verplaatsen, als spam melden of als ongelezen markeren van het geopende bericht terugkeren naar de berichtenlijst in plaats van het volgende bericht te openen."
       },
       "swipe_right_action": {
         "label": "Actie bij naar rechts vegen (mobiel)",
@@ -4816,7 +4884,6 @@
     "any_size": "Elke grootte",
     "larger_than_mb": "Groter dan {size} MB",
     "custom_size": "Aangepaste grootte",
-    "done": "Klaar",
     "name_or_address": "Naam of adres"
   },
   "welcome": {
@@ -5430,6 +5497,10 @@
       "accounts_heading": "Gekoppelde accounts",
       "account_on": "{label} op {host}",
       "account_waiting": "{label} op {host} (inloggen niet afgerond)",
+      "forward_heading": "Stuurt e-mail door naar",
+      "forward_hint": "Adressen waarnaar deze plugin berichten mag doorsturen zonder te vragen.",
+      "forward_remove": "Verwijderen",
+      "forward_remove_label": "Niet meer doorsturen naar {address}",
       "disconnect": "Ontkoppelen",
       "disconnect_failed": "Kan {label} niet ontkoppelen"
     },
@@ -5672,6 +5743,10 @@
         "title": "Het bericht wijzigen dat je schrijft",
         "body": "Tekst in een bericht vervangen of toevoegen terwijl je het schrijft, als je de plug-in in de editor gebruikt. Je kunt elke wijziging ongedaan maken en je beslist nog steeds zelf of je het verstuurt."
       },
+      "email_forward": {
+        "title": "Je e-mail doorsturen",
+        "body": "Berichten uit je account met hun bijlagen doorsturen, zonder de editor te openen. Voor de eerste keer doorsturen naar een adres wordt het je gevraagd."
+      },
       "ui_notifications": {
         "title": "Meldingen tonen",
         "body": "Meldingen op je apparaat tonen, of in de app als je ze niet hebt toegestaan. Elke melding noemt de naam van de plug-in."
@@ -5704,6 +5779,11 @@
         "title": "Accounts gebruiken die je koppelt",
         "body": "Verzoeken via de server van {appName} sturen met een account of sleutel die jij of je beheerder heeft ingesteld. De plug-in ziet het wachtwoord nooit, maar kan alles doen wat dat account op zijn eigen server mag."
       }
+    },
+    "forward_approval": {
+      "title": "{plugin} toestaan e-mail door te sturen naar {addresses}?",
+      "message": "{plugin} wil ‘{subject}’ met de bijlagen doorsturen naar {addresses}. Als je dit toestaat, kan het voortaan zonder te vragen e-mail naar dit adres doorsturen. Je kunt dit intrekken via Instellingen > Add-ons.",
+      "allow": "Toestaan en doorsturen"
     },
     "dialog": {
       "from_plugin": "Van de plug-in {name}",
@@ -5946,6 +6026,37 @@
     "easy_read": "Makkelijk lezen",
     "sign_language": "Gebarentaal",
     "new_tab": "opent in een nieuw tabblad"
+  },
+  "structured_mail_calendar": {
+    "add_to_calendar": "Toevoegen aan agenda",
+    "update_in_calendar": "Bijwerken in agenda",
+    "remove_from_calendar": "Uit agenda verwijderen",
+    "in_calendar": "In je agenda",
+    "view_in_calendar": "In agenda bekijken",
+    "select_calendar": "Kies een agenda",
+    "added": "Toegevoegd aan je agenda",
+    "updated": "Agenda bijgewerkt",
+    "removed": "Uit je agenda verwijderd",
+    "action_failed": "Je agenda kon niet worden gewijzigd. Probeer het opnieuw.",
+    "blocked": "Een plug-in heeft deze agendawijziging tegengehouden.",
+    "title": {
+      "rental_car": "Huurauto",
+      "rental_car_company": "Huurauto: {company}"
+    },
+    "description": {
+      "reference": "Boekingsnummer: {reference}",
+      "passengers": "Reizigers: {names}",
+      "seats": "Stoelen: {seats}",
+      "checkin": "Inchecken: {url}",
+      "manage": "Boeking beheren: {url}",
+      "ticket": "Ticket: {url}",
+      "phone": "Telefoon: {phone}",
+      "car": "Auto: {car}",
+      "tickets": "Tickets: {numbers}",
+      "party_size": "Aantal personen: {count}",
+      "added_from": "Toegevoegd vanuit een e-mail van {domain}",
+      "added_from_subject": "Toegevoegd vanuit de e-mail ‘{subject}’ van {domain}"
+    }
   },
   "register": {
     "title": "Create Email Account",

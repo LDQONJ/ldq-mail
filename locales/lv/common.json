@@ -499,6 +499,11 @@
       "failed_sent_from": "Šis ziņojums apgalvo, ka ir no domēna {domain}, taču tas nosūtīts no domēna {host} un neizturēja domēna {domain} sūtītāja pārbaudes. Tas var būt viltots.",
       "caution": "Esiet piesardzīgi ar saitēm, pielikumiem un paroļu vai maksājumu datu pieprasījumiem."
     },
+    "brand_logo": {
+      "verified_label": "Verificēts logotips",
+      "verified": "Šis logotips ir verificēts kā {organization} logotips.",
+      "verified_by": "{issuer} ir verificējis, ka šis logotips pieder {organization}."
+    },
     "back_to_list": "Atpakaļ uz sarakstu",
     "view_contact": "Skatīt kontaktu",
     "message_details": "Informācija par ziņojumu",
@@ -771,6 +776,69 @@
       "copy": "Kopēt kodu {code}",
       "copied": "Kods nokopēts",
       "copy_failed": "Neizdevās nokopēt kodu"
+    },
+    "structured_mail": {
+      "kind_flight": "Lidojums",
+      "kind_train": "Vilciens",
+      "kind_bus": "Autobuss",
+      "kind_lodging": "Viesnīca",
+      "kind_rentalcar": "Nomas auto",
+      "kind_event": "Pasākums",
+      "kind_restaurant": "Restorāns",
+      "kind_order": "Pasūtījums",
+      "kind_parcel": "Sūtījums",
+      "region_flight": "Lidojuma rezervācija",
+      "region_train": "Vilciena rezervācija",
+      "region_bus": "Autobusa rezervācija",
+      "region_lodging": "Viesnīcas rezervācija",
+      "region_rentalcar": "Nomas auto rezervācija",
+      "region_event": "Pasākuma rezervācija",
+      "region_restaurant": "Galdiņa rezervācija",
+      "region_shipment": "Pasūtījums un piegāde",
+      "status_cancelled": "Atcelts",
+      "status_pending": "Gaida apstiprinājumu",
+      "status_hold": "Rezervēts",
+      "order_status_payment_due": "Gaida apmaksu",
+      "order_status_processing": "Tiek apstrādāts",
+      "order_status_problem": "Problēma",
+      "order_status_in_transit": "Nosūtīts",
+      "order_status_pickup_available": "Gatavs saņemšanai",
+      "order_status_returned": "Atgriezts",
+      "order_status_delivered": "Piegādāts",
+      "order_status_cancelled": "Atcelts",
+      "reference": "Rezervācijas numurs",
+      "order_number": "Pasūtījuma numurs",
+      "tracking_number": "Izsekošanas numurs",
+      "copy_reference": "Kopēt rezervācijas numuru {value}",
+      "copy_order_number": "Kopēt pasūtījuma numuru {value}",
+      "copy_tracking_number": "Kopēt izsekošanas numuru {value}",
+      "copied_reference": "Rezervācijas numurs nokopēts",
+      "copied_order_number": "Pasūtījuma numurs nokopēts",
+      "copied_tracking_number": "Izsekošanas numurs nokopēts",
+      "copy_failed": "Neizdevās nokopēt starpliktuvē",
+      "passengers": "Pasažieri",
+      "seats": "Vietas",
+      "tickets": "Biļetes",
+      "link_check_in": "Reģistrēties",
+      "link_manage": "Pārvaldīt rezervāciju",
+      "link_ticket": "Biļete",
+      "link_track": "Izsekot",
+      "link_view_order": "Skatīt pasūtījumu",
+      "check_in_label": "Reģistrēšanās",
+      "check_out_label": "Izrakstīšanās",
+      "from_time": "no {time}",
+      "until_time": "līdz {time}",
+      "nights": "{count, plural, zero {# naktis} one {# nakts} other {# naktis}}",
+      "pickup": "Saņemšana",
+      "dropoff": "Nodošana",
+      "party_size": "{count, plural, zero {Galdiņš # personām} one {Galdiņš # personai} other {Galdiņš # personām}}",
+      "items_more": "un vēl {count}",
+      "items_count": "{count, plural, zero {# preču} one {# prece} other {# preces}}",
+      "total": "Kopā {total}",
+      "expected_by": "Piegāde līdz {date}",
+      "local_time": "vietējais laiks",
+      "local_time_title": "Vietējais laiks attiecīgajā vietā, nevis jūsu laika joslā",
+      "route": "{from} – {to}"
     },
     "mv_position": "{index} no {total}",
     "plugin_panel_show": "Rādīt spraudņa paneli",
@@ -1574,7 +1642,7 @@
     "notifications": {
       "test_sound": "Pārbaudīt paziņojuma skaņu",
       "sounds": {
-        "default": "Noklusējuma (Signāls)",
+        "default": "Signāls",
         "cheerful": "Priecīgs",
         "involved": "Iesaistošs",
         "swift": "Ātrs",
@@ -1957,8 +2025,8 @@
         "unsupported": "Pašreizējais konts neziņo par aizturētas sūtīšanas atbalstu. Iestatījums joprojām tiks saglabāts citiem kontiem."
       },
       "return_to_list_after_action": {
-        "label": "Atgriezties sarakstā pēc dzēšanas vai atzīmēšanas kā nelasītu",
-        "description": "Pēc atvērtā ziņojuma dzēšanas vai atzīmēšanas kā nelasīta atgriezieties ziņojumu sarakstā, nevis atveriet nākamo ziņojumu."
+        "label": "Atgriezties sarakstā pēc dzēšanas, arhivēšanas, pārvietošanas vai atzīmēšanas kā nelasītu",
+        "description": "Pēc atvērtā ziņojuma dzēšanas, arhivēšanas, pārvietošanas, atzīmēšanas kā mēstules vai atzīmēšanas kā nelasīta atgriezieties ziņojumu sarakstā, nevis atveriet nākamo ziņojumu."
       },
       "swipe_right_action": {
         "label": "Darbība, velkot pa labi (mobilajā ierīcē)",
@@ -4815,7 +4883,6 @@
     "any_size": "Jebkurš izmērs",
     "larger_than_mb": "Lielāks par {size} MB",
     "custom_size": "Pielāgots izmērs",
-    "done": "Gatavs",
     "name_or_address": "Vārds vai adrese"
   },
   "welcome": {
@@ -5429,6 +5496,10 @@
       "accounts_heading": "Savienotie konti",
       "account_on": "{label} serverī {host}",
       "account_waiting": "{label} serverī {host} (pierakstīšanās nav pabeigta)",
+      "forward_heading": "Pārsūta pastu uz",
+      "forward_hint": "Adreses, uz kurām šis spraudnis drīkst pārsūtīt vēstules, nejautājot.",
+      "forward_remove": "Noņemt",
+      "forward_remove_label": "Pārtraukt pārsūtīšanu uz {address}",
       "disconnect": "Atvienot",
       "disconnect_failed": "Neizdevās atvienot {label}"
     },
@@ -5671,6 +5742,10 @@
         "title": "Mainīt ziņojumu, ko rakstāt",
         "body": "Aizstāt vai pievienot tekstu ziņojumā rakstīšanas laikā, kad izmantojat spraudni redaktorā. Katru izmaiņu var atsaukt, un jūs joprojām izlemjat, vai sūtīt."
       },
+      "email_forward": {
+        "title": "Pārsūtīt jūsu pastu",
+        "body": "Pārsūtīt vēstules no jūsu konta kopā ar pielikumiem, neatverot redaktoru. Pirms pirmās pārsūtīšanas uz katru adresi jums tiek jautāts."
+      },
       "ui_notifications": {
         "title": "Rādīt paziņojumus",
         "body": "Rādīt paziņojumus jūsu ierīcē vai lietotnē, ja neesat tos atļāvis. Katrā ir spraudņa nosaukums."
@@ -5703,6 +5778,11 @@
         "title": "Izmantot jūsu savienotos kontus",
         "body": "Sūtīt pieprasījumus caur {appName} serveri ar kontu vai atslēgu, ko iestatījāt jūs vai jūsu administrators. Spraudnis nekad neredz paroli, taču tas var darīt visu, ko šis konts var darīt savā serverī."
       }
+    },
+    "forward_approval": {
+      "title": "Atļaut spraudnim {plugin} pārsūtīt pastu uz {addresses}?",
+      "message": "{plugin} vēlas pārsūtīt “{subject}” kopā ar pielikumiem uz {addresses}. Ja jūs to atļausiet, turpmāk tas varēs pārsūtīt pastu uz šo adresi, nejautājot. To var atsaukt sadaļā Iestatījumi > Papildinājumi.",
+      "allow": "Atļaut un pārsūtīt"
     },
     "dialog": {
       "from_plugin": "No spraudņa {name}",
@@ -5945,6 +6025,37 @@
     "easy_read": "Vieglā valoda",
     "sign_language": "Zīmju valoda",
     "new_tab": "atveras jaunā cilnē"
+  },
+  "structured_mail_calendar": {
+    "add_to_calendar": "Pievienot kalendāram",
+    "update_in_calendar": "Atjaunināt kalendārā",
+    "remove_from_calendar": "Noņemt no kalendāra",
+    "in_calendar": "Jūsu kalendārā",
+    "view_in_calendar": "Atvērt kalendārā",
+    "select_calendar": "Izvēlieties kalendāru",
+    "added": "Pievienots jūsu kalendāram",
+    "updated": "Kalendārs atjaunināts",
+    "removed": "Noņemts no jūsu kalendāra",
+    "action_failed": "Neizdevās mainīt kalendāru. Mēģiniet vēlreiz.",
+    "blocked": "Spraudnis apturēja šīs kalendāra izmaiņas.",
+    "title": {
+      "rental_car": "Nomas auto",
+      "rental_car_company": "Nomas auto: {company}"
+    },
+    "description": {
+      "reference": "Rezervācijas numurs: {reference}",
+      "passengers": "Pasažieri: {names}",
+      "seats": "Vietas: {seats}",
+      "checkin": "Reģistrēšanās: {url}",
+      "manage": "Pārvaldīt rezervāciju: {url}",
+      "ticket": "Biļete: {url}",
+      "phone": "Tālrunis: {phone}",
+      "car": "Automašīna: {car}",
+      "tickets": "Biļetes: {numbers}",
+      "party_size": "Personu skaits: {count}",
+      "added_from": "Pievienots no {domain} e-pasta",
+      "added_from_subject": "Pievienots no {domain} e-pasta “{subject}”"
+    }
   },
   "register": {
     "title": "Create Email Account",

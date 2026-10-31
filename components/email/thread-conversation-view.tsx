@@ -11,9 +11,12 @@ import { emailDisplayDate } from "@/lib/email-date";
 import { getRenderableHtmlBody } from "@/lib/email-body-selection";
 import { findVerificationCode, verificationCodeBodyText } from "@/lib/verification-code";
 import { VerificationCodeChip } from "./verification-code-chip";
+import { StructuredMailCards } from "./structured-mail/structured-mail-cards";
+import { BookingCalendarActions } from "./structured-mail/booking-calendar-actions";
+import { useStructuredMail } from "./structured-mail/use-structured-mail";
 import { attachmentIcon } from "./attachment-chips";
 import { ExternalSenderChip } from "./external-sender-chip";
-import { collectReferencedCids, isEmbeddedInBody, normalizeCid, rewriteCidReferences } from "@/lib/attachment-visibility";
+import { collectReferencedCids, isEmbeddedInBody, isReportPart, normalizeCid, rewriteCidReferences } from "@/lib/attachment-visibility";
 import { collapsePlainTextQuotes, setupQuoteCollapse } from "@/lib/quote-collapse";
 import { fitEmailBodyWidth } from "@/lib/email-fit-width";
 import { mailLanguage } from "@/lib/mail-language";
@@ -26,6 +29,7 @@ import { useThemeStore } from "@/stores/theme-store";
 import { useShallow } from "zustand/react/shallow";
 import { Avatar } from "@/components/ui/avatar";
 import { useSenderWarning } from "@/hooks/use-sender-warning";
+import { brandIndicatorDomain } from "@/lib/email-headers";
 import { Button } from "@/components/ui/button";
 import { formatDate, formatFileSize, cn, cleanPreview } from "@/lib/utils";
 import { IconButton } from "@/components/ui/icon-button";
@@ -375,6 +379,7 @@ function EmailCard({
             size="md"
             className="flex-shrink-0"
             senderWarning={senderWarning}
+            brandDomain={brandIndicatorDomain(email)}
           />
         )}
         <div className="flex-1 min-w-0">
@@ -563,6 +568,8 @@ export function ConversationEmailBody({
   const fallbackSource = useEmailStore(useShallow(() => resolveEmailBlobContext(email, client)));
   const source = blobSource ?? fallbackSource;
   const { client: blobClient, accountId } = source;
+  // Booking, parcel and order cards; only an expanded message mounts this body.
+  const structuredCards = useStructuredMail(email, source);
   // Local CID URLs belong to a particular client/owner/message/part list.
   // Hide the previous set during render, before the new fetch's effect runs.
   const cidRequest = useMemo(() => ({ blobClient, accountId, emailId: email.id, attachments: email.attachments }),
@@ -747,9 +754,10 @@ export function ConversationEmailBody({
 
   // Parts the body embeds via cid: stay out of the attachment row while the
   // user hides inline images - the desktop viewer's rule, shared through
-  // lib/attachment-visibility.ts so the two views cannot drift apart.
+  // lib/attachment-visibility.ts so the two views cannot drift apart. The
+  // report parts of a bounce or read receipt never show.
   const visibleAttachments = useMemo(() => {
-    const attachments = email.attachments ?? [];
+    const attachments = (email.attachments ?? []).filter(att => !isReportPart(att.type));
     if (!hideInlineImageAttachments) return attachments;
     const bodyCids = collectReferencedCids(getRenderableHtmlBody(email));
     return attachments.filter(att => !isEmbeddedInBody(att, bodyCids));
@@ -924,6 +932,20 @@ export function ConversationEmailBody({
       {verificationCode && (
         <div className="flex" style={{ paddingInline: 'var(--density-card-p)', paddingTop: 'var(--density-card-p)' }}>
           <VerificationCodeChip code={verificationCode} className="py-1 text-sm" />
+        </div>
+      )}
+
+      {structuredCards.length > 0 && (
+        // Aligned with the body: its own padding on the phone card, the
+        // caller's (className) in Mountain View.
+        <div style={bodyStyle ? { paddingTop: '0.5rem', paddingBottom: '0.25rem' } : { paddingInline: 'var(--density-card-p)', paddingTop: 'var(--density-card-p)' }}>
+          {/* No product images when the mail is shown as plain text. */}
+          <StructuredMailCards
+            cards={structuredCards}
+            email={email}
+            allowRemoteImages={allowExternal && mailViewMode !== 'plain'}
+            calendarActions={(booking) => <BookingCalendarActions booking={booking} email={email} />}
+          />
         </div>
       )}
 

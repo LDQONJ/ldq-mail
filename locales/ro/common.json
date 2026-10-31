@@ -499,6 +499,11 @@
       "failed_sent_from": "Acest mesaj pretinde că provine de la {domain}, dar a fost trimis de pe {host} și nu a trecut de verificările de expeditor ale domeniului {domain}. Este posibil să fie falsificat.",
       "caution": "Fiți atenți la linkuri, atașamente și solicitări de parole sau date de plată."
     },
+    "brand_logo": {
+      "verified_label": "Logo verificat",
+      "verified": "Acest logo este verificat ca aparținând {organization}.",
+      "verified_by": "{issuer} a verificat că acest logo aparține {organization}."
+    },
     "back_to_list": "Înapoi la listă",
     "view_contact": "Vizualizare contact",
     "message_details": "Detalii mesaj",
@@ -771,6 +776,69 @@
       "copy": "Copiază codul {code}",
       "copied": "Cod copiat",
       "copy_failed": "Codul nu a putut fi copiat"
+    },
+    "structured_mail": {
+      "kind_flight": "Zbor",
+      "kind_train": "Tren",
+      "kind_bus": "Autobuz",
+      "kind_lodging": "Hotel",
+      "kind_rentalcar": "Mașină închiriată",
+      "kind_event": "Eveniment",
+      "kind_restaurant": "Restaurant",
+      "kind_order": "Comandă",
+      "kind_parcel": "Colet",
+      "region_flight": "Rezervare zbor",
+      "region_train": "Rezervare tren",
+      "region_bus": "Rezervare autobuz",
+      "region_lodging": "Rezervare hotel",
+      "region_rentalcar": "Rezervare mașină închiriată",
+      "region_event": "Rezervare eveniment",
+      "region_restaurant": "Rezervare la restaurant",
+      "region_shipment": "Comandă și livrare",
+      "status_cancelled": "Anulată",
+      "status_pending": "În așteptare",
+      "status_hold": "Rezervată provizoriu",
+      "order_status_payment_due": "Plată restantă",
+      "order_status_processing": "În procesare",
+      "order_status_problem": "Problemă",
+      "order_status_in_transit": "Expediată",
+      "order_status_pickup_available": "Gata de ridicare",
+      "order_status_returned": "Returnată",
+      "order_status_delivered": "Livrată",
+      "order_status_cancelled": "Anulată",
+      "reference": "Cod de rezervare",
+      "order_number": "Număr comandă",
+      "tracking_number": "Număr de urmărire",
+      "copy_reference": "Copiază codul de rezervare {value}",
+      "copy_order_number": "Copiază numărul comenzii {value}",
+      "copy_tracking_number": "Copiază numărul de urmărire {value}",
+      "copied_reference": "Codul de rezervare a fost copiat",
+      "copied_order_number": "Numărul comenzii a fost copiat",
+      "copied_tracking_number": "Numărul de urmărire a fost copiat",
+      "copy_failed": "Nu s-a putut copia în clipboard",
+      "passengers": "Pasageri",
+      "seats": "Locuri",
+      "tickets": "Bilete",
+      "link_check_in": "Check-in",
+      "link_manage": "Gestionează rezervarea",
+      "link_ticket": "Bilet",
+      "link_track": "Urmărește",
+      "link_view_order": "Vezi comanda",
+      "check_in_label": "Check-in",
+      "check_out_label": "Check-out",
+      "from_time": "de la {time}",
+      "until_time": "până la {time}",
+      "nights": "{count, plural, one {# noapte} few {# nopți} other {# de nopți}}",
+      "pickup": "Preluare",
+      "dropoff": "Predare",
+      "party_size": "{count, plural, one {Masă pentru # persoană} few {Masă pentru # persoane} other {Masă pentru # de persoane}}",
+      "items_more": "și încă {count}",
+      "items_count": "{count, plural, one {# articol} few {# articole} other {# de articole}}",
+      "total": "Total {total}",
+      "expected_by": "Sosește până pe {date}",
+      "local_time": "ora locală",
+      "local_time_title": "Ora locală a locului, nu cea din fusul tău orar",
+      "route": "{from} – {to}"
     },
     "mv_position": "{index} din {total}",
     "plugin_panel_show": "Afișează panoul pluginului",
@@ -1578,7 +1646,7 @@
     "notifications": {
       "test_sound": "Testați sunetul de notificare",
       "sounds": {
-        "default": "Implicit (Bip)",
+        "default": "Bip",
         "cheerful": "Vesel",
         "involved": "Implicat",
         "swift": "Gest rapid",
@@ -1961,8 +2029,8 @@
         "unsupported": "Contul curent nu indică faptul că acceptă trimiterea amânată. Setarea este totuși salvată pentru alte conturi."
       },
       "return_to_list_after_action": {
-        "label": "Revenire la listă după ștergere sau marcare ca necitit",
-        "description": "După ștergerea sau marcarea mesajului deschis ca necitit, reveniți la lista de mesaje în loc să deschideți mesajul următor."
+        "label": "Revenire la listă după ștergere, arhivare, mutare sau marcare ca necitit",
+        "description": "După ștergerea, arhivarea, mutarea, raportarea ca spam sau marcarea mesajului deschis ca necitit, reveniți la lista de mesaje în loc să deschideți mesajul următor."
       },
       "swipe_right_action": {
         "label": "Acțiune la glisare spre dreapta (mobil)",
@@ -4946,7 +5014,6 @@
     "any_size": "Orice dimensiune",
     "larger_than_mb": "Mai mare de {size} MB",
     "custom_size": "Dimensiune personalizată",
-    "done": "Gata",
     "name_or_address": "Nume sau adresă"
   },
   "welcome": {
@@ -5430,6 +5497,10 @@
       "accounts_heading": "Conturi conectate",
       "account_on": "{label} pe {host}",
       "account_waiting": "{label} pe {host} (conectare neterminată)",
+      "forward_heading": "Redirecționează mesaje către",
+      "forward_hint": "Adrese către care acest plugin poate redirecționa mesaje fără să întrebe.",
+      "forward_remove": "Eliminați",
+      "forward_remove_label": "Opriți redirecționarea către {address}",
       "disconnect": "Deconectați",
       "disconnect_failed": "{label} nu a putut fi deconectat"
     },
@@ -5672,6 +5743,10 @@
         "title": "Modificarea mesajului pe care îl scrieți",
         "body": "Înlocuirea sau adăugarea de text într-un mesaj în timp ce îl scrieți, când folosiți pluginul în editor. Puteți anula fiecare modificare și decideți în continuare dacă îl trimiteți."
       },
+      "email_forward": {
+        "title": "Redirecționarea mesajelor dvs.",
+        "body": "Redirecționează mesaje din contul dvs. împreună cu atașamentele, fără a deschide editorul. Sunteți întrebat înainte de prima redirecționare către fiecare adresă."
+      },
       "ui_notifications": {
         "title": "Afișarea notificărilor",
         "body": "Afișează notificări pe dispozitiv sau în aplicație, dacă nu le-ați permis. Fiecare indică numele pluginului."
@@ -5704,6 +5779,11 @@
         "title": "Folosirea conturilor pe care le conectați",
         "body": "Trimite cereri prin serverul {appName} cu un cont sau o cheie configurate de dvs. sau de administratorul dvs. Pluginul nu vede niciodată parola, dar poate face tot ce poate face acel cont pe serverul său."
       }
+    },
+    "forward_approval": {
+      "title": "Permiteți ca {plugin} să redirecționeze mesaje către {addresses}?",
+      "message": "{plugin} vrea să redirecționeze „{subject}” împreună cu atașamentele către {addresses}. Dacă permiteți, de acum înainte va putea redirecționa mesaje către această adresă fără să întrebe. Puteți retrage permisiunea din Setări > Suplimente.",
+      "allow": "Permiteți și redirecționați"
     },
     "dialog": {
       "from_plugin": "De la pluginul {name}",
@@ -5946,6 +6026,37 @@
     "easy_read": "Ușor de citit",
     "sign_language": "Limbaj mimico-gestual",
     "new_tab": "se deschide într-o filă nouă"
+  },
+  "structured_mail_calendar": {
+    "add_to_calendar": "Adaugă în calendar",
+    "update_in_calendar": "Actualizează în calendar",
+    "remove_from_calendar": "Elimină din calendar",
+    "in_calendar": "În calendarul dvs.",
+    "view_in_calendar": "Vizualizare în calendar",
+    "select_calendar": "Alegeți un calendar",
+    "added": "Adăugat în calendarul dvs.",
+    "updated": "Calendar actualizat",
+    "removed": "Eliminat din calendarul dvs.",
+    "action_failed": "Calendarul nu a putut fi modificat. Încercați din nou.",
+    "blocked": "Un plugin a oprit această modificare în calendar.",
+    "title": {
+      "rental_car": "Mașină închiriată",
+      "rental_car_company": "Mașină închiriată: {company}"
+    },
+    "description": {
+      "reference": "Cod rezervare: {reference}",
+      "passengers": "Pasageri: {names}",
+      "seats": "Locuri: {seats}",
+      "checkin": "Check-in: {url}",
+      "manage": "Gestionați rezervarea: {url}",
+      "ticket": "Bilet: {url}",
+      "phone": "Telefon: {phone}",
+      "car": "Mașină: {car}",
+      "tickets": "Bilete: {numbers}",
+      "party_size": "Număr de persoane: {count}",
+      "added_from": "Adăugat dintr-un e-mail de la {domain}",
+      "added_from_subject": "Adăugat din e-mailul „{subject}” de la {domain}"
+    }
   },
   "register": {
     "title": "Create Email Account",

@@ -499,6 +499,11 @@
       "failed_sent_from": "Este mensaje dice proceder de {domain}, pero se envió desde {host} y no superó las comprobaciones de remitente de {domain}. Podría estar falsificado.",
       "caution": "Tenga cuidado con los enlaces, los archivos adjuntos y las solicitudes de contraseñas o datos de pago."
     },
+    "brand_logo": {
+      "verified_label": "Logotipo verificado",
+      "verified": "Este logotipo está verificado como propiedad de {organization}.",
+      "verified_by": "{issuer} verificó que este logotipo pertenece a {organization}."
+    },
     "back_to_list": "Volver a la lista",
     "view_contact": "Ver contacto",
     "message_details": "Detalles del Mensaje",
@@ -771,6 +776,69 @@
       "copy": "Copiar código {code}",
       "copied": "Código copiado",
       "copy_failed": "No se pudo copiar el código"
+    },
+    "structured_mail": {
+      "kind_flight": "Vuelo",
+      "kind_train": "Tren",
+      "kind_bus": "Autobús",
+      "kind_lodging": "Hotel",
+      "kind_rentalcar": "Coche de alquiler",
+      "kind_event": "Evento",
+      "kind_restaurant": "Restaurante",
+      "kind_order": "Pedido",
+      "kind_parcel": "Paquete",
+      "region_flight": "Reserva de vuelo",
+      "region_train": "Reserva de tren",
+      "region_bus": "Reserva de autobús",
+      "region_lodging": "Reserva de hotel",
+      "region_rentalcar": "Reserva de coche de alquiler",
+      "region_event": "Reserva de evento",
+      "region_restaurant": "Reserva de restaurante",
+      "region_shipment": "Pedido y envío",
+      "status_cancelled": "Cancelada",
+      "status_pending": "Pendiente",
+      "status_hold": "En espera",
+      "order_status_payment_due": "Pago pendiente",
+      "order_status_processing": "En preparación",
+      "order_status_problem": "Problema",
+      "order_status_in_transit": "Enviado",
+      "order_status_pickup_available": "Listo para recoger",
+      "order_status_returned": "Devuelto",
+      "order_status_delivered": "Entregado",
+      "order_status_cancelled": "Cancelado",
+      "reference": "Código de reserva",
+      "order_number": "Número de pedido",
+      "tracking_number": "Número de seguimiento",
+      "copy_reference": "Copiar el código de reserva {value}",
+      "copy_order_number": "Copiar el número de pedido {value}",
+      "copy_tracking_number": "Copiar el número de seguimiento {value}",
+      "copied_reference": "Código de reserva copiado",
+      "copied_order_number": "Número de pedido copiado",
+      "copied_tracking_number": "Número de seguimiento copiado",
+      "copy_failed": "No se pudo copiar al portapapeles",
+      "passengers": "Pasajeros",
+      "seats": "Asientos",
+      "tickets": "Entradas",
+      "link_check_in": "Facturar",
+      "link_manage": "Gestionar reserva",
+      "link_ticket": "Entrada",
+      "link_track": "Seguir envío",
+      "link_view_order": "Ver pedido",
+      "check_in_label": "Entrada",
+      "check_out_label": "Salida",
+      "from_time": "desde las {time}",
+      "until_time": "hasta las {time}",
+      "nights": "{count, plural, one {# noche} other {# noches}}",
+      "pickup": "Recogida",
+      "dropoff": "Devolución",
+      "party_size": "{count, plural, one {Mesa para # persona} other {Mesa para # personas}}",
+      "items_more": "y {count} más",
+      "items_count": "{count, plural, one {# artículo} other {# artículos}}",
+      "total": "Total {total}",
+      "expected_by": "Llega antes del {date}",
+      "local_time": "hora local",
+      "local_time_title": "Hora local del lugar, no la de tu zona horaria",
+      "route": "{from} a {to}"
     },
     "mv_position": "{index} de {total}",
     "plugin_panel_show": "Mostrar el panel del complemento",
@@ -1581,7 +1649,7 @@
     "notifications": {
       "test_sound": "Probar sonido de notificación",
       "sounds": {
-        "default": "Predeterminado (Pitido)",
+        "default": "Pitido",
         "cheerful": "Alegre",
         "involved": "Elaborado",
         "swift": "Gesto rápido",
@@ -1964,8 +2032,8 @@
         "unsupported": "La cuenta actual no anuncia compatibilidad con envío demorado. La opción seguirá guardada para otras cuentas."
       },
       "return_to_list_after_action": {
-        "label": "Volver a la lista tras eliminar o marcar como no leído",
-        "description": "Después de eliminar o marcar como no leído el mensaje abierto, volver a la lista de mensajes en lugar de abrir el mensaje siguiente."
+        "label": "Volver a la lista tras eliminar, archivar, mover o marcar como no leído",
+        "description": "Después de eliminar, archivar, mover, reportar como spam o marcar como no leído el mensaje abierto, volver a la lista de mensajes en lugar de abrir el mensaje siguiente."
       },
       "swipe_right_action": {
         "label": "Acción al deslizar a la derecha (móvil)",
@@ -4822,7 +4890,6 @@
     "any_size": "Cualquier tamaño",
     "larger_than_mb": "Más de {size} MB",
     "custom_size": "Tamaño personalizado",
-    "done": "Listo",
     "name_or_address": "Nombre o dirección"
   },
   "welcome": {
@@ -5436,6 +5503,10 @@
       "accounts_heading": "Cuentas conectadas",
       "account_on": "{label} en {host}",
       "account_waiting": "{label} en {host} (inicio de sesión sin terminar)",
+      "forward_heading": "Reenvía correo a",
+      "forward_hint": "Direcciones a las que este plugin puede reenviar mensajes sin preguntar.",
+      "forward_remove": "Quitar",
+      "forward_remove_label": "Dejar de reenviar a {address}",
       "disconnect": "Desconectar",
       "disconnect_failed": "No se pudo desconectar {label}"
     },
@@ -5678,6 +5749,10 @@
         "title": "Cambiar el mensaje que escribes",
         "body": "Sustituir o añadir texto en un mensaje mientras lo escribes, cuando usas el complemento en el editor. Puedes deshacer cada cambio y sigues decidiendo si lo envías."
       },
+      "email_forward": {
+        "title": "Reenviar tu correo",
+        "body": "Reenviar mensajes de tu cuenta con sus adjuntos, sin abrir el editor. Se te pregunta antes del primer reenvío a cada dirección."
+      },
       "ui_notifications": {
         "title": "Mostrar notificaciones",
         "body": "Mostrar notificaciones en tu dispositivo, o dentro de la aplicación si no las has permitido. Cada una indica el nombre del complemento."
@@ -5710,6 +5785,11 @@
         "title": "Usar las cuentas que conectes",
         "body": "Enviar solicitudes a través del servidor de {appName} con una cuenta o clave configurada por ti o por tu administrador. El complemento nunca ve la contraseña, pero puede hacer todo lo que esa cuenta puede hacer en su propio servidor."
       }
+    },
+    "forward_approval": {
+      "title": "¿Permitir que {plugin} reenvíe correo a {addresses}?",
+      "message": "{plugin} quiere reenviar «{subject}» con sus adjuntos a {addresses}. Si lo permites, podrá reenviar correo a esta dirección a partir de ahora sin preguntar. Puedes revocarlo en Configuración > Complementos.",
+      "allow": "Permitir y reenviar"
     },
     "dialog": {
       "from_plugin": "Del complemento {name}",
@@ -5952,6 +6032,37 @@
     "easy_read": "Lectura fácil",
     "sign_language": "Lengua de signos",
     "new_tab": "se abre en una pestaña nueva"
+  },
+  "structured_mail_calendar": {
+    "add_to_calendar": "Añadir al calendario",
+    "update_in_calendar": "Actualizar en el calendario",
+    "remove_from_calendar": "Quitar del calendario",
+    "in_calendar": "En tu calendario",
+    "view_in_calendar": "Ver en el calendario",
+    "select_calendar": "Elige un calendario",
+    "added": "Añadido a tu calendario",
+    "updated": "Calendario actualizado",
+    "removed": "Quitado de tu calendario",
+    "action_failed": "No se pudo cambiar tu calendario. Inténtalo de nuevo.",
+    "blocked": "Un complemento ha impedido este cambio en el calendario.",
+    "title": {
+      "rental_car": "Coche de alquiler",
+      "rental_car_company": "Coche de alquiler: {company}"
+    },
+    "description": {
+      "reference": "Código de reserva: {reference}",
+      "passengers": "Pasajeros: {names}",
+      "seats": "Asientos: {seats}",
+      "checkin": "Check-in: {url}",
+      "manage": "Gestionar la reserva: {url}",
+      "ticket": "Billete o entrada: {url}",
+      "phone": "Teléfono: {phone}",
+      "car": "Vehículo: {car}",
+      "tickets": "Entradas: {numbers}",
+      "party_size": "Personas: {count}",
+      "added_from": "Añadido desde un correo de {domain}",
+      "added_from_subject": "Añadido desde el correo «{subject}» de {domain}"
+    }
   },
   "register": {
     "title": "Create Email Account",

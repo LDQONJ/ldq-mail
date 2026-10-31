@@ -499,6 +499,11 @@
       "failed_sent_from": "این پیام ادعا می‌کند از {domain} است، اما از {host} ارسال شده و در بررسی‌های فرستنده برای {domain} رد شده است. ممکن است جعلی باشد.",
       "caution": "مراقب پیوندها، پیوست‌ها و درخواست‌های رمز عبور یا اطلاعات پرداخت باشید."
     },
+    "brand_logo": {
+      "verified_label": "لوگوی تأییدشده",
+      "verified": "این لوگو به‌عنوان متعلق به {organization} تأیید شده است.",
+      "verified_by": "{issuer} تأیید کرده است که این لوگو متعلق به {organization} است."
+    },
     "back_to_list": "بازگشت به لیست",
     "view_contact": "مشاهده مخاطب",
     "message_details": "جزئیات پیام",
@@ -771,6 +776,69 @@
       "copy": "کپی کد {code}",
       "copied": "کد کپی شد",
       "copy_failed": "کپی کد ممکن نشد"
+    },
+    "structured_mail": {
+      "kind_flight": "پرواز",
+      "kind_train": "قطار",
+      "kind_bus": "اتوبوس",
+      "kind_lodging": "هتل",
+      "kind_rentalcar": "خودروی اجاره‌ای",
+      "kind_event": "رویداد",
+      "kind_restaurant": "رستوران",
+      "kind_order": "سفارش",
+      "kind_parcel": "مرسوله",
+      "region_flight": "رزرو پرواز",
+      "region_train": "رزرو قطار",
+      "region_bus": "رزرو اتوبوس",
+      "region_lodging": "رزرو هتل",
+      "region_rentalcar": "رزرو خودروی اجاره‌ای",
+      "region_event": "رزرو رویداد",
+      "region_restaurant": "رزرو رستوران",
+      "region_shipment": "سفارش و ارسال",
+      "status_cancelled": "لغو شده",
+      "status_pending": "در انتظار",
+      "status_hold": "نگه‌داشته شده",
+      "order_status_payment_due": "در انتظار پرداخت",
+      "order_status_processing": "در حال پردازش",
+      "order_status_problem": "مشکل",
+      "order_status_in_transit": "ارسال شده",
+      "order_status_pickup_available": "آماده تحویل",
+      "order_status_returned": "مرجوع شده",
+      "order_status_delivered": "تحویل داده شده",
+      "order_status_cancelled": "لغو شده",
+      "reference": "کد رزرو",
+      "order_number": "شماره سفارش",
+      "tracking_number": "کد رهگیری",
+      "copy_reference": "کپی کد رزرو {value}",
+      "copy_order_number": "کپی شماره سفارش {value}",
+      "copy_tracking_number": "کپی کد رهگیری {value}",
+      "copied_reference": "کد رزرو کپی شد",
+      "copied_order_number": "شماره سفارش کپی شد",
+      "copied_tracking_number": "کد رهگیری کپی شد",
+      "copy_failed": "کپی در کلیپ‌بورد انجام نشد",
+      "passengers": "مسافران",
+      "seats": "صندلی‌ها",
+      "tickets": "بلیت‌ها",
+      "link_check_in": "پذیرش آنلاین",
+      "link_manage": "مدیریت رزرو",
+      "link_ticket": "بلیت",
+      "link_track": "رهگیری",
+      "link_view_order": "مشاهده سفارش",
+      "check_in_label": "ورود",
+      "check_out_label": "خروج",
+      "from_time": "از ساعت {time}",
+      "until_time": "تا ساعت {time}",
+      "nights": "{count, plural, one {# شب} other {# شب}}",
+      "pickup": "تحویل گرفتن",
+      "dropoff": "بازگرداندن",
+      "party_size": "{count, plural, one {میز برای # نفر} other {میز برای # نفر}}",
+      "items_more": "و {count} مورد دیگر",
+      "items_count": "{count, plural, one {# کالا} other {# کالا}}",
+      "total": "مجموع {total}",
+      "expected_by": "رسیدن تا {date}",
+      "local_time": "به وقت محلی",
+      "local_time_title": "به وقت محلی همان مکان، نه منطقه زمانی شما",
+      "route": "{from} به {to}"
     },
     "mv_position": "{index} از {total}",
     "plugin_panel_show": "نمایش پنل افزونه",
@@ -1572,7 +1640,7 @@
     "notifications": {
       "test_sound": "تست صدای اعلان",
       "sounds": {
-        "default": "پیش‌فرض (بیپ)",
+        "default": "بیپ",
         "cheerful": "شاد",
         "involved": "درگیر",
         "swift": "سریع",
@@ -1955,8 +2023,8 @@
         "unsupported": "پشتیبانی نمی‌شود"
       },
       "return_to_list_after_action": {
-        "label": "بازگشت به فهرست پس از حذف یا علامت‌گذاری به‌عنوان خوانده‌نشده",
-        "description": "پس از حذف یا علامت‌گذاری پیام باز به‌عنوان خوانده‌نشده، به‌جای باز کردن پیام بعدی به فهرست پیام‌ها بازگردید."
+        "label": "بازگشت به فهرست پس از حذف، بایگانی، انتقال یا علامت‌گذاری به‌عنوان خوانده‌نشده",
+        "description": "پس از حذف، بایگانی، انتقال، گزارش هرزنامه یا علامت‌گذاری پیام باز به‌عنوان خوانده‌نشده، به‌جای باز کردن پیام بعدی به فهرست پیام‌ها بازگردید."
       },
       "swipe_right_action": {
         "label": "عملکرد کشیدن به راست (موبایل)",
@@ -4940,7 +5008,6 @@
     "any_size": "هر اندازه",
     "larger_than_mb": "بزرگ‌تر از {size} مگابایت",
     "custom_size": "اندازه دلخواه",
-    "done": "انجام شد",
     "name_or_address": "نام یا نشانی"
   },
   "welcome": {
@@ -5424,6 +5491,10 @@
       "accounts_heading": "حساب‌های متصل",
       "account_on": "{label} روی {host}",
       "account_waiting": "{label} روی {host} (ورود کامل نشده)",
+      "forward_heading": "ایمیل را هدایت می‌کند به",
+      "forward_hint": "نشانی‌هایی که این افزونه می‌تواند بدون پرسیدن پیام‌ها را به آن‌ها هدایت کند.",
+      "forward_remove": "حذف",
+      "forward_remove_label": "توقف هدایت به {address}",
       "disconnect": "قطع اتصال",
       "disconnect_failed": "قطع اتصال {label} ممکن نشد"
     },
@@ -5666,6 +5737,10 @@
         "title": "تغییر پیامی که می‌نویسید",
         "body": "جایگزینی یا افزودن متن در پیام هنگام نوشتن آن، وقتی افزونه را در ویرایشگر به کار می‌برید. هر تغییر را می‌توانید برگردانید و تصمیم ارسال همچنان با شماست."
       },
+      "email_forward": {
+        "title": "هدایت ایمیل‌های شما",
+        "body": "پیام‌های حساب شما را همراه با پیوست‌ها، بدون باز کردن ویرایشگر، هدایت می‌کند. پیش از اولین هدایت به هر نشانی از شما پرسیده می‌شود."
+      },
       "ui_notifications": {
         "title": "نمایش اعلان‌ها",
         "body": "نمایش اعلان روی دستگاه شما، یا داخل برنامه اگر اجازه اعلان نداده‌اید. هر اعلان نام افزونه را نشان می‌دهد."
@@ -5698,6 +5773,11 @@
         "title": "استفاده از حساب‌هایی که متصل می‌کنید",
         "body": "ارسال درخواست از طریق سرور {appName} با حساب یا کلیدی که شما یا مدیرتان راه‌اندازی کرده‌اید. افزونه هرگز گذرواژه را نمی‌بیند، اما می‌تواند هر کاری را که آن حساب روی سرور خودش می‌تواند انجام دهد، انجام دهد."
       }
+    },
+    "forward_approval": {
+      "title": "به {plugin} اجازه داده شود ایمیل را به {addresses} هدایت کند؟",
+      "message": "{plugin} می‌خواهد «{subject}» را همراه با پیوست‌ها به {addresses} هدایت کند. اگر اجازه دهید، از این پس می‌تواند بدون پرسیدن، ایمیل را به این نشانی هدایت کند. می‌توانید این اجازه را در تنظیمات > افزونه‌ها پس بگیرید.",
+      "allow": "اجازه و هدایت"
     },
     "dialog": {
       "from_plugin": "از افزونه {name}",
@@ -5940,6 +6020,37 @@
     "easy_read": "متن آسان‌خوان",
     "sign_language": "زبان اشاره",
     "new_tab": "در زبانه‌ای تازه باز می‌شود"
+  },
+  "structured_mail_calendar": {
+    "add_to_calendar": "افزودن به تقویم",
+    "update_in_calendar": "به‌روزرسانی در تقویم",
+    "remove_from_calendar": "حذف از تقویم",
+    "in_calendar": "در تقویم شما",
+    "view_in_calendar": "مشاهده در تقویم",
+    "select_calendar": "یک تقویم انتخاب کنید",
+    "added": "به تقویم شما اضافه شد",
+    "updated": "تقویم به‌روزرسانی شد",
+    "removed": "از تقویم شما حذف شد",
+    "action_failed": "تغییر تقویم انجام نشد. دوباره تلاش کنید.",
+    "blocked": "یک افزونه این تغییر تقویم را متوقف کرد.",
+    "title": {
+      "rental_car": "خودروی اجاره‌ای",
+      "rental_car_company": "خودروی اجاره‌ای: {company}"
+    },
+    "description": {
+      "reference": "کد رزرو: {reference}",
+      "passengers": "مسافران: {names}",
+      "seats": "صندلی‌ها: {seats}",
+      "checkin": "پذیرش آنلاین: {url}",
+      "manage": "مدیریت رزرو: {url}",
+      "ticket": "بلیت: {url}",
+      "phone": "تلفن: {phone}",
+      "car": "خودرو: {car}",
+      "tickets": "بلیت‌ها: {numbers}",
+      "party_size": "تعداد نفرات: {count}",
+      "added_from": "از ایمیلی از {domain} اضافه شد",
+      "added_from_subject": "از ایمیل «{subject}» از {domain} اضافه شد"
+    }
   },
   "register": {
     "title": "Create Email Account",

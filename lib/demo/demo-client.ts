@@ -13,6 +13,7 @@ import { withBasePath } from '@/lib/browser-navigation';
 import { toInertBlob } from '@/lib/file-preview';
 import type { StorageQuota } from "@/lib/quota";
 import { buildDemoEml, demoEmlBlobId, demoEmlEmailId } from './demo-eml';
+import { stripMessageIdBrackets } from '@/lib/email-threading';
 
 // Fixture blobs with real bytes behind them, served from public/demo/ (see
 // fixtures/assets.ts for the list and the licences). Any other blob id falls
@@ -37,7 +38,7 @@ export const DEMO_SIMULATE_KEY = 'bulwark-demo-simulate';
  *
  * One instance per demo login: `new DemoJMAPClient('work')` is the primary
  * account (with the shared Support mailbox delegated to it), and
- * `new DemoJMAPClient('personal')` the mail-only second account.
+ * `new DemoJMAPClient('personal')` the second account, with mail and contacts.
  */
 export class DemoJMAPClient implements IJMAPClient {
   private data: DemoData;
@@ -117,8 +118,8 @@ export class DemoJMAPClient implements IJMAPClient {
 
   // ── Capabilities ──────────────────────────────────────────────
 
-  /** The personal login is mail only; everything else lives in the work account. */
-  private get mailOnly(): boolean { return this.profile === 'personal'; }
+  /** The personal login has mail and contacts; everything else lives in the work account. */
+  private get isPersonal(): boolean { return this.profile === 'personal'; }
 
   hasAccountCapability(capability: string, _accountId?: string): boolean {
     return capability === 'urn:ietf:params:jmap:submission';
@@ -141,8 +142,8 @@ export class DemoJMAPClient implements IJMAPClient {
       'urn:ietf:params:jmap:submission': { maxDelayedSend: 30 * 24 * 60 * 60, submissionExtensions: { FUTURERELEASE: true } },
       'urn:ietf:params:jmap:vacationresponse': {},
       'urn:ietf:params:jmap:quota': {},
-      ...(this.mailOnly ? {} : {
-        'urn:ietf:params:jmap:contacts': {},
+      'urn:ietf:params:jmap:contacts': {},
+      ...(this.isPersonal ? {} : {
         'urn:ietf:params:jmap:calendars': {},
         'urn:ietf:params:jmap:sieve': {},
         'urn:ietf:params:jmap:files': {},
@@ -161,10 +162,10 @@ export class DemoJMAPClient implements IJMAPClient {
   supportsQuota(): boolean { return true; }
   supportsVacationResponse(): boolean { return true; }
   accountSupports(): boolean { return true; }
-  supportsContacts(): boolean { return !this.mailOnly; }
-  supportsCalendars(): boolean { return !this.mailOnly; }
-  supportsSieve(): boolean { return !this.mailOnly; }
-  supportsFiles(): boolean { return !this.mailOnly; }
+  supportsContacts(): boolean { return true; }
+  supportsCalendars(): boolean { return !this.isPersonal; }
+  supportsSieve(): boolean { return !this.isPersonal; }
+  supportsFiles(): boolean { return !this.isPersonal; }
   supportsPrincipals(): boolean { return false; }
   async getPrincipals(): Promise<never[]> { return []; }
   async setCalendarShare(): Promise<void> { /* demo: no-op */ }
@@ -791,13 +792,15 @@ export class DemoJMAPClient implements IJMAPClient {
     attachments?: Array<{ blobId: string; name: string; type: string; size: number; disposition?: 'attachment' | 'inline'; cid?: string }>,
     _fromName?: string,
     htmlBody?: string,
+    inReplyTo?: string[],
+    references?: string[],
   ): Promise<string> {
     const draftsMb = this.data.mailboxes.find(m => m.role === 'drafts');
     const id = draftId || generateDemoId('email');
     const existing = draftId ? this.data.emails.findIndex(e => e.id === draftId) : -1;
 
     const email: Email = {
-      id, threadId: generateDemoId('thread'),
+      id, threadId: this.threadFor(inReplyTo, references),
       mailboxIds: { [draftsMb?.id || this.data.mailboxes[0].id]: true },
       keywords: { $seen: true, $draft: true },
       size: body.length,
@@ -819,6 +822,8 @@ export class DemoJMAPClient implements IJMAPClient {
         : { '1': { value: body } },
       attachments: attachments?.map(a => ({ ...a, partId: generateDemoId('part') })),
       messageId: `<${id}@demo.example.com>`,
+      inReplyTo: inReplyTo?.length ? inReplyTo : undefined,
+      references: references?.length ? references : undefined,
     };
 
     if (existing >= 0) {
@@ -853,7 +858,7 @@ export class DemoJMAPClient implements IJMAPClient {
     }
     const sentMb = this.data.mailboxes.find(m => m.role === 'sent');
     const email: Email = {
-      id: generateDemoId('email'), threadId: generateDemoId('thread'),
+      id: generateDemoId('email'), threadId: this.threadFor(inReplyTo, references),
       mailboxIds: { [delayedUntil ? (this.data.mailboxes.find(m => m.role === 'drafts')?.id || this.data.mailboxes[0].id) : (sentMb?.id || this.data.mailboxes[0].id)]: true },
       keywords: delayedUntil ? { $seen: true, $draft: true } : { $seen: true },
       size: body.length + (htmlBody?.length || 0),
@@ -891,6 +896,19 @@ export class DemoJMAPClient implements IJMAPClient {
     return delayedUntil
       ? { scheduled: true, emailId: email.id, emailSubmissionId, sendAt: delayedUntil }
       : { scheduled: false, emailId: email.id };
+  }
+
+  /**
+   * The thread a new message joins. A server threads a reply by In-Reply-To
+   * and References, so the reply shows up in the conversation it answers;
+   * without a known parent the message starts a thread of its own.
+   */
+  private threadFor(inReplyTo?: string[], references?: string[]): string {
+    const wanted = new Set([...(inReplyTo ?? []), ...(references ?? [])].map(stripMessageIdBrackets));
+    const parent = wanted.size > 0
+      ? this.data.emails.find(e => e.messageId && wanted.has(stripMessageIdBrackets(e.messageId)))
+      : undefined;
+    return parent?.threadId ?? generateDemoId('thread');
   }
 
   /** The From address of new mail: the chosen identity, else the account's own address. */

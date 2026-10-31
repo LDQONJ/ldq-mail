@@ -448,6 +448,11 @@
       "failed_sent_from": "ההודעה הזו טוענת שהיא מהדומיין {domain}, אבל היא נשלחה מהדומיין {host} ונכשלה בבדיקות השולח של {domain}. ייתכן שהיא מזויפת.",
       "caution": "היזהר מקישורים, מקבצים מצורפים ומבקשות לסיסמאות או לפרטי תשלום."
     },
+    "brand_logo": {
+      "verified_label": "לוגו מאומת",
+      "verified": "הלוגו הזה מאומת כשייך ל-{organization}.",
+      "verified_by": "{issuer} אימת שהלוגו הזה שייך ל-{organization}."
+    },
     "back_to_list": "חזרה לרשימה",
     "view_contact": "הצג איש קשר",
     "message_details": "פרטי הודעה",
@@ -736,6 +741,69 @@
       "copy": "העתקת הקוד {code}",
       "copied": "הקוד הועתק",
       "copy_failed": "לא ניתן להעתיק את הקוד"
+    },
+    "structured_mail": {
+      "kind_flight": "טיסה",
+      "kind_train": "רכבת",
+      "kind_bus": "אוטובוס",
+      "kind_lodging": "מלון",
+      "kind_rentalcar": "רכב שכור",
+      "kind_event": "אירוע",
+      "kind_restaurant": "מסעדה",
+      "kind_order": "הזמנה",
+      "kind_parcel": "חבילה",
+      "region_flight": "הזמנת טיסה",
+      "region_train": "הזמנת רכבת",
+      "region_bus": "הזמנת אוטובוס",
+      "region_lodging": "הזמנת מלון",
+      "region_rentalcar": "הזמנת רכב שכור",
+      "region_event": "הזמנה לאירוע",
+      "region_restaurant": "הזמנת מקום במסעדה",
+      "region_shipment": "הזמנה ומשלוח",
+      "status_cancelled": "בוטלה",
+      "status_pending": "ממתינה",
+      "status_hold": "בהמתנה",
+      "order_status_payment_due": "ממתינה לתשלום",
+      "order_status_processing": "בטיפול",
+      "order_status_problem": "בעיה",
+      "order_status_in_transit": "נשלחה",
+      "order_status_pickup_available": "מוכנה לאיסוף",
+      "order_status_returned": "הוחזרה",
+      "order_status_delivered": "נמסרה",
+      "order_status_cancelled": "בוטלה",
+      "reference": "מספר הזמנה",
+      "order_number": "מספר הזמנה",
+      "tracking_number": "מספר מעקב",
+      "copy_reference": "העתקת מספר ההזמנה {value}",
+      "copy_order_number": "העתקת מספר ההזמנה {value}",
+      "copy_tracking_number": "העתקת מספר המעקב {value}",
+      "copied_reference": "מספר ההזמנה הועתק",
+      "copied_order_number": "מספר ההזמנה הועתק",
+      "copied_tracking_number": "מספר המעקב הועתק",
+      "copy_failed": "לא ניתן להעתיק ללוח",
+      "passengers": "נוסעים",
+      "seats": "מושבים",
+      "tickets": "כרטיסים",
+      "link_check_in": "צ'ק-אין",
+      "link_manage": "ניהול ההזמנה",
+      "link_ticket": "כרטיס",
+      "link_track": "מעקב",
+      "link_view_order": "הצגת ההזמנה",
+      "check_in_label": "צ'ק-אין",
+      "check_out_label": "צ'ק-אאוט",
+      "from_time": "החל מ-{time}",
+      "until_time": "עד {time}",
+      "nights": "{count, plural, one {לילה אחד} two {שני לילות} other {# לילות}}",
+      "pickup": "איסוף",
+      "dropoff": "החזרה",
+      "party_size": "{count, plural, one {שולחן לאדם אחד} other {שולחן ל-# אנשים}}",
+      "items_more": "ועוד {count}",
+      "items_count": "{count, plural, one {פריט אחד} other {# פריטים}}",
+      "total": "סה\"כ {total}",
+      "expected_by": "יגיע עד {date}",
+      "local_time": "שעון מקומי",
+      "local_time_title": "השעה המקומית במקום, לא באזור הזמן שלך",
+      "route": "{from} – {to}"
     },
     "mv_position": "{index} מתוך {total}",
     "plugin_panel_show": "הצגת חלונית התוסף",
@@ -1538,7 +1606,7 @@
     "notifications": {
       "test_sound": "צליל הודעת בדיקה",
       "sounds": {
-        "default": "ברירת מחדל (ביפ)",
+        "default": "ביפ",
         "cheerful": "עליז",
         "involved": "מעורב",
         "swift": "מחווה מהירה",
@@ -1921,8 +1989,8 @@
         "unsupported": "החשבון הנוכחי אינו פרסום תמיכה בשליחה מעוכבת. ההגדרה עדיין שמורה לחשבונות אחרים."
       },
       "return_to_list_after_action": {
-        "label": "חזור לרשימה לאחר מחיקה או סימון שלא נקראו",
-        "description": "לאחר מחיקה או סימון ההודעה הפתוחה כלא קרויה, חזור לרשימת ההודעות במקום לפתוח את ההודעה הבאה."
+        "label": "חזור לרשימה לאחר מחיקה, העברה לארכיון, העברה לתיקייה או סימון שלא נקראו",
+        "description": "לאחר מחיקה, העברה לארכיון, העברה לתיקייה, דיווח כספאם או סימון ההודעה הפתוחה כלא קרויה, חזור לרשימת ההודעות במקום לפתוח את ההודעה הבאה."
       },
       "swipe_right_action": {
         "label": "פעולת החלקה ימינה (נייד)",
@@ -4732,7 +4800,6 @@
     "any_size": "כל גודל",
     "larger_than_mb": "גדול מ-{size} MB",
     "custom_size": "גודל מותאם",
-    "done": "סיום",
     "name_or_address": "שם או כתובת"
   },
   "welcome": {
@@ -5429,6 +5496,10 @@
       "accounts_heading": "חשבונות מחוברים",
       "account_on": "{label} בשרת {host}",
       "account_waiting": "{label} בשרת {host} (ההתחברות לא הושלמה)",
+      "forward_heading": "מעביר דואר אל",
+      "forward_hint": "כתובות שהתוסף הזה רשאי להעביר אליהן הודעות בלי לשאול.",
+      "forward_remove": "הסרה",
+      "forward_remove_label": "הפסקת ההעברה אל {address}",
       "disconnect": "ניתוק",
       "disconnect_failed": "לא ניתן לנתק את {label}"
     },
@@ -5671,6 +5742,10 @@
         "title": "שינוי ההודעה שאתם כותבים",
         "body": "החלפה או הוספה של טקסט בהודעה בזמן הכתיבה, כשמשתמשים בתוסף בעורך. אפשר לבטל כל שינוי, וההחלטה אם לשלוח נשארת שלכם."
       },
+      "email_forward": {
+        "title": "העברת הדואר שלכם",
+        "body": "העברת הודעות מהחשבון שלכם יחד עם הקבצים המצורפים, בלי לפתוח את חלון הכתיבה. לפני ההעברה הראשונה לכל כתובת תתבקשו לאשר."
+      },
       "ui_notifications": {
         "title": "הצגת התראות",
         "body": "הצגת התראות במכשיר שלכם, או בתוך האפליקציה אם לא אישרתם התראות. כל התראה מציינת את שם התוסף."
@@ -5703,6 +5778,11 @@
         "title": "שימוש בחשבונות שאתם מחברים",
         "body": "שליחת בקשות דרך השרת של {appName} עם חשבון או מפתח שהוגדרו על ידיכם או על ידי מנהל המערכת. התוסף אף פעם לא רואה את הסיסמה, אבל הוא יכול לעשות כל מה שהחשבון הזה יכול לעשות בשרת שלו."
       }
+    },
+    "forward_approval": {
+      "title": "לאפשר ל-{plugin} להעביר דואר אל {addresses}?",
+      "message": "{plugin} רוצה להעביר את „{subject}“ יחד עם הקבצים המצורפים אל {addresses}. אם תאשרו, מעכשיו הוא יוכל להעביר דואר לכתובת זו בלי לשאול. אפשר לבטל זאת בהגדרות > תוספים.",
+      "allow": "לאשר ולהעביר"
     },
     "dialog": {
       "from_plugin": "מהתוסף {name}",
@@ -5945,6 +6025,37 @@
     "easy_read": "שפה פשוטה",
     "sign_language": "שפת סימנים",
     "new_tab": "נפתח בכרטיסייה חדשה"
+  },
+  "structured_mail_calendar": {
+    "add_to_calendar": "הוסף ליומן",
+    "update_in_calendar": "עדכן ביומן",
+    "remove_from_calendar": "הסרה מהיומן",
+    "in_calendar": "ביומן שלך",
+    "view_in_calendar": "הצג בלוח שנה",
+    "select_calendar": "בחר יומן",
+    "added": "נוסף ליומן שלך",
+    "updated": "היומן עודכן",
+    "removed": "הוסר מהיומן שלך",
+    "action_failed": "לא ניתן היה לשנות את היומן. נסה שוב.",
+    "blocked": "תוסף עצר את השינוי הזה ביומן.",
+    "title": {
+      "rental_car": "רכב שכור",
+      "rental_car_company": "רכב שכור: {company}"
+    },
+    "description": {
+      "reference": "מספר הזמנה: {reference}",
+      "passengers": "נוסעים: {names}",
+      "seats": "מושבים: {seats}",
+      "checkin": "צ׳ק-אין: {url}",
+      "manage": "ניהול ההזמנה: {url}",
+      "ticket": "כרטיס: {url}",
+      "phone": "טלפון: {phone}",
+      "car": "רכב: {car}",
+      "tickets": "כרטיסים: {numbers}",
+      "party_size": "מספר אנשים: {count}",
+      "added_from": "נוסף מהודעה מ-{domain}",
+      "added_from_subject": "נוסף מההודעה ״{subject}״ מ-{domain}"
+    }
   },
   "register": {
     "title": "Create Email Account",

@@ -499,6 +499,11 @@
       "failed_sent_from": "這封郵件聲稱來自 {domain}，但它是從 {host} 寄出的，而且未通過 {domain} 的寄件者驗證，可能是偽造的。",
       "caution": "請小心其中的連結、附件，以及要求提供密碼或付款資訊的請求。"
     },
+    "brand_logo": {
+      "verified_label": "已驗證的標誌",
+      "verified": "此標誌已驗證屬於 {organization}。",
+      "verified_by": "{issuer} 已驗證此標誌屬於 {organization}。"
+    },
     "back_to_list": "回到清單",
     "view_contact": "檢視聯絡人",
     "message_details": "郵件詳細資料",
@@ -771,6 +776,69 @@
       "copy": "複製驗證碼 {code}",
       "copied": "驗證碼已複製",
       "copy_failed": "無法複製驗證碼"
+    },
+    "structured_mail": {
+      "kind_flight": "航班",
+      "kind_train": "火車",
+      "kind_bus": "巴士",
+      "kind_lodging": "飯店",
+      "kind_rentalcar": "租車",
+      "kind_event": "活動",
+      "kind_restaurant": "餐廳",
+      "kind_order": "訂單",
+      "kind_parcel": "包裹",
+      "region_flight": "航班訂位",
+      "region_train": "火車訂票",
+      "region_bus": "巴士訂票",
+      "region_lodging": "飯店訂房",
+      "region_rentalcar": "租車預約",
+      "region_event": "活動預約",
+      "region_restaurant": "餐廳訂位",
+      "region_shipment": "訂單與配送",
+      "status_cancelled": "已取消",
+      "status_pending": "待確認",
+      "status_hold": "已保留",
+      "order_status_payment_due": "待付款",
+      "order_status_processing": "處理中",
+      "order_status_problem": "有問題",
+      "order_status_in_transit": "已出貨",
+      "order_status_pickup_available": "可取貨",
+      "order_status_returned": "已退回",
+      "order_status_delivered": "已送達",
+      "order_status_cancelled": "已取消",
+      "reference": "訂位代號",
+      "order_number": "訂單編號",
+      "tracking_number": "貨件追蹤號碼",
+      "copy_reference": "複製訂位代號 {value}",
+      "copy_order_number": "複製訂單編號 {value}",
+      "copy_tracking_number": "複製貨件追蹤號碼 {value}",
+      "copied_reference": "已複製訂位代號",
+      "copied_order_number": "已複製訂單編號",
+      "copied_tracking_number": "已複製貨件追蹤號碼",
+      "copy_failed": "無法複製到剪貼簿",
+      "passengers": "乘客",
+      "seats": "座位",
+      "tickets": "票券",
+      "link_check_in": "報到",
+      "link_manage": "管理訂位",
+      "link_ticket": "票券",
+      "link_track": "追蹤貨件",
+      "link_view_order": "查看訂單",
+      "check_in_label": "入住",
+      "check_out_label": "退房",
+      "from_time": "{time} 起",
+      "until_time": "{time} 前",
+      "nights": "{count, plural, other {# 晚}}",
+      "pickup": "取車",
+      "dropoff": "還車",
+      "party_size": "{count, plural, other {# 人桌}}",
+      "items_more": "及其他 {count} 件",
+      "items_count": "{count, plural, other {# 件商品}}",
+      "total": "總計 {total}",
+      "expected_by": "預計 {date} 前送達",
+      "local_time": "當地時間",
+      "local_time_title": "這是該地點的當地時間，而非你所在時區的時間",
+      "route": "{from} 至 {to}"
     },
     "mv_position": "第 {index} 封，共 {total} 封",
     "plugin_panel_show": "顯示外掛程式面板",
@@ -1577,7 +1645,7 @@
     "notifications": {
       "test_sound": "測試通知聲音",
       "sounds": {
-        "default": "預設（蜂鳴聲）",
+        "default": "蜂鳴聲",
         "cheerful": "快樂",
         "involved": "沉浸",
         "swift": "輕快手勢",
@@ -1960,8 +2028,8 @@
         "unsupported": "目前帳號未宣告支援延遲傳送。該設定仍會為其他帳號儲存。"
       },
       "return_to_list_after_action": {
-        "label": "刪除或標示為未讀後回到清單",
-        "description": "刪除開啟的郵件或標示為未讀後，回到郵件清單，而不是開啟下一封郵件。"
+        "label": "刪除、封存、移動或標示為未讀後回到清單",
+        "description": "刪除、封存、移動開啟的郵件、回報為垃圾郵件或標示為未讀後，回到郵件清單，而不是開啟下一封郵件。"
       },
       "swipe_right_action": {
         "label": "向右滑動動作（行動裝置）",
@@ -4945,7 +5013,6 @@
     "any_size": "任意大小",
     "larger_than_mb": "大於 {size} MB",
     "custom_size": "自訂大小",
-    "done": "完成",
     "name_or_address": "姓名或地址"
   },
   "welcome": {
@@ -5429,6 +5496,10 @@
       "accounts_heading": "已連線的帳號",
       "account_on": "{host} 上的 {label}",
       "account_waiting": "{host} 上的 {label}（尚未完成登入）",
+      "forward_heading": "郵件轉寄到",
+      "forward_hint": "這個外掛程式可以不經詢問轉寄郵件的地址。",
+      "forward_remove": "移除",
+      "forward_remove_label": "停止轉寄到 {address}",
       "disconnect": "中斷連線",
       "disconnect_failed": "無法中斷 {label} 的連線"
     },
@@ -5671,6 +5742,10 @@
         "title": "修改您正在撰寫的郵件",
         "body": "在編輯器中使用外掛程式時，取代或新增您正在撰寫的郵件中的文字。每次修改都可以復原，是否寄出仍由您決定。"
       },
+      "email_forward": {
+        "title": "轉寄您的郵件",
+        "body": "不必開啟撰寫視窗，即可將您帳號中的郵件連同附件一起轉寄。第一次轉寄到每個地址前都會先徵求您的同意。"
+      },
       "ui_notifications": {
         "title": "顯示通知",
         "body": "在您的裝置上顯示通知；如果您未允許通知，則在應用程式內顯示。每則通知都會註明外掛程式名稱。"
@@ -5703,6 +5778,11 @@
         "title": "使用您連線的帳號",
         "body": "使用您或管理員設定的帳號或金鑰，透過 {appName} 的伺服器傳送要求。外掛程式永遠看不到密碼，但可以在該帳號所屬的伺服器上執行該帳號能做的任何動作。"
       }
+    },
+    "forward_approval": {
+      "title": "允許 {plugin} 將郵件轉寄到 {addresses} 嗎？",
+      "message": "{plugin} 想將「{subject}」連同附件轉寄到 {addresses}。如果允許，它之後可以不經詢問將郵件轉寄到這個地址。您可以在 設定 > 附加元件 中撤銷。",
+      "allow": "允許並轉寄"
     },
     "dialog": {
       "from_plugin": "來自外掛程式 {name}",
@@ -5945,6 +6025,37 @@
     "easy_read": "易讀版",
     "sign_language": "手語",
     "new_tab": "在新分頁中開啟"
+  },
+  "structured_mail_calendar": {
+    "add_to_calendar": "新增到行事曆",
+    "update_in_calendar": "在行事曆中更新",
+    "remove_from_calendar": "從行事曆移除",
+    "in_calendar": "已在您的行事曆中",
+    "view_in_calendar": "在行事曆中檢視",
+    "select_calendar": "選取行事曆",
+    "added": "已新增到您的行事曆",
+    "updated": "行事曆已更新",
+    "removed": "已從您的行事曆移除",
+    "action_failed": "無法變更您的行事曆，請再試一次。",
+    "blocked": "某個外掛程式阻止了此行事曆變更。",
+    "title": {
+      "rental_car": "租車",
+      "rental_car_company": "租車：{company}"
+    },
+    "description": {
+      "reference": "訂位代號：{reference}",
+      "passengers": "乘客：{names}",
+      "seats": "座位：{seats}",
+      "checkin": "報到：{url}",
+      "manage": "管理訂位：{url}",
+      "ticket": "電子票：{url}",
+      "phone": "電話：{phone}",
+      "car": "車輛：{car}",
+      "tickets": "票號：{numbers}",
+      "party_size": "人數：{count}",
+      "added_from": "新增自 {domain} 寄來的郵件",
+      "added_from_subject": "新增自 {domain} 寄來的郵件「{subject}」"
+    }
   },
   "register": {
     "title": "LDQ Mail",

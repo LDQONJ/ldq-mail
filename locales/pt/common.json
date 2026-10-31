@@ -499,6 +499,11 @@
       "failed_sent_from": "Esta mensagem afirma ser de {domain}, mas foi enviada de {host} e não passou nas verificações de remetente de {domain}. Pode ter sido falsificada.",
       "caution": "Tenha cuidado com links, anexos e pedidos de senhas ou dados de pagamento."
     },
+    "brand_logo": {
+      "verified_label": "Logotipo verificado",
+      "verified": "Este logotipo foi verificado como pertencente a {organization}.",
+      "verified_by": "{issuer} verificou que este logotipo pertence a {organization}."
+    },
     "back_to_list": "Voltar para a lista",
     "view_contact": "Ver contato",
     "message_details": "Detalhes da Mensagem",
@@ -771,6 +776,69 @@
       "copy": "Copiar código {code}",
       "copied": "Código copiado",
       "copy_failed": "Não foi possível copiar o código"
+    },
+    "structured_mail": {
+      "kind_flight": "Voo",
+      "kind_train": "Comboio",
+      "kind_bus": "Autocarro",
+      "kind_lodging": "Hotel",
+      "kind_rentalcar": "Carro alugado",
+      "kind_event": "Evento",
+      "kind_restaurant": "Restaurante",
+      "kind_order": "Encomenda",
+      "kind_parcel": "Encomenda postal",
+      "region_flight": "Reserva de voo",
+      "region_train": "Reserva de comboio",
+      "region_bus": "Reserva de autocarro",
+      "region_lodging": "Reserva de hotel",
+      "region_rentalcar": "Reserva de carro alugado",
+      "region_event": "Reserva de evento",
+      "region_restaurant": "Reserva de restaurante",
+      "region_shipment": "Encomenda e entrega",
+      "status_cancelled": "Cancelada",
+      "status_pending": "Pendente",
+      "status_hold": "Em espera",
+      "order_status_payment_due": "Pagamento pendente",
+      "order_status_processing": "Em preparação",
+      "order_status_problem": "Problema",
+      "order_status_in_transit": "Enviada",
+      "order_status_pickup_available": "Pronta para levantar",
+      "order_status_returned": "Devolvida",
+      "order_status_delivered": "Entregue",
+      "order_status_cancelled": "Cancelada",
+      "reference": "Código de reserva",
+      "order_number": "Número da encomenda",
+      "tracking_number": "Número de seguimento",
+      "copy_reference": "Copiar o código de reserva {value}",
+      "copy_order_number": "Copiar o número da encomenda {value}",
+      "copy_tracking_number": "Copiar o número de seguimento {value}",
+      "copied_reference": "Código de reserva copiado",
+      "copied_order_number": "Número da encomenda copiado",
+      "copied_tracking_number": "Número de seguimento copiado",
+      "copy_failed": "Não foi possível copiar para a área de transferência",
+      "passengers": "Passageiros",
+      "seats": "Lugares",
+      "tickets": "Bilhetes",
+      "link_check_in": "Fazer check-in",
+      "link_manage": "Gerir reserva",
+      "link_ticket": "Bilhete",
+      "link_track": "Seguir",
+      "link_view_order": "Ver encomenda",
+      "check_in_label": "Check-in",
+      "check_out_label": "Check-out",
+      "from_time": "a partir das {time}",
+      "until_time": "até às {time}",
+      "nights": "{count, plural, one {# noite} other {# noites}}",
+      "pickup": "Levantamento",
+      "dropoff": "Devolução",
+      "party_size": "{count, plural, one {Mesa para # pessoa} other {Mesa para # pessoas}}",
+      "items_more": "e mais {count}",
+      "items_count": "{count, plural, one {# artigo} other {# artigos}}",
+      "total": "Total {total}",
+      "expected_by": "Chega até {date}",
+      "local_time": "hora local",
+      "local_time_title": "Hora local do lugar, não do seu fuso horário",
+      "route": "{from} para {to}"
     },
     "mv_position": "{index} de {total}",
     "plugin_panel_show": "Mostrar o painel do plugin",
@@ -1578,7 +1646,7 @@
     "notifications": {
       "test_sound": "Testar som de notificação",
       "sounds": {
-        "default": "Padrão (Bipe)",
+        "default": "Bipe",
         "cheerful": "Alegre",
         "involved": "Elaborado",
         "swift": "Gesto rápido",
@@ -1961,8 +2029,8 @@
         "unsupported": "A conta atual não anuncia suporte a envio atrasado. A configuração continuará salva para outras contas."
       },
       "return_to_list_after_action": {
-        "label": "Voltar à lista após eliminar ou marcar como não lido",
-        "description": "Depois de eliminar ou marcar como não lida a mensagem aberta, voltar à lista de mensagens em vez de abrir a mensagem seguinte."
+        "label": "Voltar à lista após eliminar, arquivar, mover ou marcar como não lido",
+        "description": "Depois de eliminar, arquivar, mover, reportar como spam ou marcar como não lida a mensagem aberta, voltar à lista de mensagens em vez de abrir a mensagem seguinte."
       },
       "swipe_right_action": {
         "label": "Ação ao deslizar para a direita (celular)",
@@ -4819,7 +4887,6 @@
     "any_size": "Qualquer tamanho",
     "larger_than_mb": "Maior que {size} MB",
     "custom_size": "Tamanho personalizado",
-    "done": "Concluído",
     "name_or_address": "Nome ou endereço"
   },
   "welcome": {
@@ -5433,6 +5500,10 @@
       "accounts_heading": "Contas conectadas",
       "account_on": "{label} em {host}",
       "account_waiting": "{label} em {host} (login não concluído)",
+      "forward_heading": "Encaminha e-mails para",
+      "forward_hint": "Endereços para os quais este plugin pode encaminhar mensagens sem perguntar.",
+      "forward_remove": "Remover",
+      "forward_remove_label": "Parar de encaminhar para {address}",
       "disconnect": "Desconectar",
       "disconnect_failed": "Não foi possível desconectar {label}"
     },
@@ -5675,6 +5746,10 @@
         "title": "Alterar a mensagem que você está escrevendo",
         "body": "Substituir ou adicionar texto em uma mensagem enquanto você a escreve, quando usa o plugin no editor. Você pode desfazer cada alteração e continua decidindo se envia."
       },
+      "email_forward": {
+        "title": "Encaminhar seus e-mails",
+        "body": "Encaminhar mensagens da sua conta com os anexos, sem abrir o editor. Você é consultado antes do primeiro encaminhamento para cada endereço."
+      },
       "ui_notifications": {
         "title": "Mostrar notificações",
         "body": "Mostrar notificações no seu dispositivo, ou dentro do aplicativo se você não as permitiu. Cada uma indica o nome do plugin."
@@ -5707,6 +5782,11 @@
         "title": "Usar contas que você conecta",
         "body": "Enviar solicitações pelo servidor do {appName} com uma conta ou chave configurada por você ou pelo seu administrador. O plugin nunca vê a senha, mas pode fazer tudo o que essa conta pode fazer no próprio servidor."
       }
+    },
+    "forward_approval": {
+      "title": "Permitir que {plugin} encaminhe e-mails para {addresses}?",
+      "message": "{plugin} quer encaminhar “{subject}” com os anexos para {addresses}. Se você permitir, ele poderá encaminhar e-mails para esse endereço daqui em diante sem perguntar. Você pode desfazer isso em Configurações > Extras.",
+      "allow": "Permitir e encaminhar"
     },
     "dialog": {
       "from_plugin": "Do plugin {name}",
@@ -5949,6 +6029,37 @@
     "easy_read": "Leitura fácil",
     "sign_language": "Língua de sinais",
     "new_tab": "abre em uma nova aba"
+  },
+  "structured_mail_calendar": {
+    "add_to_calendar": "Adicionar ao calendário",
+    "update_in_calendar": "Atualizar no calendário",
+    "remove_from_calendar": "Remover do calendário",
+    "in_calendar": "No seu calendário",
+    "view_in_calendar": "Ver no calendário",
+    "select_calendar": "Escolha um calendário",
+    "added": "Adicionado ao seu calendário",
+    "updated": "Calendário atualizado",
+    "removed": "Removido do seu calendário",
+    "action_failed": "Não foi possível alterar seu calendário. Tente novamente.",
+    "blocked": "Um plugin impediu esta alteração no calendário.",
+    "title": {
+      "rental_car": "Carro alugado",
+      "rental_car_company": "Carro alugado: {company}"
+    },
+    "description": {
+      "reference": "Código da reserva: {reference}",
+      "passengers": "Passageiros: {names}",
+      "seats": "Assentos: {seats}",
+      "checkin": "Check-in: {url}",
+      "manage": "Gerenciar reserva: {url}",
+      "ticket": "Bilhete: {url}",
+      "phone": "Telefone: {phone}",
+      "car": "Carro: {car}",
+      "tickets": "Ingressos: {numbers}",
+      "party_size": "Pessoas: {count}",
+      "added_from": "Adicionado a partir de um e-mail de {domain}",
+      "added_from_subject": "Adicionado a partir do e-mail “{subject}” de {domain}"
+    }
   },
   "register": {
     "title": "Create Email Account",

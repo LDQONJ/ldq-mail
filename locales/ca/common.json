@@ -499,6 +499,11 @@
       "failed_sent_from": "Aquest missatge diu que és de {domain}, però s'ha enviat des de {host} i no ha superat les comprovacions de remitent de {domain}. Podria estar falsificat.",
       "caution": "Aneu amb compte amb els enllaços, els fitxers adjunts i les sol·licituds de contrasenyes o dades de pagament."
     },
+    "brand_logo": {
+      "verified_label": "Logotip verificat",
+      "verified": "Aquest logotip està verificat com a propietat de {organization}.",
+      "verified_by": "{issuer} ha verificat que aquest logotip pertany a {organization}."
+    },
     "back_to_list": "Torna a la llista",
     "view_contact": "Mostra el contacte",
     "message_details": "Detalls del missatge",
@@ -771,6 +776,69 @@
       "copy": "Copia el codi {code}",
       "copied": "Codi copiat",
       "copy_failed": "No s'ha pogut copiar el codi"
+    },
+    "structured_mail": {
+      "kind_flight": "Vol",
+      "kind_train": "Tren",
+      "kind_bus": "Autobús",
+      "kind_lodging": "Hotel",
+      "kind_rentalcar": "Cotxe de lloguer",
+      "kind_event": "Esdeveniment",
+      "kind_restaurant": "Restaurant",
+      "kind_order": "Comanda",
+      "kind_parcel": "Paquet",
+      "region_flight": "Reserva de vol",
+      "region_train": "Reserva de tren",
+      "region_bus": "Reserva d'autobús",
+      "region_lodging": "Reserva d'hotel",
+      "region_rentalcar": "Reserva de cotxe de lloguer",
+      "region_event": "Reserva d'esdeveniment",
+      "region_restaurant": "Reserva de restaurant",
+      "region_shipment": "Comanda i lliurament",
+      "status_cancelled": "Cancel·lada",
+      "status_pending": "Pendent",
+      "status_hold": "En espera",
+      "order_status_payment_due": "Pagament pendent",
+      "order_status_processing": "En preparació",
+      "order_status_problem": "Problema",
+      "order_status_in_transit": "Enviada",
+      "order_status_pickup_available": "A punt per recollir",
+      "order_status_returned": "Retornada",
+      "order_status_delivered": "Lliurada",
+      "order_status_cancelled": "Cancel·lada",
+      "reference": "Codi de reserva",
+      "order_number": "Número de comanda",
+      "tracking_number": "Número de seguiment",
+      "copy_reference": "Copia el codi de reserva {value}",
+      "copy_order_number": "Copia el número de comanda {value}",
+      "copy_tracking_number": "Copia el número de seguiment {value}",
+      "copied_reference": "S'ha copiat el codi de reserva",
+      "copied_order_number": "S'ha copiat el número de comanda",
+      "copied_tracking_number": "S'ha copiat el número de seguiment",
+      "copy_failed": "No s'ha pogut copiar al porta-retalls",
+      "passengers": "Passatgers",
+      "seats": "Seients",
+      "tickets": "Entrades",
+      "link_check_in": "Facturació",
+      "link_manage": "Gestiona la reserva",
+      "link_ticket": "Entrada",
+      "link_track": "Segueix l'enviament",
+      "link_view_order": "Mostra la comanda",
+      "check_in_label": "Entrada",
+      "check_out_label": "Sortida",
+      "from_time": "des de les {time}",
+      "until_time": "fins a les {time}",
+      "nights": "{count, plural, one {# nit} other {# nits}}",
+      "pickup": "Recollida",
+      "dropoff": "Devolució",
+      "party_size": "{count, plural, one {Taula per a # persona} other {Taula per a # persones}}",
+      "items_more": "i {count} més",
+      "items_count": "{count, plural, one {# article} other {# articles}}",
+      "total": "Total {total}",
+      "expected_by": "Arriba abans del {date}",
+      "local_time": "hora local",
+      "local_time_title": "Hora local del lloc, no la de la teva zona horària",
+      "route": "{from} a {to}"
     },
     "mv_position": "{index} de {total}",
     "plugin_panel_show": "Mostra el tauler del connector",
@@ -1578,7 +1646,7 @@
     "notifications": {
       "test_sound": "Prova el so de notificació",
       "sounds": {
-        "default": "Per defecte (bip)",
+        "default": "Bip",
         "cheerful": "Alegre",
         "involved": "Elaborat",
         "swift": "Gest ràpid",
@@ -1961,8 +2029,8 @@
         "unsupported": "El compte actual no indica compatibilitat amb l'enviament retardat. La configuració es continua desant per a altres comptes."
       },
       "return_to_list_after_action": {
-        "label": "Torna a la llista després de suprimir o marcar com a no llegit",
-        "description": "Després de suprimir o marcar com a no llegit el missatge obert, torna a la llista de missatges en lloc d'obrir el següent."
+        "label": "Torna a la llista després de suprimir, arxivar, moure o marcar com a no llegit",
+        "description": "Després de suprimir, arxivar, moure, denunciar com a brossa o marcar com a no llegit el missatge obert, torna a la llista de missatges en lloc d'obrir el següent."
       },
       "swipe_right_action": {
         "label": "Acció en lliscar a la dreta (mòbil)",
@@ -4946,7 +5014,6 @@
     "any_size": "Qualsevol mida",
     "larger_than_mb": "Més de {size} MB",
     "custom_size": "Mida personalitzada",
-    "done": "Fet",
     "name_or_address": "Nom o adreça"
   },
   "welcome": {
@@ -5430,6 +5497,10 @@
       "accounts_heading": "Comptes connectats",
       "account_on": "{label} a {host}",
       "account_waiting": "{label} a {host} (inici de sessió sense acabar)",
+      "forward_heading": "Reenvia el correu a",
+      "forward_hint": "Adreces a les quals aquest connector pot reenviar missatges sense preguntar.",
+      "forward_remove": "Elimina",
+      "forward_remove_label": "Deixa de reenviar a {address}",
       "disconnect": "Desconnecta",
       "disconnect_failed": "No s'ha pogut desconnectar {label}"
     },
@@ -5672,6 +5743,10 @@
         "title": "Canviar el missatge que escriviu",
         "body": "Substituir o afegir text en un missatge mentre l'escriviu, quan feu servir el connector a l'editor. Podeu desfer cada canvi i continueu decidint si l'envieu."
       },
+      "email_forward": {
+        "title": "Reenviar el vostre correu",
+        "body": "Reenviar missatges del vostre compte amb els adjunts, sense obrir l'editor. Se us pregunta abans del primer reenviament a cada adreça."
+      },
       "ui_notifications": {
         "title": "Mostrar notificacions",
         "body": "Mostrar notificacions al dispositiu, o dins l'aplicació si no les heu permeses. Cadascuna indica el nom del connector."
@@ -5704,6 +5779,11 @@
         "title": "Fer servir els comptes que connecteu",
         "body": "Enviar peticions a través del servidor de {appName} amb un compte o una clau que heu configurat vós o el vostre administrador. El connector no veu mai la contrasenya, però pot fer tot el que aquest compte pot fer al seu propi servidor."
       }
+    },
+    "forward_approval": {
+      "title": "Voleu permetre que {plugin} reenviï correu a {addresses}?",
+      "message": "{plugin} vol reenviar «{subject}» amb els adjunts a {addresses}. Si ho permeteu, d'ara endavant podrà reenviar correu a aquesta adreça sense preguntar. Ho podeu revocar a Configuració > Complements.",
+      "allow": "Permet i reenvia"
     },
     "dialog": {
       "from_plugin": "Del connector {name}",
@@ -5946,6 +6026,37 @@
     "easy_read": "Lectura fàcil",
     "sign_language": "Llengua de signes",
     "new_tab": "s'obre en una pestanya nova"
+  },
+  "structured_mail_calendar": {
+    "add_to_calendar": "Afegeix al calendari",
+    "update_in_calendar": "Actualitza al calendari",
+    "remove_from_calendar": "Treu del calendari",
+    "in_calendar": "Al vostre calendari",
+    "view_in_calendar": "Mostra al calendari",
+    "select_calendar": "Trieu un calendari",
+    "added": "S’ha afegit al vostre calendari",
+    "updated": "S’ha actualitzat el calendari",
+    "removed": "S’ha tret del vostre calendari",
+    "action_failed": "No s’ha pogut modificar el calendari. Torneu-ho a provar.",
+    "blocked": "Un connector ha impedit aquest canvi al calendari.",
+    "title": {
+      "rental_car": "Cotxe de lloguer",
+      "rental_car_company": "Cotxe de lloguer: {company}"
+    },
+    "description": {
+      "reference": "Codi de reserva: {reference}",
+      "passengers": "Passatgers: {names}",
+      "seats": "Seients: {seats}",
+      "checkin": "Facturació: {url}",
+      "manage": "Gestiona la reserva: {url}",
+      "ticket": "Bitllet: {url}",
+      "phone": "Telèfon: {phone}",
+      "car": "Cotxe: {car}",
+      "tickets": "Entrades: {numbers}",
+      "party_size": "Persones: {count}",
+      "added_from": "Afegit des d’un correu de {domain}",
+      "added_from_subject": "Afegit des del correu «{subject}» de {domain}"
+    }
   },
   "register": {
     "title": "Create Email Account",

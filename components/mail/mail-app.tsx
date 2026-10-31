@@ -119,7 +119,8 @@ import { FilePreviewModal } from "@/components/files/file-preview-modal";
 import { WopiEditor } from "@/components/files/wopi-editor";
 import { useWopiStatus, canWopiOpen } from "@/hooks/use-wopi-status";
 import { isFilePreviewable } from "@/lib/file-preview";
-import { prepareQuickReply } from "@/lib/outgoing/quick-reply";
+import { prepareQuickReply, type QuickReplyQuestion } from "@/lib/outgoing/quick-reply";
+import enMessages from "@/locales/en/common.json";
 import { computeReplyThreadingHeaders } from "@/lib/email-threading";
 import { EML_IMPORT_ACCEPT, expandImportableEmails } from "@/lib/eml-import";
 import { resolveComposeAccountEmail } from "@/lib/reply-identity";
@@ -1168,7 +1169,7 @@ export function MailApp({ linkSegments: routeSegments }: MailAppProps = {}) {
       }
     },
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }), [activeEmails, selectedEmail, client, selectedMailbox, isMobile, isTablet, selectedEmailKeys, mailboxes, isScheduledView, mvShell, showCrossStarred, isUnifiedView, unifiedRole, archiveActionEnabled]);
+  }), [activeEmails, selectedEmail, client, selectedMailbox, isMobile, isTablet, selectedEmailKeys, mailboxes, isScheduledView, mvShell, cursorOnly, showCrossStarred, isUnifiedView, unifiedRole, archiveActionEnabled]);
 
   // Initialize keyboard shortcuts
   // Mountain View keeps the ticked rows while a message is read (#1231). The
@@ -2919,6 +2920,24 @@ export function MailApp({ linkSegments: routeSegments }: MailAppProps = {}) {
     clearSelection(); // only on success - a vetoed/no-op attempt keeps the selection
   };
 
+  // Taking the open message out of the folder (delete, archive, move, spam,
+  // not spam, remove from folder) returns to the list (Gmail-style), not the
+  // next email, unless the user turned the setting off. Called once
+  // the action is confirmed and right before the store removes the row: with
+  // nothing selected its remove-and-advance opens nothing, so the next message
+  // is not loaded and marked read on the way. A Mountain View cursor is no
+  // open message and moves on to the next row. A message the list no longer
+  // holds (a quick filter dropped it) stays selected: the store finds it
+  // through the selection (#695), and with no row to go on from it opens
+  // nothing after it anyway. (#1458)
+  const leaveIfOpen = (email: Email) => {
+    const { selectedEmail: open, emails: rows } = useEmailStore.getState();
+    const key = emailKeyFor(email);
+    if (!open || emailKeyFor(open) !== key || (mvShell && cursorOnly)) return;
+    if (!rows.some((row) => emailKeyFor(row) === key)) return;
+    if (useSettingsStore.getState().returnToListAfterAction) handleMobileBack();
+  };
+
   const handleDelete = async (emailToDelete: Email | null = selectedEmail) => {
     if (!client || !emailToDelete) return;
 
@@ -2959,6 +2978,8 @@ export function MailApp({ linkSegments: routeSegments }: MailAppProps = {}) {
     } else if (!(await confirmMailRemoval('delete', 1, confirmDialog, tRemove))) {
       return;
     }
+
+    leaveIfOpen(emailToDelete);
 
     // The store's delete reads the "Delete action" setting: move to the
     // email's own account's trash (marking it read when asked), or destroy
@@ -3024,11 +3045,9 @@ export function MailApp({ linkSegments: routeSegments }: MailAppProps = {}) {
       });
       if (!archiveMailbox) return; // a plugin refused the Archive folder
 
-      let archived: boolean;
-      let restore: EmailRestoreBatch[] | null = null;
-      const keepRestore = (batches: EmailRestoreBatch[]) => { restore = batches; };
+      let destination: Mailbox;
       if (archiveMode === 'single') {
-        archived = await moveThreadToMailbox(client, emailToArchive.id, archiveMailbox.id, emailKeyFor(emailToArchive), keepRestore);
+        destination = archiveMailbox;
       } else {
         const emailDate = new Date(emailToArchive.receivedAt);
         const year = emailDate.getFullYear().toString();
@@ -3053,7 +3072,7 @@ export function MailApp({ linkSegments: routeSegments }: MailAppProps = {}) {
         }
 
         if (archiveMode === 'year') {
-          archived = await moveThreadToMailbox(client, emailToArchive.id, yearMailbox.id, emailKeyFor(emailToArchive), keepRestore);
+          destination = yearMailbox;
         } else {
           const yearId = yearMailbox.originalId || yearMailbox.id;
           const afterYear = readMailboxes();
@@ -3063,9 +3082,13 @@ export function MailApp({ linkSegments: routeSegments }: MailAppProps = {}) {
             if (!monthMailbox) return; // a plugin refused the folder
             await refreshMailboxes();
           }
-          archived = await moveThreadToMailbox(client, emailToArchive.id, monthMailbox.id, emailKeyFor(emailToArchive), keepRestore);
+          destination = monthMailbox;
         }
       }
+
+      let restore: EmailRestoreBatch[] | null = null;
+      leaveIfOpen(emailToArchive);
+      const archived = await moveThreadToMailbox(client, emailToArchive.id, destination.id, emailKeyFor(emailToArchive), (batches) => { restore = batches; });
       if (!archived) return;
 
       if (conversationThread && conversationThread.threadKey === threadKeyFor(emailToArchive)) {
@@ -3103,6 +3126,7 @@ export function MailApp({ linkSegments: routeSegments }: MailAppProps = {}) {
     const email = useEmailStore.getState().emails.find(e => (emailKey ? emailKeyFor(e) === emailKey : e.id === emailId));
     const restore = email ? restoreBatchesFor([email], client) : null;
     const receipts: CrossAccountMoveReceipt[] = [];
+    if (email) leaveIfOpen(email);
     try {
       if (!(await moveToMailboxCrossAware(client, emailId, mailboxId, emailKey, receipts))) return;
       toastWithUndo(
@@ -3135,6 +3159,7 @@ export function MailApp({ linkSegments: routeSegments }: MailAppProps = {}) {
     // Undo puts it back in its own folders, read state included, as every
     // other Undo does.
     const restore = restoreBatchesFor([emailToMark], client);
+    leaveIfOpen(emailToMark);
     try {
       if (!(await markAsSpam(client, emailToMark.id, emailKeyFor(emailToMark)))) return;
       toastWithUndo(t('email_viewer.spam.toast_success'), undoMoveAction(client, restore, undo));
@@ -3148,6 +3173,7 @@ export function MailApp({ linkSegments: routeSegments }: MailAppProps = {}) {
     if (!client || !emailToRestore) return;
 
     const restore = restoreBatchesFor([emailToRestore], client);
+    leaveIfOpen(emailToRestore);
     try {
       if (!(await undoSpam(client, emailToRestore.id, emailKeyFor(emailToRestore)))) return;
       toastWithUndo(t('email_viewer.spam.toast_not_spam_success'), undoMoveAction(client, restore, undo));
@@ -4008,16 +4034,50 @@ export function MailApp({ linkSegments: routeSegments }: MailAppProps = {}) {
     const signatureIdentity = (sendingIdentity?.htmlSignature || sendingIdentity?.textSignature)
       ? sendingIdentity
       : primaryIdentity;
-    // The same checks and finalisers as the composer's send
+    // The same warnings, checks and finalisers as the composer's send
     // (lib/outgoing/send-pipeline.ts): a quick reply is no way around them.
+    const settings = useSettingsStore.getState();
+    const askBeforeQuickReply = (question: QuickReplyQuestion) => {
+      switch (question.kind) {
+        case 'placeholders':
+          return confirmDialog({
+            title: t('email_composer.placeholder_warning.title'),
+            message: `${t('email_composer.placeholder_warning.message')} ${t('email_composer.placeholder_warning.found')}: ${question.found.join(', ')}`,
+            confirmText: t('email_composer.placeholder_warning.send_anyway'),
+            cancelText: t('email_composer.placeholder_warning.back'),
+          });
+        case 'attachment':
+          return confirmDialog({
+            title: t('email_composer.forgot_attachment.title'),
+            message: t('email_composer.forgot_attachment.message', { keyword: question.keyword }),
+            confirmText: t('email_composer.forgot_attachment.send_anyway'),
+            cancelText: t('email_composer.forgot_attachment.back'),
+          });
+        case 'send':
+          return confirmDialog({
+            title: t('email_composer.send_confirm.title'),
+            message: t('email_composer.send_confirm.message', { count: recipients.length }),
+            confirmText: t('email_composer.send'),
+          });
+      }
+    };
     const prepared = await prepareQuickReply({
       body,
       signatureIdentity,
       sendingIdentity,
-      separator: useSettingsStore.getState().signatureSeparatorEnabled,
+      separator: settings.signatureSeparatorEnabled,
       to: recipients,
       fromEmail: headerFromEmail,
       identityId: sendingIdentity?.id,
+      questions: {
+        // The fill-in words of the UI language and of English, as the composer.
+        placeholderWords: settings.placeholderWarningEnabled
+          ? [enMessages.email_composer.placeholder_words, t.raw('email_composer.placeholder_words')]
+          : null,
+        attachmentKeywords: settings.attachmentReminderEnabled ? settings.attachmentReminderKeywords : null,
+        confirmSend: settings.sendConfirmation,
+        ask: askBeforeQuickReply,
+      },
     });
     if (!prepared) return false;
     const { html: finalHtmlBody, text: finalBody } = prepared;
@@ -5500,17 +5560,7 @@ export function MailApp({ linkSegments: routeSegments }: MailAppProps = {}) {
                     onReplyAll={handleReplyAll}
                     onForward={handleForward}
                     onForwardAsAttachment={handleForwardAsAttachment}
-                    onDelete={() => {
-                      // Deleting the open message returns to the list (Gmail-style),
-                      // not the next email — unless the user turned the setting off.
-                      // Deselect first so the store's remove-and-advance sees no
-                      // selection and doesn't auto-open the next message.
-                      const target = selectedEmail;
-                      if (useSettingsStore.getState().returnToListAfterAction) {
-                        handleMobileBack();
-                      }
-                      handleDelete(target);
-                    }}
+                    onDelete={() => handleDelete()}
                     onArchive={archiveActionEnabled ? () => handleArchive() : undefined}
                     onToggleStar={handleToggleStar}
                     onTogglePinned={() => { if (selectedEmail) void handleTogglePinned(selectedEmail); }}
@@ -5570,6 +5620,10 @@ export function MailApp({ linkSegments: routeSegments }: MailAppProps = {}) {
                       const full = e.bodyValues ? e : await handleLoadConversationEmail(e);
                       await handleConversationReply(full ?? e);
                     } : undefined}
+                    onReplyAllConversationEmail={mvConversationView ? async (e) => {
+                      const full = e.bodyValues ? e : await handleLoadConversationEmail(e);
+                      await handleConversationReplyAll(full ?? e);
+                    } : undefined}
                     mvInlineComposer={mvInlineReply ? <MvComposeInline onPopOut={handleMvPopOut}>{composerNode}</MvComposeInline> : undefined}
                     onToggleFullscreen={!isEmbedded && !isMobile ? () => setFullscreenReading((v) => !v) : undefined}
                     isFullscreen={fullscreenReading}
@@ -5608,10 +5662,12 @@ export function MailApp({ linkSegments: routeSegments }: MailAppProps = {}) {
                     mailboxes={mailboxes}
                     selectedMailbox={selectedMailbox}
                     onMoveToMailbox={async (mailboxId) => {
-                      if (selectedEmail) await handleMoveToMailbox(selectedEmail.id, mailboxId);
+                      if (selectedEmail) await handleMoveToMailbox(selectedEmail.id, mailboxId, emailKeyFor(selectedEmail));
                     }}
                     onRemoveFromFolder={openEmailCanLeaveFolder ? () => {
-                      if (selectedEmail) void removeFromFolder([selectedEmail]);
+                      if (!selectedEmail) return;
+                      leaveIfOpen(selectedEmail);
+                      void removeFromFolder([selectedEmail]);
                     } : undefined}
                     className={isMobile ? "flex-1" : undefined}
                   />

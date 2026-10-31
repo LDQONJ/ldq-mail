@@ -499,6 +499,11 @@
       "failed_sent_from": "このメッセージは{domain}からのものとされていますが、実際には{host}から送信されており、{domain}の送信者チェックにも失敗しました。なりすましの可能性があります。",
       "caution": "リンクや添付ファイル、パスワードや支払い情報の要求には注意してください。"
     },
+    "brand_logo": {
+      "verified_label": "認証済みロゴ",
+      "verified": "このロゴは {organization} のものとして認証されています。",
+      "verified_by": "{issuer} がこのロゴが {organization} のものであることを認証しました。"
+    },
     "back_to_list": "リストに戻る",
     "view_contact": "連絡先を表示",
     "message_details": "メッセージの詳細",
@@ -771,6 +776,69 @@
       "copy": "コード {code} をコピー",
       "copied": "コードをコピーしました",
       "copy_failed": "コードをコピーできませんでした"
+    },
+    "structured_mail": {
+      "kind_flight": "フライト",
+      "kind_train": "列車",
+      "kind_bus": "バス",
+      "kind_lodging": "ホテル",
+      "kind_rentalcar": "レンタカー",
+      "kind_event": "イベント",
+      "kind_restaurant": "レストラン",
+      "kind_order": "注文",
+      "kind_parcel": "荷物",
+      "region_flight": "フライトの予約",
+      "region_train": "列車の予約",
+      "region_bus": "バスの予約",
+      "region_lodging": "ホテルの予約",
+      "region_rentalcar": "レンタカーの予約",
+      "region_event": "イベントの予約",
+      "region_restaurant": "レストランの予約",
+      "region_shipment": "注文と配送",
+      "status_cancelled": "キャンセル済み",
+      "status_pending": "保留中",
+      "status_hold": "仮押さえ",
+      "order_status_payment_due": "支払い待ち",
+      "order_status_processing": "準備中",
+      "order_status_problem": "問題あり",
+      "order_status_in_transit": "発送済み",
+      "order_status_pickup_available": "受け取り可能",
+      "order_status_returned": "返品済み",
+      "order_status_delivered": "配達済み",
+      "order_status_cancelled": "キャンセル済み",
+      "reference": "予約番号",
+      "order_number": "注文番号",
+      "tracking_number": "追跡番号",
+      "copy_reference": "予約番号 {value} をコピー",
+      "copy_order_number": "注文番号 {value} をコピー",
+      "copy_tracking_number": "追跡番号 {value} をコピー",
+      "copied_reference": "予約番号をコピーしました",
+      "copied_order_number": "注文番号をコピーしました",
+      "copied_tracking_number": "追跡番号をコピーしました",
+      "copy_failed": "クリップボードにコピーできませんでした",
+      "passengers": "搭乗者",
+      "seats": "座席",
+      "tickets": "チケット",
+      "link_check_in": "チェックイン",
+      "link_manage": "予約を管理",
+      "link_ticket": "チケット",
+      "link_track": "追跡",
+      "link_view_order": "注文を表示",
+      "check_in_label": "チェックイン",
+      "check_out_label": "チェックアウト",
+      "from_time": "{time}以降",
+      "until_time": "{time}まで",
+      "nights": "{count, plural, other {#泊}}",
+      "pickup": "貸出",
+      "dropoff": "返却",
+      "party_size": "{count, plural, other {#名様}}",
+      "items_more": "ほか{count}点",
+      "items_count": "{count, plural, other {#点}}",
+      "total": "合計 {total}",
+      "expected_by": "{date}までにお届け予定",
+      "local_time": "現地時間",
+      "local_time_title": "あなたのタイムゾーンではなく、その場所の現地時間です",
+      "route": "{from} – {to}"
     },
     "mv_position": "{index} / {total}",
     "plugin_panel_show": "プラグインパネルを表示",
@@ -1575,7 +1643,7 @@
     "notifications": {
       "test_sound": "通知音をテスト",
       "sounds": {
-        "default": "デフォルト（ビープ）",
+        "default": "ビープ",
         "cheerful": "チアフル",
         "involved": "インボルブド",
         "swift": "スウィフトジェスチャー",
@@ -1958,8 +2026,8 @@
         "unsupported": "現在のアカウントは遅延送信のサポートを通知していません。この設定は他のアカウント用に保存されます。"
       },
       "return_to_list_after_action": {
-        "label": "削除または未読にした後に一覧へ戻る",
-        "description": "開いているメッセージを削除または未読にした後、次のメッセージを開かずにメッセージ一覧へ戻ります。"
+        "label": "削除、アーカイブ、移動、または未読にした後に一覧へ戻る",
+        "description": "開いているメッセージを削除、アーカイブ、移動、迷惑メールとして報告、または未読にした後、次のメッセージを開かずにメッセージ一覧へ戻ります。"
       },
       "swipe_right_action": {
         "label": "右スワイプの操作（モバイル）",
@@ -4816,7 +4884,6 @@
     "any_size": "サイズ指定なし",
     "larger_than_mb": "{size} MB より大きい",
     "custom_size": "サイズを指定",
-    "done": "完了",
     "name_or_address": "名前またはアドレス"
   },
   "welcome": {
@@ -5430,6 +5497,10 @@
       "accounts_heading": "接続済みのアカウント",
       "account_on": "{host} の {label}",
       "account_waiting": "{host} の {label} (サインイン未完了)",
+      "forward_heading": "メールの転送先",
+      "forward_hint": "このプラグインが確認なしでメッセージを転送できるアドレスです。",
+      "forward_remove": "削除",
+      "forward_remove_label": "{address} への転送を停止",
       "disconnect": "接続を解除",
       "disconnect_failed": "{label} の接続を解除できませんでした"
     },
@@ -5672,6 +5743,10 @@
         "title": "作成中のメッセージを変更する",
         "body": "エディターでプラグインを使ったときに、作成中のメッセージのテキストを置き換えたり追加したりします。変更はひとつずつ元に戻せ、送信するかどうかは引き続きあなたが決めます。"
       },
+      "email_forward": {
+        "title": "メールを転送",
+        "body": "作成画面を開かずに、アカウント内のメッセージを添付ファイルごと転送します。各アドレスへの最初の転送の前に確認されます。"
+      },
       "ui_notifications": {
         "title": "通知を表示",
         "body": "デバイスに通知を表示します。通知を許可していない場合はアプリ内に表示します。どの通知にもプラグイン名が入ります。"
@@ -5704,6 +5779,11 @@
         "title": "接続したアカウントを使用",
         "body": "あなたまたは管理者が設定したアカウントやキーを使って、{appName} のサーバー経由でリクエストを送信します。プラグインがパスワードを見ることはありませんが、そのアカウントがそのサーバーでできることはすべて実行できます。"
       }
+    },
+    "forward_approval": {
+      "title": "{plugin} に {addresses} へのメール転送を許可しますか？",
+      "message": "{plugin} が「{subject}」を添付ファイルごと {addresses} に転送しようとしています。許可すると、今後はこのアドレスへ確認なしでメールを転送できます。設定 > アドオン でいつでも取り消せます。",
+      "allow": "許可して転送"
     },
     "dialog": {
       "from_plugin": "プラグイン {name} から",
@@ -5946,6 +6026,37 @@
     "easy_read": "わかりやすい版",
     "sign_language": "手話",
     "new_tab": "新しいタブで開きます"
+  },
+  "structured_mail_calendar": {
+    "add_to_calendar": "カレンダーに追加",
+    "update_in_calendar": "カレンダーを更新",
+    "remove_from_calendar": "カレンダーから削除",
+    "in_calendar": "カレンダーに登録済み",
+    "view_in_calendar": "カレンダーで表示",
+    "select_calendar": "カレンダーを選択",
+    "added": "カレンダーに追加しました",
+    "updated": "カレンダーを更新しました",
+    "removed": "カレンダーから削除しました",
+    "action_failed": "カレンダーを変更できませんでした。もう一度お試しください。",
+    "blocked": "プラグインがこのカレンダーの変更を止めました。",
+    "title": {
+      "rental_car": "レンタカー",
+      "rental_car_company": "レンタカー: {company}"
+    },
+    "description": {
+      "reference": "予約番号: {reference}",
+      "passengers": "乗客: {names}",
+      "seats": "座席: {seats}",
+      "checkin": "チェックイン: {url}",
+      "manage": "予約の管理: {url}",
+      "ticket": "チケット: {url}",
+      "phone": "電話: {phone}",
+      "car": "車両: {car}",
+      "tickets": "チケット番号: {numbers}",
+      "party_size": "人数: {count}",
+      "added_from": "{domain} からのメールから追加",
+      "added_from_subject": "{domain} からのメール「{subject}」から追加"
+    }
   },
   "register": {
     "title": "Create Email Account",

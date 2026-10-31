@@ -499,6 +499,11 @@
       "failed_sent_from": "Bu ileti {domain} etki alanından geldiğini iddia ediyor, ancak {host} etki alanından gönderildi ve {domain} etki alanının gönderen denetimlerinden geçemedi. Sahte olabilir.",
       "caution": "Bağlantılara, eklere ve parola ya da ödeme bilgisi isteklerine karşı dikkatli olun."
     },
+    "brand_logo": {
+      "verified_label": "Doğrulanmış logo",
+      "verified": "Bu logonun {organization} kuruluşuna ait olduğu doğrulandı.",
+      "verified_by": "{issuer}, bu logonun {organization} kuruluşuna ait olduğunu doğruladı."
+    },
     "back_to_list": "Listeye dön",
     "view_contact": "Kişiyi görüntüle",
     "message_details": "İleti Ayrıntıları",
@@ -771,6 +776,69 @@
       "copy": "{code} kodunu kopyala",
       "copied": "Kod kopyalandı",
       "copy_failed": "Kod kopyalanamadı"
+    },
+    "structured_mail": {
+      "kind_flight": "Uçuş",
+      "kind_train": "Tren",
+      "kind_bus": "Otobüs",
+      "kind_lodging": "Otel",
+      "kind_rentalcar": "Kiralık araç",
+      "kind_event": "Etkinlik",
+      "kind_restaurant": "Restoran",
+      "kind_order": "Sipariş",
+      "kind_parcel": "Kargo",
+      "region_flight": "Uçuş rezervasyonu",
+      "region_train": "Tren rezervasyonu",
+      "region_bus": "Otobüs rezervasyonu",
+      "region_lodging": "Otel rezervasyonu",
+      "region_rentalcar": "Araç kiralama rezervasyonu",
+      "region_event": "Etkinlik rezervasyonu",
+      "region_restaurant": "Restoran rezervasyonu",
+      "region_shipment": "Sipariş ve teslimat",
+      "status_cancelled": "İptal edildi",
+      "status_pending": "Beklemede",
+      "status_hold": "Opsiyonlu",
+      "order_status_payment_due": "Ödeme bekleniyor",
+      "order_status_processing": "Hazırlanıyor",
+      "order_status_problem": "Sorun var",
+      "order_status_in_transit": "Kargoya verildi",
+      "order_status_pickup_available": "Teslim almaya hazır",
+      "order_status_returned": "İade edildi",
+      "order_status_delivered": "Teslim edildi",
+      "order_status_cancelled": "İptal edildi",
+      "reference": "Rezervasyon kodu",
+      "order_number": "Sipariş numarası",
+      "tracking_number": "Takip numarası",
+      "copy_reference": "{value} rezervasyon kodunu kopyala",
+      "copy_order_number": "{value} sipariş numarasını kopyala",
+      "copy_tracking_number": "{value} takip numarasını kopyala",
+      "copied_reference": "Rezervasyon kodu kopyalandı",
+      "copied_order_number": "Sipariş numarası kopyalandı",
+      "copied_tracking_number": "Takip numarası kopyalandı",
+      "copy_failed": "Panoya kopyalanamadı",
+      "passengers": "Yolcular",
+      "seats": "Koltuklar",
+      "tickets": "Biletler",
+      "link_check_in": "Check-in yap",
+      "link_manage": "Rezervasyonu yönet",
+      "link_ticket": "Bilet",
+      "link_track": "Takip et",
+      "link_view_order": "Siparişi görüntüle",
+      "check_in_label": "Giriş",
+      "check_out_label": "Çıkış",
+      "from_time": "{time} itibarıyla",
+      "until_time": "en geç {time}",
+      "nights": "{count, plural, one {# gece} other {# gece}}",
+      "pickup": "Teslim alma",
+      "dropoff": "Teslim etme",
+      "party_size": "{count, plural, one {# kişilik masa} other {# kişilik masa}}",
+      "items_more": "ve {count} tane daha",
+      "items_count": "{count, plural, one {# ürün} other {# ürün}}",
+      "total": "Toplam {total}",
+      "expected_by": "En geç {date} tarihinde gelir",
+      "local_time": "yerel saat",
+      "local_time_title": "Yerin yerel saati, sizin saat diliminiz değil",
+      "route": "{from} – {to}"
     },
     "mv_position": "{index} / {total}",
     "plugin_panel_show": "Eklenti panelini göster",
@@ -1576,7 +1644,7 @@
     "notifications": {
       "test_sound": "Bildirim sesini test et",
       "sounds": {
-        "default": "Varsayılan (Bip)",
+        "default": "Bip",
         "cheerful": "Neşeli",
         "involved": "Odaklı",
         "swift": "Hızlı Jest",
@@ -1959,8 +2027,8 @@
         "unsupported": "Geçerli hesap gecikmeli gönderim desteği bildirmiyor. Ayar diğer hesaplar için kaydedilmeye devam eder."
       },
       "return_to_list_after_action": {
-        "label": "Silme veya okunmadı olarak işaretlemeden sonra listeye dön",
-        "description": "Açık iletiyi sildikten veya okunmadı olarak işaretledikten sonra, sonraki iletiyi açmak yerine ileti listesine dön."
+        "label": "Silme, arşivleme, taşıma veya okunmadı olarak işaretlemeden sonra listeye dön",
+        "description": "Açık iletiyi sildikten, arşivledikten, taşıdıktan, spam olarak bildirdikten veya okunmadı olarak işaretledikten sonra, sonraki iletiyi açmak yerine ileti listesine dön."
       },
       "swipe_right_action": {
         "label": "Sağa kaydırma eylemi (mobil)",
@@ -4947,7 +5015,6 @@
     "any_size": "Herhangi bir boyut",
     "larger_than_mb": "{size} MB'tan büyük",
     "custom_size": "Özel boyut",
-    "done": "Bitti",
     "name_or_address": "Ad veya adres"
   },
   "welcome": {
@@ -5431,6 +5498,10 @@
       "accounts_heading": "Bağlı hesaplar",
       "account_on": "{host} üzerinde {label}",
       "account_waiting": "{host} üzerinde {label} (giriş tamamlanmadı)",
+      "forward_heading": "Postaları şuraya iletir",
+      "forward_hint": "Bu eklentinin sormadan ileti iletebileceği adresler.",
+      "forward_remove": "Kaldır",
+      "forward_remove_label": "{address} adresine iletmeyi durdur",
       "disconnect": "Bağlantıyı kes",
       "disconnect_failed": "{label} bağlantısı kesilemedi"
     },
@@ -5673,6 +5744,10 @@
         "title": "Yazdığınız iletiyi değiştirme",
         "body": "Eklentiyi düzenleyicide kullandığınızda, yazarken iletide metni değiştirir veya ekler. Her değişikliği geri alabilirsiniz ve göndermeye yine siz karar verirsiniz."
       },
+      "email_forward": {
+        "title": "Postanızı iletme",
+        "body": "Hesabınızdaki iletileri ekleriyle birlikte, düzenleyiciyi açmadan iletir. Her adrese ilk iletmeden önce size sorulur."
+      },
       "ui_notifications": {
         "title": "Bildirim gösterme",
         "body": "Cihazınızda bildirim gösterme ya da bildirimlere izin vermediyseniz uygulama içinde gösterme. Her bildirimde eklentinin adı yer alır."
@@ -5705,6 +5780,11 @@
         "title": "Bağladığınız hesapları kullanma",
         "body": "Sizin veya yöneticinizin ayarladığı bir hesap ya da anahtarla {appName} sunucusu üzerinden istek gönderme. Eklenti parolayı hiçbir zaman görmez, ancak o hesabın kendi sunucusunda yapabildiği her şeyi yapabilir."
       }
+    },
+    "forward_approval": {
+      "title": "{plugin} eklentisinin {addresses} adresine posta iletmesine izin verilsin mi?",
+      "message": "{plugin}, “{subject}” iletisini ekleriyle birlikte {addresses} adresine iletmek istiyor. İzin verirseniz bundan sonra bu adrese sormadan posta iletebilir. Bunu Ayarlar > Eklentiler bölümünden geri alabilirsiniz.",
+      "allow": "İzin ver ve ilet"
     },
     "dialog": {
       "from_plugin": "{name} eklentisinden",
@@ -5947,6 +6027,37 @@
     "easy_read": "Kolay okunur",
     "sign_language": "İşaret dili",
     "new_tab": "yeni sekmede açılır"
+  },
+  "structured_mail_calendar": {
+    "add_to_calendar": "Takvime ekle",
+    "update_in_calendar": "Takvimde güncelle",
+    "remove_from_calendar": "Takvimden kaldır",
+    "in_calendar": "Takviminizde",
+    "view_in_calendar": "Takvimde görüntüle",
+    "select_calendar": "Bir takvim seçin",
+    "added": "Takviminize eklendi",
+    "updated": "Takvim güncellendi",
+    "removed": "Takviminizden kaldırıldı",
+    "action_failed": "Takviminiz değiştirilemedi. Tekrar deneyin.",
+    "blocked": "Bir eklenti bu takvim değişikliğini durdurdu.",
+    "title": {
+      "rental_car": "Kiralık araç",
+      "rental_car_company": "Kiralık araç: {company}"
+    },
+    "description": {
+      "reference": "Rezervasyon kodu: {reference}",
+      "passengers": "Yolcular: {names}",
+      "seats": "Koltuklar: {seats}",
+      "checkin": "Check-in: {url}",
+      "manage": "Rezervasyonu yönet: {url}",
+      "ticket": "Bilet: {url}",
+      "phone": "Telefon: {phone}",
+      "car": "Araç: {car}",
+      "tickets": "Biletler: {numbers}",
+      "party_size": "Kişi sayısı: {count}",
+      "added_from": "{domain} adresinden gelen bir e-postadan eklendi",
+      "added_from_subject": "{domain} adresinden gelen “{subject}” e-postasından eklendi"
+    }
   },
   "register": {
     "title": "Create Email Account",

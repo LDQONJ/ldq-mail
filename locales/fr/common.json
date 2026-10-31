@@ -499,6 +499,11 @@
       "failed_sent_from": "Ce message prétend venir de {domain}, mais il a été envoyé depuis {host} et a échoué aux vérifications d'expéditeur de {domain}. Il est peut-être falsifié.",
       "caution": "Méfiez-vous des liens, des pièces jointes et des demandes de mots de passe ou d'informations de paiement."
     },
+    "brand_logo": {
+      "verified_label": "Logo vérifié",
+      "verified": "Ce logo est vérifié comme appartenant à {organization}.",
+      "verified_by": "{issuer} a vérifié que ce logo appartient à {organization}."
+    },
     "back_to_list": "Retour à la liste",
     "view_contact": "Voir le contact",
     "message_details": "Détails du message",
@@ -771,6 +776,69 @@
       "copy": "Copier le code {code}",
       "copied": "Code copié",
       "copy_failed": "Impossible de copier le code"
+    },
+    "structured_mail": {
+      "kind_flight": "Vol",
+      "kind_train": "Train",
+      "kind_bus": "Bus",
+      "kind_lodging": "Hôtel",
+      "kind_rentalcar": "Voiture de location",
+      "kind_event": "Événement",
+      "kind_restaurant": "Restaurant",
+      "kind_order": "Commande",
+      "kind_parcel": "Colis",
+      "region_flight": "Réservation de vol",
+      "region_train": "Réservation de train",
+      "region_bus": "Réservation de bus",
+      "region_lodging": "Réservation d'hôtel",
+      "region_rentalcar": "Location de voiture",
+      "region_event": "Réservation d'événement",
+      "region_restaurant": "Réservation de restaurant",
+      "region_shipment": "Commande et livraison",
+      "status_cancelled": "Annulée",
+      "status_pending": "En attente",
+      "status_hold": "Option",
+      "order_status_payment_due": "Paiement en attente",
+      "order_status_processing": "En préparation",
+      "order_status_problem": "Problème",
+      "order_status_in_transit": "Expédiée",
+      "order_status_pickup_available": "Prête à retirer",
+      "order_status_returned": "Retournée",
+      "order_status_delivered": "Livrée",
+      "order_status_cancelled": "Annulée",
+      "reference": "Référence de réservation",
+      "order_number": "Numéro de commande",
+      "tracking_number": "Numéro de suivi",
+      "copy_reference": "Copier la référence de réservation {value}",
+      "copy_order_number": "Copier le numéro de commande {value}",
+      "copy_tracking_number": "Copier le numéro de suivi {value}",
+      "copied_reference": "Référence de réservation copiée",
+      "copied_order_number": "Numéro de commande copié",
+      "copied_tracking_number": "Numéro de suivi copié",
+      "copy_failed": "Impossible de copier dans le presse-papiers",
+      "passengers": "Passagers",
+      "seats": "Places",
+      "tickets": "Billets",
+      "link_check_in": "Enregistrement",
+      "link_manage": "Gérer la réservation",
+      "link_ticket": "Billet",
+      "link_track": "Suivre",
+      "link_view_order": "Voir la commande",
+      "check_in_label": "Arrivée",
+      "check_out_label": "Départ",
+      "from_time": "à partir de {time}",
+      "until_time": "jusqu'à {time}",
+      "nights": "{count, plural, one {# nuit} other {# nuits}}",
+      "pickup": "Prise en charge",
+      "dropoff": "Restitution",
+      "party_size": "{count, plural, one {Table pour # personne} other {Table pour # personnes}}",
+      "items_more": "et {count} de plus",
+      "items_count": "{count, plural, one {# article} other {# articles}}",
+      "total": "Total {total}",
+      "expected_by": "Livraison prévue d'ici le {date}",
+      "local_time": "heure locale",
+      "local_time_title": "Heure locale du lieu, pas celle de votre fuseau horaire",
+      "route": "{from} vers {to}"
     },
     "mv_position": "{index} sur {total}",
     "plugin_panel_show": "Afficher le panneau du plugin",
@@ -1579,7 +1647,7 @@
     "notifications": {
       "test_sound": "Tester le son de notification",
       "sounds": {
-        "default": "Par défaut (Bip)",
+        "default": "Bip",
         "cheerful": "Joyeux",
         "involved": "Élaboré",
         "swift": "Geste rapide",
@@ -1962,8 +2030,8 @@
         "unsupported": "Le compte actuel n’annonce pas la prise en charge de l’envoi différé. Le réglage reste enregistré pour d’autres comptes."
       },
       "return_to_list_after_action": {
-        "label": "Revenir à la liste après suppression ou marquage comme non lu",
-        "description": "Après avoir supprimé ou marqué comme non lu le message ouvert, revenir à la liste des messages au lieu d'ouvrir le message suivant."
+        "label": "Revenir à la liste après suppression, archivage, déplacement ou marquage comme non lu",
+        "description": "Après avoir supprimé, archivé, déplacé, signalé comme spam ou marqué comme non lu le message ouvert, revenir à la liste des messages au lieu d'ouvrir le message suivant."
       },
       "swipe_right_action": {
         "label": "Action du balayage vers la droite (mobile)",
@@ -4820,7 +4888,6 @@
     "any_size": "Toutes tailles",
     "larger_than_mb": "Plus de {size} Mo",
     "custom_size": "Taille personnalisée",
-    "done": "Terminé",
     "name_or_address": "Nom ou adresse"
   },
   "welcome": {
@@ -5434,6 +5501,10 @@
       "accounts_heading": "Comptes connectés",
       "account_on": "{label} sur {host}",
       "account_waiting": "{label} sur {host} (connexion non terminée)",
+      "forward_heading": "Transfère les e-mails à",
+      "forward_hint": "Adresses auxquelles ce plugin peut transférer des messages sans demander.",
+      "forward_remove": "Retirer",
+      "forward_remove_label": "Ne plus transférer à {address}",
       "disconnect": "Déconnecter",
       "disconnect_failed": "Impossible de déconnecter {label}"
     },
@@ -5676,6 +5747,10 @@
         "title": "Modifier le message que vous écrivez",
         "body": "Remplacer ou ajouter du texte dans un message pendant que vous l'écrivez, quand vous utilisez le plugin dans l'éditeur. Chaque modification peut être annulée, et c'est toujours vous qui décidez de l'envoyer."
       },
+      "email_forward": {
+        "title": "Transférer vos e-mails",
+        "body": "Transférer des messages de votre compte avec leurs pièces jointes, sans ouvrir l'éditeur. Vous êtes consulté avant le premier transfert vers chaque adresse."
+      },
       "ui_notifications": {
         "title": "Afficher des notifications",
         "body": "Afficher des notifications sur votre appareil, ou dans l'application si vous ne les avez pas autorisées. Chacune indique le nom du plugin."
@@ -5708,6 +5783,11 @@
         "title": "Utiliser les comptes que vous connectez",
         "body": "Envoyer des requêtes via le serveur de {appName} avec un compte ou une clé configurés par vous ou votre administrateur. Le plugin ne voit jamais le mot de passe, mais il peut faire tout ce que ce compte peut faire sur son propre serveur."
       }
+    },
+    "forward_approval": {
+      "title": "Autoriser {plugin} à transférer des e-mails à {addresses} ?",
+      "message": "{plugin} veut transférer « {subject} » avec ses pièces jointes à {addresses}. Si vous l'autorisez, il pourra désormais transférer des e-mails à cette adresse sans vous demander. Vous pouvez revenir sur ce choix dans Paramètres > Extensions.",
+      "allow": "Autoriser et transférer"
     },
     "dialog": {
       "from_plugin": "Du plugin {name}",
@@ -5950,6 +6030,37 @@
     "easy_read": "Facile à lire",
     "sign_language": "Langue des signes",
     "new_tab": "s'ouvre dans un nouvel onglet"
+  },
+  "structured_mail_calendar": {
+    "add_to_calendar": "Ajouter au calendrier",
+    "update_in_calendar": "Mettre à jour dans le calendrier",
+    "remove_from_calendar": "Retirer du calendrier",
+    "in_calendar": "Dans votre calendrier",
+    "view_in_calendar": "Voir dans le calendrier",
+    "select_calendar": "Choisir un calendrier",
+    "added": "Ajouté à votre calendrier",
+    "updated": "Calendrier mis à jour",
+    "removed": "Retiré de votre calendrier",
+    "action_failed": "Impossible de modifier votre calendrier. Réessayez.",
+    "blocked": "Un plugin a empêché cette modification du calendrier.",
+    "title": {
+      "rental_car": "Voiture de location",
+      "rental_car_company": "Voiture de location : {company}"
+    },
+    "description": {
+      "reference": "Référence de réservation : {reference}",
+      "passengers": "Passagers : {names}",
+      "seats": "Sièges : {seats}",
+      "checkin": "Enregistrement : {url}",
+      "manage": "Gérer la réservation : {url}",
+      "ticket": "Billet : {url}",
+      "phone": "Téléphone : {phone}",
+      "car": "Véhicule : {car}",
+      "tickets": "Billets : {numbers}",
+      "party_size": "Nombre de personnes : {count}",
+      "added_from": "Ajouté depuis un e-mail de {domain}",
+      "added_from_subject": "Ajouté depuis l’e-mail « {subject} » de {domain}"
+    }
   },
   "register": {
     "title": "Create Email Account",

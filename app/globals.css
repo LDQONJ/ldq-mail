@@ -171,6 +171,17 @@
   }
 }
 
+/* A tag lozenge's tint (KEYWORD_PALETTE fill): the hue at 10%, laid over the
+   page background rather than over whatever is behind the tag. A
+   see-through bg-amber-500/10 took on the row's colour, so on an unread,
+   selected or hovered row the tag text fell below 4.5:1. On the plain page
+   it looks the same as before. */
+@utility tag-fill-* {
+  --tag-fill: --alpha(--value(--color-*) / 10%);
+  background-color: var(--color-background);
+  background-image: linear-gradient(var(--tag-fill), var(--tag-fill));
+}
+
 
 /* The default border colour. In the base layer, so a border colour utility
    (border-primary, border-transparent, border-destructive, border-input)
@@ -770,9 +781,12 @@ optgroup {
     animation-iteration-count: 1 !important;
     /* Every element transitions `all` by default once it has a duration.
        Visibility is left out: a transition from hidden would keep a newly
-       shown menu or dialog hidden for a frame, and focus() would miss it. */
-    transition-property: all, visibility !important;
-    transition-duration: 0.01ms, 0s !important;
+       shown menu or dialog hidden for a frame, and focus() would miss it.
+       So is the position: Chrome paints a transition's first frame at its
+       start value, and a menu placed from script flashed where it was
+       measured (a submenu in the window's top-left corner). */
+    transition-property: all, visibility, top, right, bottom, left !important;
+    transition-duration: 0.01ms, 0s, 0s, 0s, 0s, 0s !important;
     scroll-behavior: auto !important;
   }
 }
@@ -783,8 +797,8 @@ optgroup {
 [data-motion="reduce"] *:not(.animate-spin):not([class*="animate-spin"]):not([class*="spin"])::after {
   animation-duration: 0.01ms !important;
   animation-iteration-count: 1 !important;
-  transition-property: all, visibility !important;
-  transition-duration: 0.01ms, 0s !important;
+  transition-property: all, visibility, top, right, bottom, left !important;
+  transition-duration: 0.01ms, 0s, 0s, 0s, 0s, 0s !important;
   scroll-behavior: auto !important;
 }
 

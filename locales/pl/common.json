@@ -499,6 +499,11 @@
       "failed_sent_from": "Ta wiadomość twierdzi, że pochodzi z domeny {domain}, ale została wysłana z domeny {host} i nie przeszła weryfikacji nadawcy domeny {domain}. Może być sfałszowana.",
       "caution": "Uważaj na linki, załączniki i prośby o hasła lub dane płatnicze."
     },
+    "brand_logo": {
+      "verified_label": "Zweryfikowane logo",
+      "verified": "To logo zostało zweryfikowane jako należące do {organization}.",
+      "verified_by": "{issuer} potwierdził, że to logo należy do {organization}."
+    },
     "back_to_list": "Powrót do listy",
     "view_contact": "Pokaż kontakt",
     "message_details": "Szczegóły wiadomości",
@@ -771,6 +776,69 @@
       "copy": "Kopiuj kod {code}",
       "copied": "Skopiowano kod",
       "copy_failed": "Nie udało się skopiować kodu"
+    },
+    "structured_mail": {
+      "kind_flight": "Lot",
+      "kind_train": "Pociąg",
+      "kind_bus": "Autobus",
+      "kind_lodging": "Hotel",
+      "kind_rentalcar": "Wynajem samochodu",
+      "kind_event": "Wydarzenie",
+      "kind_restaurant": "Restauracja",
+      "kind_order": "Zamówienie",
+      "kind_parcel": "Przesyłka",
+      "region_flight": "Rezerwacja lotu",
+      "region_train": "Rezerwacja pociągu",
+      "region_bus": "Rezerwacja autobusu",
+      "region_lodging": "Rezerwacja hotelu",
+      "region_rentalcar": "Rezerwacja samochodu",
+      "region_event": "Rezerwacja wydarzenia",
+      "region_restaurant": "Rezerwacja stolika",
+      "region_shipment": "Zamówienie i dostawa",
+      "status_cancelled": "Anulowano",
+      "status_pending": "Oczekuje",
+      "status_hold": "Wstępna rezerwacja",
+      "order_status_payment_due": "Oczekuje na płatność",
+      "order_status_processing": "W realizacji",
+      "order_status_problem": "Problem",
+      "order_status_in_transit": "Wysłano",
+      "order_status_pickup_available": "Gotowe do odbioru",
+      "order_status_returned": "Zwrócono",
+      "order_status_delivered": "Dostarczono",
+      "order_status_cancelled": "Anulowano",
+      "reference": "Numer rezerwacji",
+      "order_number": "Numer zamówienia",
+      "tracking_number": "Numer przesyłki",
+      "copy_reference": "Kopiuj numer rezerwacji {value}",
+      "copy_order_number": "Kopiuj numer zamówienia {value}",
+      "copy_tracking_number": "Kopiuj numer przesyłki {value}",
+      "copied_reference": "Skopiowano numer rezerwacji",
+      "copied_order_number": "Skopiowano numer zamówienia",
+      "copied_tracking_number": "Skopiowano numer przesyłki",
+      "copy_failed": "Nie udało się skopiować do schowka",
+      "passengers": "Pasażerowie",
+      "seats": "Miejsca",
+      "tickets": "Bilety",
+      "link_check_in": "Odprawa",
+      "link_manage": "Zarządzaj rezerwacją",
+      "link_ticket": "Bilet",
+      "link_track": "Śledź",
+      "link_view_order": "Pokaż zamówienie",
+      "check_in_label": "Zameldowanie",
+      "check_out_label": "Wymeldowanie",
+      "from_time": "od {time}",
+      "until_time": "do {time}",
+      "nights": "{count, plural, one {# noc} few {# noce} many {# nocy} other {# nocy}}",
+      "pickup": "Odbiór",
+      "dropoff": "Zwrot",
+      "party_size": "{count, plural, one {Stolik dla # osoby} few {Stolik dla # osób} many {Stolik dla # osób} other {Stolik dla # osoby}}",
+      "items_more": "i {count} więcej",
+      "items_count": "{count, plural, one {# produkt} few {# produkty} many {# produktów} other {# produktu}}",
+      "total": "Razem {total}",
+      "expected_by": "Dostawa do {date}",
+      "local_time": "czas lokalny",
+      "local_time_title": "Czas lokalny w danym miejscu, nie w Twojej strefie czasowej",
+      "route": "{from} – {to}"
     },
     "mv_position": "{index} z {total}",
     "plugin_panel_show": "Pokaż panel wtyczki",
@@ -1575,7 +1643,7 @@
     "notifications": {
       "test_sound": "Przetestuj dźwięk powiadomienia",
       "sounds": {
-        "default": "Domyślny (Beep)",
+        "default": "Beep",
         "cheerful": "Pogodny",
         "involved": "Dynamiczny",
         "swift": "Szybki gest",
@@ -1958,8 +2026,8 @@
         "unsupported": "Bieżące konto nie zgłasza obsługi opóźnionej wysyłki. Ustawienie pozostanie zapisane dla innych kont."
       },
       "return_to_list_after_action": {
-        "label": "Powrót do listy po usunięciu lub oznaczeniu jako nieprzeczytane",
-        "description": "Po usunięciu lub oznaczeniu otwartej wiadomości jako nieprzeczytanej wróć do listy wiadomości zamiast otwierać następną."
+        "label": "Powrót do listy po usunięciu, zarchiwizowaniu, przeniesieniu lub oznaczeniu jako nieprzeczytane",
+        "description": "Po usunięciu, zarchiwizowaniu, przeniesieniu, zgłoszeniu jako spam lub oznaczeniu otwartej wiadomości jako nieprzeczytanej wróć do listy wiadomości zamiast otwierać następną."
       },
       "swipe_right_action": {
         "label": "Akcja przy przesunięciu w prawo (mobilne)",
@@ -4816,7 +4884,6 @@
     "any_size": "Dowolny rozmiar",
     "larger_than_mb": "Większe niż {size} MB",
     "custom_size": "Własny rozmiar",
-    "done": "Gotowe",
     "name_or_address": "Imię lub adres"
   },
   "welcome": {
@@ -5430,6 +5497,10 @@
       "accounts_heading": "Połączone konta",
       "account_on": "{label} na {host}",
       "account_waiting": "{label} na {host} (logowanie niedokończone)",
+      "forward_heading": "Przekazuje pocztę na",
+      "forward_hint": "Adresy, na które ta wtyczka może przekazywać wiadomości bez pytania.",
+      "forward_remove": "Usuń",
+      "forward_remove_label": "Przestań przekazywać na {address}",
       "disconnect": "Rozłącz",
       "disconnect_failed": "Nie udało się rozłączyć {label}"
     },
@@ -5672,6 +5743,10 @@
         "title": "Zmiana pisanej wiadomości",
         "body": "Zastępowanie lub dodawanie tekstu w wiadomości podczas pisania, gdy używasz wtyczki w edytorze. Każdą zmianę możesz cofnąć, a o wysłaniu nadal decydujesz Ty."
       },
+      "email_forward": {
+        "title": "Przekazywanie Twojej poczty",
+        "body": "Przekazuje wiadomości z Twojego konta razem z załącznikami, bez otwierania edytora. Przed pierwszym przekazaniem na każdy adres zostaniesz zapytany."
+      },
       "ui_notifications": {
         "title": "Wyświetlanie powiadomień",
         "body": "Wyświetla powiadomienia na urządzeniu lub w aplikacji, jeśli ich nie zezwolono. Każde podaje nazwę wtyczki."
@@ -5704,6 +5779,11 @@
         "title": "Korzystanie z połączonych przez Ciebie kont",
         "body": "Wysyła żądania przez serwer {appName} z użyciem konta lub klucza skonfigurowanego przez Ciebie lub Twojego administratora. Wtyczka nigdy nie widzi hasła, ale może zrobić na tym serwerze wszystko, co może to konto."
       }
+    },
+    "forward_approval": {
+      "title": "Pozwolić wtyczce {plugin} przekazywać pocztę na {addresses}?",
+      "message": "{plugin} chce przekazać „{subject}” razem z załącznikami na {addresses}. Jeśli na to pozwolisz, będzie od teraz mogła przekazywać pocztę na ten adres bez pytania. Możesz to cofnąć w Ustawienia > Dodatki.",
+      "allow": "Zezwól i przekaż"
     },
     "dialog": {
       "from_plugin": "Od wtyczki {name}",
@@ -5946,6 +6026,37 @@
     "easy_read": "Tekst łatwy do czytania",
     "sign_language": "Język migowy",
     "new_tab": "otwiera się w nowej karcie"
+  },
+  "structured_mail_calendar": {
+    "add_to_calendar": "Dodaj do kalendarza",
+    "update_in_calendar": "Zaktualizuj w kalendarzu",
+    "remove_from_calendar": "Usuń z kalendarza",
+    "in_calendar": "W Twoim kalendarzu",
+    "view_in_calendar": "Pokaż w kalendarzu",
+    "select_calendar": "Wybierz kalendarz",
+    "added": "Dodano do Twojego kalendarza",
+    "updated": "Zaktualizowano kalendarz",
+    "removed": "Usunięto z Twojego kalendarza",
+    "action_failed": "Nie udało się zmienić kalendarza. Spróbuj ponownie.",
+    "blocked": "Wtyczka zablokowała tę zmianę w kalendarzu.",
+    "title": {
+      "rental_car": "Wynajem samochodu",
+      "rental_car_company": "Wynajem samochodu: {company}"
+    },
+    "description": {
+      "reference": "Numer rezerwacji: {reference}",
+      "passengers": "Pasażerowie: {names}",
+      "seats": "Miejsca: {seats}",
+      "checkin": "Odprawa: {url}",
+      "manage": "Zarządzaj rezerwacją: {url}",
+      "ticket": "Bilet: {url}",
+      "phone": "Telefon: {phone}",
+      "car": "Samochód: {car}",
+      "tickets": "Bilety: {numbers}",
+      "party_size": "Liczba osób: {count}",
+      "added_from": "Dodano z wiadomości od {domain}",
+      "added_from_subject": "Dodano z wiadomości „{subject}” od {domain}"
+    }
   },
   "register": {
     "title": "Create Email Account",

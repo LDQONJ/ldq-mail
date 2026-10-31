@@ -16,12 +16,12 @@ import { ReadAloudBar } from "./read-aloud-bar";
 import { attachmentIcon } from "./attachment-chips";
 import { ReaderViewDialog } from "./reader-view-dialog";
 import { ReadingMask } from "./reading-mask";
-import { collectReferencedCids, isEmbeddedInBody, normalizeCid, rewriteCidReferences } from "@/lib/attachment-visibility";
+import { collectReferencedCids, isEmbeddedInBody, isReportPart, normalizeCid, rewriteCidReferences } from "@/lib/attachment-visibility";
+import { getAttachmentDisplayName } from "@/lib/attachment-name";
 import { collapsePlainTextQuotes, setupQuoteCollapse } from "@/lib/quote-collapse";
 import { DARK_PENDING_CLASS, applyEmailDarkMode, emailColorScheme, emailDarkModeCss, emailHasNativeDarkMode as htmlHasNativeDarkMode, resolveColorSchemeMedia } from "@/lib/email-dark-mode";
 import { fitEmailBodyWidth, type FitOptions } from "@/lib/email-fit-width";
 import { hasFullBleedCanvas } from "@/lib/email-full-bleed";
-import { stripBidiControls } from "@/lib/bidi";
 import { withBasePath } from "@/lib/browser-navigation";
 import { buildContactsPath } from "@/lib/deep-links";
 import { Button } from "@/components/ui/button";
@@ -48,7 +48,7 @@ import { useMeasuredTagDisplay } from "@/hooks/use-tag-display";
 import { useKeywordFormat } from "@/hooks/use-keyword-format";
 import { useAccountTags, useEmailTagScope, type TagScope } from "@/hooks/use-account-tags";
 import { getEmailTagIds, emailKeyFor } from "@/lib/thread-utils";
-import { getSecurityStatus, extractListHeaders, getSenderVerification } from "@/lib/email-headers";
+import { getSecurityStatus, extractListHeaders, getSenderVerification, brandIndicatorDomain } from "@/lib/email-headers";
 import { emailToReadView } from "@/lib/plugin-projection";
 import type { EmailReadView, ExternalLinkContext } from "@/lib/plugin-types";
 import { ViewSourceDialog } from "./view-source-dialog";
@@ -152,6 +152,9 @@ import { parseTnef, isTnefAttachment } from "@/lib/tnef";
 import { debug } from "@/lib/debug";
 import { findVerificationCode, verificationCodeBodyText } from "@/lib/verification-code";
 import { VerificationCodeChip } from "./verification-code-chip";
+import { StructuredMailCards } from "./structured-mail/structured-mail-cards";
+import { BookingCalendarActions } from "./structured-mail/booking-calendar-actions";
+import { useStructuredMail } from "./structured-mail/use-structured-mail";
 import { ConversationEmailBody, type ConversationAttachmentHandler, useConversationExternalContent, useMarkReadWhenShown } from "./thread-conversation-view";
 import type { TnefAttachment } from "@/lib/tnef";
 import { PluginSlot } from "@/components/plugins/plugin-slot";
@@ -170,6 +173,7 @@ import type { IJMAPClient } from "@/lib/jmap/client-interface";
 import { useArchiveActionEnabled } from "@/lib/archive-gate";
 import { useNoThirdPartyTraffic } from "@/hooks/use-third-party-mode";
 import { useSenderWarning } from "@/hooks/use-sender-warning";
+import { BrandVerifiedBadge } from "@/components/email/brand-verified-badge";
 
 /** The More menu's two drill-downs: a folder list and a tag list. */
 type MoreMenuSub = MessageSubmenuKey;
@@ -249,6 +253,7 @@ interface EmailViewerProps {
   onMarkConversationEmailRead?: (email: Email) => void;
   /** Mountain View: reply to one message of the conversation. */
   onReplyConversationEmail?: (email: Email) => void;
+  onReplyAllConversationEmail?: (email: Email) => void;
   /** Mountain View: a reply being written in place, shown under the conversation instead of the reply buttons. */
   mvInlineComposer?: React.ReactNode;
   onShowShortcuts?: () => void;
@@ -272,44 +277,6 @@ interface EmailViewerProps {
   selectedMailbox?: string;
   className?: string;
 }
-
-const MIME_TYPE_LABELS: Record<string, string> = {
-  'application/pdf': 'Document.pdf',
-  'application/zip': 'Archive.zip',
-  'application/x-zip-compressed': 'Archive.zip',
-  'application/gzip': 'Archive.gz',
-  'application/x-rar-compressed': 'Archive.rar',
-  'application/x-7z-compressed': 'Archive.7z',
-  'application/msword': 'Document.doc',
-  'application/vnd.openxmlformats-officedocument.wordprocessingml.document': 'Document.docx',
-  'application/vnd.ms-excel': 'Spreadsheet.xls',
-  'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet': 'Spreadsheet.xlsx',
-  'application/vnd.ms-powerpoint': 'Presentation.ppt',
-  'application/vnd.openxmlformats-officedocument.presentationml.presentation': 'Presentation.pptx',
-  'text/plain': 'Text.txt',
-  'text/html': 'Document.html',
-  'text/csv': 'Data.csv',
-  'application/json': 'Data.json',
-  'application/xml': 'Data.xml',
-  'application/octet-stream': 'Attachment',
-  'message/rfc822': 'Email.eml',
-};
-
-const getAttachmentDisplayName = (name: string | null | undefined, mimeType?: string): string => {
-  // Without directional overrides, which would show `report‮fdp.exe`
-  // as `reportexe.pdf` (the download name is cleaned separately).
-  if (name) return stripBidiControls(name);
-  if (mimeType) {
-    const label = MIME_TYPE_LABELS[mimeType.toLowerCase()];
-    if (label) return label;
-    const sub = mimeType.split('/')[1];
-    if (sub) {
-      const clean = sub.replace(/^x-/, '').replace(/^vnd\./, '');
-      return `Attachment.${clean}`;
-    }
-  }
-  return 'Attachment';
-};
 
 // Helper function to format recipients with contextual display
 const _formatRecipients = (
@@ -751,7 +718,7 @@ function MvConversationCard({ email, onOpen, timeFormat, compact }: { email: Ema
       data-email-id={email.id}
       className={cn("w-full flex items-start py-3 border-t border-border text-start hover:bg-muted/40 transition-colors", compact ? "gap-3 px-4" : "gap-4 px-6")}
     >
-      <Avatar name={sender?.name} email={sender?.email} size="md" className="w-10 h-10 flex-shrink-0" senderWarning={senderWarning} />
+      <Avatar name={sender?.name} email={sender?.email} size="md" className="w-10 h-10 flex-shrink-0" senderWarning={senderWarning} brandDomain={brandIndicatorDomain(email)} />
       <span className="flex-1 min-w-0">
         <span className="flex items-baseline gap-2">
           <span dir="auto" className={cn("text-sm truncate", unread ? "font-bold" : "font-semibold")}>
@@ -824,6 +791,7 @@ export function MvExpandedConversationCard({
   onLoadBody,
   onMarkRead,
   onReply,
+  onReplyAll,
   onDownloadAttachment,
   blobSource,
   compact,
@@ -835,6 +803,7 @@ export function MvExpandedConversationCard({
   onLoadBody?: (email: Email) => void;
   onMarkRead?: (email: Email) => void;
   onReply?: (email: Email) => void;
+  onReplyAll?: (email: Email) => void;
   onDownloadAttachment?: ConversationAttachmentHandler;
   blobSource?: EmailBlobContext;
 }) {
@@ -875,7 +844,7 @@ export function MvExpandedConversationCard({
         data-mv-conversation-header=""
         className={cn("flex items-start pt-3 pb-2 cursor-pointer", compact ? "gap-3 px-4" : "gap-4 px-6")}
       >
-        <Avatar name={sender?.name} email={sender?.email} size="md" className="w-10 h-10 flex-shrink-0" senderWarning={senderWarning} />
+        <Avatar name={sender?.name} email={sender?.email} size="md" className="w-10 h-10 flex-shrink-0" senderWarning={senderWarning} brandDomain={brandIndicatorDomain(email)} />
         <span className="flex-1 min-w-0">
           <span className="flex items-baseline gap-2">
             <span dir="auto" className="text-sm font-semibold truncate">{sender?.name || sender?.email || ''}</span>
@@ -888,6 +857,7 @@ export function MvExpandedConversationCard({
             {!compact && sender?.name && sender.email && (
               <span className="text-xs text-muted-foreground truncate">&lt;{sender.email}&gt;</span>
             )}
+            <BrandVerifiedBadge domain={brandIndicatorDomain(email)} />
             <ExternalSenderChip from={email.from} accountId={email.sourceClientAccountId} className="self-center" />
             <span className="ms-auto ps-2 text-xs text-muted-foreground whitespace-nowrap">
               {compact ? formatDate(emailDisplayDate(email)) : mvSenderDate(emailDisplayDate(email), timeFormat)}
@@ -908,16 +878,31 @@ export function MvExpandedConversationCard({
             {showDetails ? <ChevronUp className="w-3 h-3 flex-shrink-0" /> : <ChevronDown className="w-3 h-3 flex-shrink-0" />}
           </button>
         </span>
-        {onReply && (
-          <button
-            type="button"
-            onClick={() => onReply(email)}
-            className="grid place-items-center w-10 h-10 -my-2 -me-2 rounded-full text-muted-foreground hover:bg-muted hover:text-foreground transition-colors flex-shrink-0"
-            title={t('tooltips.reply')}
-            aria-label={t('reply')}
-          >
-            <Reply className="w-5 h-5" />
-          </button>
+        {(onReply || onReplyAll) && !email.keywords?.$draft && !email.isScheduled && (
+          <span className="flex items-center gap-1 -my-2 -me-2 flex-shrink-0" data-mv-conversation-actions="">
+            {onReply && (
+              <button
+                type="button"
+                onClick={() => onReply(email)}
+                className="grid place-items-center w-10 h-10 rounded-full text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
+                title={t('tooltips.reply')}
+                aria-label={t('reply')}
+              >
+                <Reply className="w-5 h-5" />
+              </button>
+            )}
+            {onReplyAll && (
+              <button
+                type="button"
+                onClick={() => onReplyAll(email)}
+                className="grid place-items-center w-10 h-10 rounded-full text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
+                title={t('tooltips.reply_all')}
+                aria-label={t('reply_all')}
+              >
+                <ReplyAll className="w-5 h-5" />
+              </button>
+            )}
+          </span>
         )}
       </div>
       {email.isScheduled && (
@@ -1299,6 +1284,7 @@ export function EmailViewer({
   onLoadConversationEmail,
   onMarkConversationEmailRead,
   onReplyConversationEmail,
+  onReplyAllConversationEmail,
   mvInlineComposer,
   onShowShortcuts,
   onEditDraft,
@@ -1471,6 +1457,7 @@ export function EmailViewer({
       onLoadBody={onLoadConversationEmail}
       onMarkRead={onMarkConversationEmailRead}
       onReply={onReplyConversationEmail}
+      onReplyAll={onReplyAllConversationEmail}
       blobSource={target.sourceClientAccountId || target.sourceAccountId
         ? resolveEmailBlobContext(target, client)
         : blobSource ?? resolveEmailBlobContext(target, client)}
@@ -1898,8 +1885,12 @@ export function EmailViewer({
   // Move-to dropdown: the message's own account first (#1149)
   const moveOwnerAccountId = resolveMoveOwnerAccountId(email, mailboxes, selectedMailbox);
   const { tree: moveTree, targetIds: moveTargetIds } = useMemo(
-    () => buildMoveTargets(mailboxes, { currentMailboxId: selectedMailbox, ownerAccountId: moveOwnerAccountId }),
-    [mailboxes, selectedMailbox, moveOwnerAccountId],
+    () => buildMoveTargets(mailboxes, {
+      currentMailboxId: selectedMailbox,
+      ownerAccountId: moveOwnerAccountId,
+      emails: email ? [email] : [],
+    }),
+    [mailboxes, selectedMailbox, moveOwnerAccountId, email],
   );
 
   // Close dropdown menus on click outside
@@ -2600,7 +2591,7 @@ export function EmailViewer({
       .filter(att => !(hideInlineImageAttachments && isEmbeddedInBody(att, bodyCids)))
       // Hide machine-readable report parts (MDN read-receipts, DSN bounce
       // reports). These are required MIME parts, not real user attachments.
-      .filter(att => att.type !== 'message/disposition-notification' && att.type !== 'message/delivery-status')
+      .filter(att => !isReportPart(att.type))
       .map((attachment, index) => ({
         id: attachment.blobId || `${attachment.name || 'attachment'}-${index}`,
         name: attachment.name || null,
@@ -2697,6 +2688,11 @@ export function EmailViewer({
     // the srcDoc rebuild contract described on `emailContent`).
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [email, externalContentPolicy, allowExternalContent, remoteBlockedByOrg]);
+
+  // Booking, parcel and order cards of the message itself (never of an
+  // unwrapped attached .eml); empty unless the sender is verified and the
+  // admin gate is on.
+  const structuredCards = useStructuredMail(email, blobSource);
 
   // Sanitize and prepare email HTML content
   const emailContent = useMemo(() => {
@@ -4930,6 +4926,7 @@ export function EmailViewer({
                 size="lg"
                 className="shadow-sm w-10 h-10 group-hover:ring-2 group-hover:ring-primary/30 transition-all"
                 senderWarning={senderVerification ? senderVerificationLabel : undefined}
+                brandDomain={brandIndicatorDomain(email)}
               />
             </button>
 
@@ -4952,6 +4949,7 @@ export function EmailViewer({
                     {mvViewer && sender?.email && sender?.name && (
                       <span className="text-xs text-muted-foreground truncate">&lt;{sender.email}&gt;</span>
                     )}
+                    <BrandVerifiedBadge domain={brandIndicatorDomain(email)} />
                     <ExternalSenderChip from={email.from} accountId={email.sourceClientAccountId} />
                     <EmailIdentityBadge email={email} identities={identities} />
                     {shouldShowUnsubBanner && listHeaders?.listUnsubscribe && (
@@ -4991,6 +4989,17 @@ export function EmailViewer({
                             aria-label={t('reply')}
                           >
                             <Reply className="w-5 h-5" />
+                          </button>
+                        )}
+                        {!isDraft && !isScheduled && onReplyAll && (
+                          <button
+                            type="button"
+                            onClick={onReplyAll}
+                            className="grid place-items-center w-10 h-10 rounded-full text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
+                            title={t('tooltips.reply_all')}
+                            aria-label={t('reply_all')}
+                          >
+                            <ReplyAll className="w-5 h-5" />
                           </button>
                         )}
                       </span>
@@ -5239,6 +5248,7 @@ export function EmailViewer({
                 size="lg"
                 className="shadow-sm w-10 h-10 group-hover:ring-2 group-hover:ring-primary/30 transition-all"
                 senderWarning={senderVerification ? senderVerificationLabel : undefined}
+                brandDomain={brandIndicatorDomain(email)}
               />
             </button>
             <div className="flex-1 min-w-0">
@@ -5254,6 +5264,7 @@ export function EmailViewer({
                 ) : (
                   <span className="text-sm font-semibold text-foreground">{t('unknown_sender')}</span>
                 )}
+                <BrandVerifiedBadge domain={brandIndicatorDomain(email)} />
                 <ExternalSenderChip from={email.from} accountId={email.sourceClientAccountId} />
                 <EmailIdentityBadge email={email} identities={identities} />
                 {shouldShowUnsubBanner && listHeaders?.listUnsubscribe && (
@@ -5447,6 +5458,7 @@ export function EmailViewer({
                           onViewContact={handleViewContactSidebar}
                           className="text-sm text-start"
                         />
+                        <BrandVerifiedBadge domain={brandIndicatorDomain(email)} />
                         <ExternalSenderChip from={email.from} accountId={email.sourceClientAccountId} />
                         {senderVerification && (
                           <span
@@ -5753,7 +5765,8 @@ export function EmailViewer({
         {(senderVerification ||
           (!plainView && hasBlockedContent && (remoteBlockedByOrg || (!allowExternalContent && externalContentPolicy !== 'allow'))) ||
           hasCalendarInvitation ||
-          (readReceiptResponse === 'ask' && shouldOfferReadReceipt)) && (
+          (readReceiptResponse === 'ask' && shouldOfferReadReceipt) ||
+          structuredCards.length > 0) && (
           <div className="border-b border-border bg-muted/30 isolate">
             <div className="px-6 py-1.5">
               <div className="flex flex-col gap-3 isolate">
@@ -5850,6 +5863,19 @@ export function EmailViewer({
                 {hasCalendarInvitation && (
                   <div className="py-1">
                     <CalendarInvitationBanner email={email} />
+                  </div>
+                )}
+
+                {/* Booking, parcel and order cards (structured mail) */}
+                {structuredCards.length > 0 && (
+                  <div className="py-1">
+                    <StructuredMailCards
+                      cards={structuredCards}
+                      email={email}
+                      // Product images load only when the body's remote content would.
+                      allowRemoteImages={!shouldBlockExternal && !plainView}
+                      calendarActions={(booking) => <BookingCalendarActions booking={booking} email={email} />}
+                    />
                   </div>
                 )}
               </div>

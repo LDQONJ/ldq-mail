@@ -499,6 +499,11 @@
       "failed_sent_from": "此邮件声称来自 {domain}，但它是从 {host} 发出的，并且未通过 {domain} 的发件人验证。它可能是伪造的。",
       "caution": "请谨慎对待其中的链接、附件，以及索要密码或付款信息的请求。"
     },
+    "brand_logo": {
+      "verified_label": "已验证的标志",
+      "verified": "此标志已验证属于 {organization}。",
+      "verified_by": "{issuer} 已验证此标志属于 {organization}。"
+    },
     "back_to_list": "返回列表",
     "view_contact": "查看联系人",
     "message_details": "邮件详情",
@@ -771,6 +776,69 @@
       "copy": "复制验证码 {code}",
       "copied": "验证码已复制",
       "copy_failed": "无法复制验证码"
+    },
+    "structured_mail": {
+      "kind_flight": "航班",
+      "kind_train": "火车",
+      "kind_bus": "巴士",
+      "kind_lodging": "酒店",
+      "kind_rentalcar": "租车",
+      "kind_event": "活动",
+      "kind_restaurant": "餐厅",
+      "kind_order": "订单",
+      "kind_parcel": "包裹",
+      "region_flight": "航班预订",
+      "region_train": "火车预订",
+      "region_bus": "巴士预订",
+      "region_lodging": "酒店预订",
+      "region_rentalcar": "租车预订",
+      "region_event": "活动预订",
+      "region_restaurant": "餐厅预订",
+      "region_shipment": "订单和配送",
+      "status_cancelled": "已取消",
+      "status_pending": "待确认",
+      "status_hold": "已预留",
+      "order_status_payment_due": "待付款",
+      "order_status_processing": "处理中",
+      "order_status_problem": "有问题",
+      "order_status_in_transit": "已发货",
+      "order_status_pickup_available": "待取件",
+      "order_status_returned": "已退回",
+      "order_status_delivered": "已送达",
+      "order_status_cancelled": "已取消",
+      "reference": "预订编号",
+      "order_number": "订单号",
+      "tracking_number": "运单号",
+      "copy_reference": "复制预订编号 {value}",
+      "copy_order_number": "复制订单号 {value}",
+      "copy_tracking_number": "复制运单号 {value}",
+      "copied_reference": "已复制预订编号",
+      "copied_order_number": "已复制订单号",
+      "copied_tracking_number": "已复制运单号",
+      "copy_failed": "无法复制到剪贴板",
+      "passengers": "乘客",
+      "seats": "座位",
+      "tickets": "门票",
+      "link_check_in": "值机",
+      "link_manage": "管理预订",
+      "link_ticket": "门票",
+      "link_track": "查询物流",
+      "link_view_order": "查看订单",
+      "check_in_label": "入住",
+      "check_out_label": "退房",
+      "from_time": "{time} 起",
+      "until_time": "{time} 前",
+      "nights": "{count, plural, other {# 晚}}",
+      "pickup": "取车",
+      "dropoff": "还车",
+      "party_size": "{count, plural, other {# 人桌}}",
+      "items_more": "等另外 {count} 件",
+      "items_count": "{count, plural, other {# 件商品}}",
+      "total": "合计 {total}",
+      "expected_by": "预计 {date} 前送达",
+      "local_time": "当地时间",
+      "local_time_title": "这是该地点的当地时间，而不是你所在时区的时间",
+      "route": "{from} 至 {to}"
     },
     "mv_position": "第 {index} 封，共 {total} 封",
     "plugin_panel_show": "显示插件面板",
@@ -1574,7 +1642,7 @@
     "notifications": {
       "test_sound": "测试通知声音",
       "sounds": {
-        "default": "默认（蜂鸣声）",
+        "default": "蜂鸣声",
         "cheerful": "快乐",
         "involved": "沉浸",
         "swift": "轻快手势",
@@ -1957,8 +2025,8 @@
         "unsupported": "当前账户未声明支持延迟发送。该设置仍会为其他账户保存。"
       },
       "return_to_list_after_action": {
-        "label": "删除或标记为未读后返回列表",
-        "description": "删除打开的邮件或将其标记为未读后，返回邮件列表而不是打开下一封邮件。"
+        "label": "删除、归档、移动或标记为未读后返回列表",
+        "description": "删除、归档、移动打开的邮件、举报为垃圾邮件或将其标记为未读后，返回邮件列表而不是打开下一封邮件。"
       },
       "swipe_right_action": {
         "label": "右滑操作（移动端）",
@@ -4815,7 +4883,6 @@
     "any_size": "任意大小",
     "larger_than_mb": "大于 {size} MB",
     "custom_size": "自定义大小",
-    "done": "完成",
     "name_or_address": "姓名或地址"
   },
   "welcome": {
@@ -5429,6 +5496,10 @@
       "accounts_heading": "已连接的账户",
       "account_on": "{host} 上的 {label}",
       "account_waiting": "{host} 上的 {label}（尚未完成登录）",
+      "forward_heading": "邮件转发到",
+      "forward_hint": "此插件可以不经询问转发邮件的地址。",
+      "forward_remove": "移除",
+      "forward_remove_label": "停止转发到 {address}",
       "disconnect": "断开连接",
       "disconnect_failed": "无法断开 {label} 的连接"
     },
@@ -5671,6 +5742,10 @@
         "title": "修改您正在写的邮件",
         "body": "在编辑器中使用插件时，替换或添加您正在写的邮件中的文字。每次修改都可以撤销，是否发送仍由您决定。"
       },
+      "email_forward": {
+        "title": "转发您的邮件",
+        "body": "无需打开撰写窗口，即可将您账户中的邮件连同附件一起转发。首次转发到每个地址前都会征求您的同意。"
+      },
       "ui_notifications": {
         "title": "显示通知",
         "body": "在您的设备上显示通知；如果您未允许通知，则在应用内显示。每条通知都会注明插件名称。"
@@ -5703,6 +5778,11 @@
         "title": "使用您连接的账户",
         "body": "使用您或管理员设置的账户或密钥，通过 {appName} 的服务器发送请求。插件永远看不到密码，但可以在该账户所属的服务器上执行该账户能做的任何操作。"
       }
+    },
+    "forward_approval": {
+      "title": "允许 {plugin} 将邮件转发到 {addresses} 吗？",
+      "message": "{plugin} 想将“{subject}”连同附件转发到 {addresses}。如果允许，它今后可以不经询问将邮件转发到该地址。您可以在 设置 > 附加组件 中撤销。",
+      "allow": "允许并转发"
     },
     "dialog": {
       "from_plugin": "来自插件 {name}",
@@ -5945,6 +6025,37 @@
     "easy_read": "易读版",
     "sign_language": "手语",
     "new_tab": "在新标签页中打开"
+  },
+  "structured_mail_calendar": {
+    "add_to_calendar": "添加到日历",
+    "update_in_calendar": "在日历中更新",
+    "remove_from_calendar": "从日历中移除",
+    "in_calendar": "已在你的日历中",
+    "view_in_calendar": "在日历中打开",
+    "select_calendar": "选择日历",
+    "added": "已添加到你的日历",
+    "updated": "日历已更新",
+    "removed": "已从你的日历中移除",
+    "action_failed": "无法更改你的日历，请重试。",
+    "blocked": "某个插件阻止了此日历更改。",
+    "title": {
+      "rental_car": "租车",
+      "rental_car_company": "租车：{company}"
+    },
+    "description": {
+      "reference": "预订编号：{reference}",
+      "passengers": "乘客：{names}",
+      "seats": "座位：{seats}",
+      "checkin": "值机：{url}",
+      "manage": "管理预订：{url}",
+      "ticket": "电子票：{url}",
+      "phone": "电话：{phone}",
+      "car": "车辆：{car}",
+      "tickets": "票号：{numbers}",
+      "party_size": "人数：{count}",
+      "added_from": "添加自 {domain} 发来的邮件",
+      "added_from_subject": "添加自 {domain} 发来的邮件“{subject}”"
+    }
   },
   "register": {
     "title": "LDQ Mail",

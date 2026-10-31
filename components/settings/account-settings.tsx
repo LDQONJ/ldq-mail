@@ -12,7 +12,7 @@ import { SettingsSection, SettingItem } from './settings-section';
 import { Avatar } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { useRouter } from '@/i18n/navigation';
-import { getMaxAccounts } from '@/lib/account-utils';
+import { getMaxAccounts, accountRowText } from '@/lib/account-utils';
 import { formatFileSize, cn } from '@/lib/utils';
 import { toUnicodeEmail } from '@/lib/idn';
 import { IS_LITE } from '@/lib/lite';
@@ -217,6 +217,7 @@ export function AccountSettings() {
               <AccountRow
                 key={a.id}
                 account={a}
+                text={accountRowText(a, accounts)}
                 index={index}
                 isActive={a.id === activeAccountId}
                 isFirst={index === 0}
@@ -304,6 +305,7 @@ export function AccountSettings() {
 
 interface AccountRowProps {
   account: AccountEntry;
+  text: { title: string; subtitle: string | null };
   index: number;
   isActive: boolean;
   isFirst: boolean;
@@ -330,6 +332,7 @@ interface AccountRowProps {
 
 function AccountRow({
   account,
+  text,
   index,
   isActive,
   isFirst,
@@ -396,15 +399,17 @@ function AccountRow({
       >
         <div className="flex items-center gap-1.5">
           <span className="text-sm font-medium truncate">
-            {toUnicodeEmail(account.displayName || account.label)}
+            {toUnicodeEmail(text.title)}
           </span>
           {account.isDefault && (
             <Star className="w-3 h-3 text-amber-500 flex-shrink-0 fill-amber-500" aria-label={labels.default} />
           )}
         </div>
-        <p dir="ltr" className="text-xs text-muted-foreground truncate rtl:text-right">
-          {toUnicodeEmail(account.email || account.username)}
-        </p>
+        {text.subtitle && (
+          <p dir="ltr" className="text-xs text-muted-foreground truncate rtl:text-right">
+            {toUnicodeEmail(text.subtitle)}
+          </p>
+        )}
         {account.hasError && (
           <div className="flex items-center gap-1 mt-0.5">
             <AlertCircle className="w-3 h-3 text-destructive" />
