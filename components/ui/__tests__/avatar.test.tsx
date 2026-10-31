@@ -366,4 +366,72 @@ describe('Avatar', () => {
       }
     });
   });
+
+  describe('favicon background adaptation', () => {
+    let originalGetContext: typeof HTMLCanvasElement.prototype.getContext;
+
+    beforeEach(() => {
+      originalGetContext = HTMLCanvasElement.prototype.getContext;
+    });
+
+    afterEach(() => {
+      HTMLCanvasElement.prototype.getContext = originalGetContext;
+    });
+
+    it('sets dark slate background for monochrome white logo on transparent background', async () => {
+      // 4 pixels: 2 transparent (alpha 0), 2 pure white (alpha 255, r=g=b=255)
+      const mockData = new Uint8ClampedArray([
+        0, 0, 0, 0,
+        0, 0, 0, 0,
+        255, 255, 255, 255,
+        255, 255, 255, 255,
+      ]);
+      HTMLCanvasElement.prototype.getContext = vi.fn().mockReturnValue({
+        drawImage: vi.fn(),
+        getImageData: vi.fn().mockReturnValue({ data: mockData }),
+      }) as never;
+
+      const { container } = render(<Avatar name="WhiteLogo" email="team@whitelogo-sender.org" />);
+      const img = container.querySelector('img')!;
+      Object.defineProperty(img, 'naturalWidth', { value: 32 });
+      Object.defineProperty(img, 'naturalHeight', { value: 32 });
+
+      act(() => {
+        fireEvent.load(img);
+      });
+
+      const avatarDiv = container.firstChild as HTMLElement;
+      expect(avatarDiv.style.backgroundColor).toBe('rgb(30, 41, 59)');
+    });
+
+    it('keeps white background for colored favicon with transparent corners (like Google)', async () => {
+      // 5 pixels:
+      // 1 transparent corner: [0, 0, 0, 0]
+      // 3 white disc pixels: [255, 255, 255, 255]
+      // 1 colored Google G pixel (Red): [234, 67, 53, 255]
+      const mockData = new Uint8ClampedArray([
+        0, 0, 0, 0,
+        255, 255, 255, 255,
+        255, 255, 255, 255,
+        255, 255, 255, 255,
+        234, 67, 53, 255,
+      ]);
+      HTMLCanvasElement.prototype.getContext = vi.fn().mockReturnValue({
+        drawImage: vi.fn(),
+        getImageData: vi.fn().mockReturnValue({ data: mockData }),
+      }) as never;
+
+      const { container } = render(<Avatar name="Google" email="no-reply@google-service.com" />);
+      const img = container.querySelector('img')!;
+      Object.defineProperty(img, 'naturalWidth', { value: 32 });
+      Object.defineProperty(img, 'naturalHeight', { value: 32 });
+
+      act(() => {
+        fireEvent.load(img);
+      });
+
+      const avatarDiv = container.firstChild as HTMLElement;
+      expect(avatarDiv.style.backgroundColor).toBe('rgb(255, 255, 255)');
+    });
+  });
 });

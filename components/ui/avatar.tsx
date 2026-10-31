@@ -197,18 +197,43 @@ function detectLightIcon(img: HTMLImageElement): boolean {
     let transparentPixels = 0;
     let visiblePixels = 0;
     let totalLuminance = 0;
+    let coloredPixels = 0;
+    let darkPixels = 0;
     for (let i = 0; i < data.length; i += 4) {
       const alpha = data[i + 3];
       if (alpha < 64) {
         transparentPixels++;
       } else {
         visiblePixels++;
-        // ITU-R BT.601 perceived luminance (0-255)
-        totalLuminance += 0.299 * data[i] + 0.587 * data[i + 1] + 0.114 * data[i + 2];
+        const r = data[i];
+        const g = data[i + 1];
+        const b = data[i + 2];
+        const lum = 0.299 * r + 0.587 * g + 0.114 * b;
+        totalLuminance += lum;
+
+        // Saturated pixels provide contrast against white backgrounds (e.g. Google's colored "G")
+        const max = Math.max(r, g, b);
+        const min = Math.min(r, g, b);
+        if (max - min > 30) {
+          coloredPixels++;
+        }
+
+        // Dark pixels provide contrast against white backgrounds
+        if (lum < 130) {
+          darkPixels++;
+        }
       }
     }
-    // High transparency (>5%) and visible artwork is bright (average luminance > 185)
-    return transparentPixels > (data.length / 4) * 0.05 && visiblePixels > 0 && (totalLuminance / visiblePixels) > 185;
+    // Must have a meaningful amount of transparency (>10%)
+    if (transparentPixels <= (data.length / 4) * 0.1 || visiblePixels === 0) {
+      return false;
+    }
+    // If the icon has colored elements or dark elements, keep the white background (#ffffff)
+    if (coloredPixels > visiblePixels * 0.05 || darkPixels > visiblePixels * 0.08) {
+      return false;
+    }
+    // Only monochrome white/light artwork needs a dark slate background
+    return (totalLuminance / visiblePixels) > 190;
   } catch {
     return false;
   }
