@@ -3,7 +3,7 @@
 import { useState, useCallback, useMemo, useEffect } from "react";
 import { cn } from "@/lib/utils";
 import { ShieldAlert } from "@/components/icons";
-import { getLuminance, parseColor } from "@/lib/color-transform";
+// Bulwark Webmail: default avatar initials are always pure white text.
 import { useSettingsStore } from "@/stores/settings-store";
 import { useContactStore, getContactPhotoIndex, type ContactPhotoRef } from "@/stores/contact-store";
 import { useConfig } from "@/hooks/use-config";
@@ -175,11 +175,8 @@ interface AvatarProps {
  * One of the two always reaches 4.58:1, so the initials pass 4.5:1 on every
  * generated colour (white alone failed on yellows and greens).
  */
-function initialsColor(background: string): string {
-  const rgb = parseColor(background);
-  if (!rgb) return '#ffffff';
-  const l = getLuminance(rgb.r, rgb.g, rgb.b);
-  return 1.05 / (l + 0.05) >= (l + 0.05) / 0.05 ? '#ffffff' : '#000000';
+function initialsColor(_background?: string): string {
+  return '#ffffff';
 }
 
 export function Avatar({ name, email, contactPhoto, size = "md", className, disableImages = false, disableFavicon = false, fallbackColor, senderWarning, brandDomain }: AvatarProps) {
