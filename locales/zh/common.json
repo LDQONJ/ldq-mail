@@ -73,10 +73,10 @@
     "demo_tagline": "体验功能完整的邮件客户端，无需账号。",
     "demo_no_signup": "无需注册，直接使用示例数据体验",
     "mobile_handoff": {
-      "title": "Open the Bulwark mobile app?",
-      "description": "This sign-in page was opened by an app on this device. Your sign-in for {username} will be handed to the app that registered the Bulwark link. Continue only if you started this from the Bulwark mobile app.",
-      "confirm": "Hand over to the app",
-      "cancel": "Stay in the webmail"
+      "title": "在 Bulwark 移动应用中打开？",
+      "description": "此登录页面由本设备上的应用程序打开。您对 {username} 的登录凭据将移交给注册了 Bulwark 链接的应用程序。仅当您是从 Bulwark 移动应用发起此操作时才继续。",
+      "confirm": "移交至应用",
+      "cancel": "留在网页版邮箱"
     },
     "oauth_completing": "正在完成登录…",
     "oauth_error": {
@@ -202,9 +202,9 @@
     "unified_all_unread": "全部未读",
     "unified_all_starred": "全部加星标",
     "unified_all_mail": "全部邮件",
-    "remove_account": "Remove account",
+    "remove_account": "移除账户",
     "remove_account_title": "移除账户？",
-    "remove_account_confirm": "Remove {account} from this device? You can add it back later.",
+    "remove_account_confirm": "确定从这台设备上移除账户 {account} 吗？稍后您可以重新添加它。",
     "labels": "标签",
     "create_label": "新建标签",
     "mv_tasks": "任务",
@@ -447,7 +447,7 @@
     "forward": "转发",
     "delete": "删除",
     "archive": "归档",
-    "archive_mailbox_not_found": "Archive mailbox not found - cannot archive email",
+    "archive_mailbox_not_found": "未找到归档文件夹 - 无法归档邮件",
     "star": "加星标",
     "unstar": "取消星标",
     "mark_unread": "标记为未读",
@@ -904,8 +904,8 @@
     "send": "发送",
     "cancel": "取消",
     "attach": "附件",
-    "attach_photos": "Photos & Videos",
-    "attach_files": "Files",
+    "attach_photos": "照片与视频",
+    "attach_files": "文件",
     "attach_from_files": "从文件添加附件",
     "files_picker": {
       "attach": "{count, plural, =0 {添加附件} other {添加 # 个文件}}",
@@ -1517,8 +1517,8 @@
         "label": "统一邮箱",
         "description": "显示所有已连接账户的合并文件夹（收件箱、已发送等）",
         "cross_account": {
-          "label": "Across all accounts",
-          "description": "Merge the unified mailbox across every connected account instead of staying within the active account."
+          "label": "跨所有账户",
+          "description": "将统一邮箱合并跨越所有已连接账户，而不是仅限当前活动账户。"
         },
         "include_group": {
           "label": "包含群组收件箱",
@@ -1526,26 +1526,26 @@
         }
       },
       "all_mail": {
-        "folders_label": "Folders in All Mail",
-        "folders_description": "Choose which folders are merged into the All Mail view.",
-        "account_hint": "Applies to {account}.",
-        "no_folders": "No folders available."
+        "folders_label": "统一列表中的文件夹",
+        "folders_description": "选择此账户中要合并到“所有邮件 / 未读 / 星标”列表中的文件夹。",
+        "account_hint": "适用于 {account}。",
+        "no_folders": "没有可用的文件夹。"
       },
       "colorful_sidebar_icons": {
         "label": "彩色侧边栏图标",
         "description": "按类型为文件夹和标签图标着色（蓝色收件箱、红色垃圾邮件、绿色已发送等）。禁用以获得单色侧边栏。"
       },
       "tint_list_rows": {
-        "label": "Tint List Rows by Tag Color",
-        "description": "Shade each message row with its first tag color. Disable to keep rows plain; tag dots and chips still show the color."
+        "label": "按标签颜色为邮件列表行着色",
+        "description": "使用第一标签的颜色为每封邮件的列表行添加浅色底纹。禁用后行保持默认背景，标签圆点和贴片仍会显示颜色。"
       },
       "show_folder_total_count": {
         "label": "显示邮件总数",
         "description": "在文件夹和标签旁边显示邮件总数，以及未读数量。停用后仅显示未读数量。"
       },
       "favicon_unread_badge": {
-        "label": "Unread Count on Tab Icon",
-        "description": "Show the inbox unread count as a badge on the browser tab icon, so new mail is visible when the tab is not focused. Disable to keep the icon unbadged."
+        "label": "标签页与应用图标上的未读计数",
+        "description": "在浏览器标签页图标上（及支持的已安装应用图标上）以角标形式显示收件箱未读邮件数，以便在未聚焦标签页时也能看到新邮件。禁用后图标将不显示角标。"
       },
       "show_shared_mail_accounts": {
         "label": "显示共享邮件账户",
@@ -1649,16 +1649,16 @@
         "relax": "放松"
       },
       "push_all": {
-        "title": "All accounts",
-        "description": "Turn push on or off for several accounts at once. One browser subscription serves them all.",
-        "select_all": "Select every connected account",
-        "state_on": "notifications on",
-        "state_off": "notifications off",
-        "enable_selected": "Enable for selected",
-        "disable_selected": "Disable for selected",
-        "result_enabled": "Notifications enabled for {count} accounts.",
-        "result_partial": "Enabled for {enabled} accounts; {failed} could not be enabled.",
-        "result_disabled": "Notifications disabled for {count} accounts."
+        "title": "所有账户",
+        "description": "一次性为多个账户开启或关闭推送通知。单个浏览器订阅即可服务所有账户。",
+        "select_all": "选择所有已连接的账户",
+        "state_on": "通知已开启",
+        "state_off": "通知已关闭",
+        "enable_selected": "为选中的账户开启",
+        "disable_selected": "为选中的账户关闭",
+        "result_enabled": "已为 {count} 个账户开启通知。",
+        "result_partial": "已为 {enabled} 个账户开启；{failed} 个账户无法开启。",
+        "result_disabled": "已为 {count} 个账户关闭通知。"
       },
       "sound_selection": {
         "title": "通知声音",
@@ -1673,8 +1673,8 @@
         "enabled_desc": "新邮件到达时显示通知",
         "sound": "通知声音",
         "sound_desc": "新邮件到达时播放音频提醒",
-        "inbox_only": "Inbox only",
-        "inbox_only_desc": "Only notify for mail that lands in the Inbox; skip mail a filter files into another folder"
+        "inbox_only": "仅限收件箱",
+        "inbox_only_desc": "仅对进入收件箱的邮件发送通知；跳过过滤器归类到其他文件夹的邮件"
       },
       "calendar": {
         "title": "日历通知",
@@ -1701,7 +1701,7 @@
         "status_busy": "工作中…",
         "status_inactive": "在此设备上未启用",
         "status_unsupported": "此浏览器不支持 Web Push",
-        "status_lite": "Web Push is not available in Bulwark Lite; it needs the Bulwark server.",
+        "status_lite": "Web Push 在 Bulwark Lite 中不可用；需要 Bulwark 服务器支持。",
         "title": "后台通知",
         "devices_title": "已注册的设备",
         "devices_desc": "已注册接收此账户后台通知的所有设备。撤销后，该设备会立即停止接收。",
@@ -1744,12 +1744,12 @@
         "preview_older": "更早："
       },
       "date_locale": {
-        "label": "Date format region",
-        "description": "How numeric dates are ordered (day, month, year)",
-        "auto": "Automatic",
+        "label": "日期格式地区",
+        "description": "数字日期的排列顺序（日、月、年）",
+        "auto": "自动",
         "iso": "ISO 8601",
-        "dmy": "Day/Month/Year",
-        "mdy": "Month/Day/Year"
+        "dmy": "日/月/年",
+        "mdy": "月/日/年"
       },
       "time_format": {
         "label": "时间格式",
@@ -1764,10 +1764,10 @@
         "monday": "周一"
       },
       "time_zone": {
-        "label": "Time zone",
-        "description": "Show email and calendar times in this time zone instead of the one reported by your browser",
-        "auto": "Automatic ({zone})",
-        "preview_now": "Now:"
+        "label": "时区",
+        "description": "在此指定时区中显示邮件和日历时间，而不是使用浏览器报告的时区",
+        "auto": "自动 ({zone})",
+        "preview_now": "当前时间："
       }
     },
     "email_behavior": {
@@ -1987,7 +1987,7 @@
         "keywords_label": "触发关键词",
         "keywords_description": "在消息中发现时触发提醒的词语或短语",
         "add_placeholder": "添加关键词...",
-        "add": "Add",
+        "add": "添加",
         "remove": "删除"
       },
       "empty_subject_warning": {
@@ -2099,42 +2099,42 @@
         "add": "添加账户"
       },
       "backup": {
-        "title": "Account list backup",
-        "description": "Keep the list of accounts in this browser on the server, encrypted with a password only you know, and bring it back on another device. Mailbox passwords are not saved: you sign in to each restored account yourself.",
-        "description_passwords": "Keep the list of accounts in this browser on the server, encrypted with a password only you know, and bring it back on another device. You can include the mailbox passwords, so the restored accounts sign in by themselves.",
-        "status_none": "No list is saved for {account}.",
-        "status_saved": "A list is saved for {account}.",
-        "save": "Save list",
-        "restore": "Restore list",
-        "delete": "Delete saved list",
-        "cancel": "Cancel",
-        "delete_confirm": "Delete the saved account list from the server?",
+        "title": "账户列表备份",
+        "description": "将此浏览器中的账户列表加密保存在服务器上（密码仅您知晓），以便在另一台设备上恢复。邮箱密码不会被保存：恢复后您需自行登录每个账户。",
+        "description_passwords": "将此浏览器中的账户列表加密保存在服务器上（密码仅您知晓），以便在另一台设备上恢复。您可以选择包含邮箱密码，这样恢复后的账户将自动登录。",
+        "status_none": "未为 {account} 保存任何列表。",
+        "status_saved": "已为 {account} 保存账户列表。",
+        "save": "保存列表",
+        "restore": "恢复列表",
+        "delete": "删除已保存列表",
+        "cancel": "取消",
+        "delete_confirm": "确定要从服务器上删除已保存的账户列表吗？",
         "delete_message": "其他设备将无法再从中恢复账户。",
-        "password": "Backup password",
-        "password_hint": "At least 10 characters. It cannot be recovered: if you forget it, save the list again with a new one.",
-        "restore_hint": "The password chosen when the list was saved.",
-        "confirm": "Confirm password",
-        "include_passwords": "Include mailbox passwords",
-        "include_passwords_hint": "Accounts signed in here with a password will sign in by themselves after a restore. Anyone who knows the backup password gets into every mailbox in the list.",
-        "saved": "List saved ({count, plural, one {# account} other {# accounts}}).",
-        "restored": "Accounts added: {added}. Accounts already here and updated: {updated}. Open each new account from the account list to sign in.",
-        "restored_signed_in": "Accounts added: {added}. Accounts already here and updated: {updated}.",
-        "skipped": "{count, plural, one {# account was} other {# accounts were}} not added: the account limit is reached.",
-        "saved_passwords": "Passwords included for {count, plural, one {# account} other {# accounts}}.",
-        "signed_in": "Signed in to {count, plural, one {# account} other {# accounts}} with the saved password.",
-        "sign_in_failed": "{count, plural, one {# saved password was} other {# saved passwords were}} refused: sign in to those accounts from the account list.",
-        "deleted": "Saved list deleted.",
-        "prompt_title": "Restore your other accounts?",
-        "prompt_description": "A list of accounts is saved for {account}. Enter its backup password to add them to this browser, or do it later from Settings.",
-        "prompt_not_now": "Not now",
-        "prompt_done": "Done",
+        "password": "备份密码",
+        "password_hint": "至少 10 个字符。该密码无法找回：如果忘记，请使用新密码重新保存列表。",
+        "restore_hint": "保存列表时所设置的密码。",
+        "confirm": "确认密码",
+        "include_passwords": "包含邮箱密码",
+        "include_passwords_hint": "在此使用密码登录的账户在恢复后将自动登录。任何知晓此备份密码的人都可以访问列表中保存的所有邮箱。",
+        "saved": "列表已保存（共 {count} 个账户）。",
+        "restored": "已添加账户：{added}。已存在并更新的账户：{updated}。请从账户列表中打开每个新账户进行登录。",
+        "restored_signed_in": "已添加账户：{added}。已存在并更新的账户：{updated}。",
+        "skipped": "{count} 个账户未添加：已达到账户数量上限。",
+        "saved_passwords": "已包含 {count} 个账户的密码。",
+        "signed_in": "已使用保存的密码登录 {count} 个账户。",
+        "sign_in_failed": "{count} 个已保存的密码被拒绝：请从账户列表中手动登录这些账户。",
+        "deleted": "已保存的列表已删除。",
+        "prompt_title": "恢复您的其他账户？",
+        "prompt_description": "已为 {account} 保存了一份账户列表。输入其备份密码即可将它们添加到此浏览器中，或者稍后在“设置”中恢复。",
+        "prompt_not_now": "暂不",
+        "prompt_done": "完成",
         "errors": {
-          "mismatch": "The passwords do not match.",
-          "password_length": "Use at least 10 characters.",
-          "unlock_failed": "Wrong password, or the list was saved for another account.",
-          "owner_signin_required": "Sign in to this account again, then retry.",
-          "https_required": "This needs a secure (HTTPS) connection.",
-          "storage_failed": "The server could not read or store the list. Try again later."
+          "mismatch": "两次输入的密码不一致。",
+          "password_length": "密码至少需要 10 个字符。",
+          "unlock_failed": "密码错误，或该列表是为其他账户保存的。",
+          "owner_signin_required": "请重新登录此账户，然后重试。",
+          "https_required": "这需要安全的 (HTTPS) 连接。",
+          "storage_failed": "服务器无法读取或存储该列表。请稍后重试。"
         }
       },
       "shared_accounts": {
@@ -2413,8 +2413,8 @@
       "role_trash": "已删除",
       "role_junk": "垃圾邮件",
       "role_archive": "归档",
-      "role_scheduled": "Scheduled",
-      "role_snoozed": "Snoozed",
+      "role_scheduled": "定时发送",
+      "role_snoozed": "已暂停",
       "role_none": "无",
       "create_folder": "创建文件夹",
       "create_subfolder": "新建子文件夹",
@@ -2509,9 +2509,9 @@
         "button": "查看快捷方式"
       },
       "refresh_cache": {
-        "label": "Refresh cached data",
-        "description": "Reload contacts, calendars, and folders from the server. Keeps your accounts and sessions — fixes a stale or wrong view without signing out.",
-        "button": "Refresh",
+        "label": "刷新缓存数据",
+        "description": "从服务器重新加载联系人、日历和文件夹。保留您的账户与会话 —— 无需退出登录即可修复陈旧或错误的视图。",
+        "button": "刷新",
         "confirm_title": "刷新缓存数据?"
       },
       "reset_settings": {
@@ -2536,7 +2536,7 @@
         "source_code": "源代码"
       },
       "spam_siege": {
-        "title": "Spam Siege",
+        "title": "垃圾邮件围攻",
         "intro": "在垃圾邮件和钓鱼邮件进入收件箱之前点击拦截。放行真实邮件。三面盾牌全部失去，收件箱就会失守。",
         "kinds": {
           "spam": "垃圾邮件",
@@ -3987,32 +3987,32 @@
       "calendar_uri": "日历 URL",
       "scheduling_uri": "调度 URL",
       "freebusy_uri": "空闲/忙碌 URL",
-      "section_contact": "Contact details",
-      "section_work": "Work",
-      "section_personal": "Personal",
-      "email_default_label": "Email",
-      "phone_default_label": "Phone",
-      "address_default_label": "Address",
-      "online_service_default_label": "Online",
-      "organization_label": "Organization",
-      "title_label": "Title",
-      "role_label": "Role",
-      "language_label": "Language",
-      "related_default_label": "Related",
+      "section_contact": "联系方式",
+      "section_work": "工作",
+      "section_personal": "个人",
+      "email_default_label": "邮箱",
+      "phone_default_label": "电话",
+      "address_default_label": "地址",
+      "online_service_default_label": "在线联系方式",
+      "organization_label": "公司/组织",
+      "title_label": "头衔/职位",
+      "role_label": "角色/职责",
+      "language_label": "语言",
+      "related_default_label": "关联人",
       "more_actions": "更多操作",
       "age_years": "{count}岁",
       "years_since": "{count}年前"
     },
     "activity": {
-      "recent_emails": "Recent Emails",
-      "upcoming_events": "Upcoming Events",
-      "no_emails": "No recent emails",
-      "no_events": "No upcoming events",
-      "no_subject": "(No subject)",
-      "no_title": "(No title)",
-      "load_failed": "Failed to load",
-      "unknown_sender": "Unknown sender",
-      "all_day": "All day"
+      "recent_emails": "最近往来邮件",
+      "upcoming_events": "近期日程",
+      "no_emails": "无最近邮件",
+      "no_events": "无近期日程",
+      "no_subject": "（无主题）",
+      "no_title": "（无标题）",
+      "load_failed": "加载失败",
+      "unknown_sender": "未知发件人",
+      "all_day": "全天"
     },
     "form": {
       "create_title": "新联系人",
@@ -4148,10 +4148,10 @@
       "no_members": "该群组中没有成员",
       "member_count": "{count, plural, =0 {无成员} one {1 位成员} other {# 位成员}}",
       "send_email": "发送邮件",
-      "send_email_to": "To",
-      "send_email_cc": "Cc",
-      "send_email_bcc": "Bcc",
-      "no_member_emails": "This group has no members with an email address."
+      "send_email_to": "收件人",
+      "send_email_cc": "抄送",
+      "send_email_bcc": "密送",
+      "no_member_emails": "此分组中没有包含邮箱地址的成员。"
     },
     "import": {
       "title": "导入联系人",
@@ -4684,7 +4684,8 @@
       "default_alerts_hint": "此日历中的新活动将使用这些提醒，除非在活动中进行更改。在此处更改不会影响现有活动。电子邮件提醒由邮件服务器发送。",
       "default_alerts_timed": "有具体时间的活动",
       "default_alerts_all_day": "全天活动",
-      "default_alerts_updated": "默认提醒已更新"
+      "default_alerts_updated": "默认提醒已更新",
+      "custom_color": "自定义颜色"
     },
     "subscription": {
       "title": "iCal 订阅",
@@ -4777,18 +4778,18 @@
       "oct": "10月",
       "nov": "11月",
       "dec": "12月",
-      "far": "Farvardin",
-      "ord": "Ordibehesht",
-      "kho": "Khordad",
-      "tir": "Tir",
-      "mor": "Mordad",
-      "sha": "Shahrivar",
-      "meh": "Mehr",
-      "aba": "Aban",
-      "aza": "Azar",
-      "dey": "Dey",
-      "bah": "Bahman",
-      "esf": "Esfand"
+      "far": "法尔瓦丁月",
+      "ord": "奥尔迪贝赫什特月",
+      "kho": "霍尔达德月",
+      "tir": "提尔月",
+      "mor": "莫尔达德月",
+      "sha": "沙赫里瓦尔月",
+      "meh": "梅赫尔月",
+      "aba": "阿班月",
+      "aza": "阿扎尔月",
+      "dey": "代伊月",
+      "bah": "巴赫曼月",
+      "esf": "埃斯凡德月"
     },
     "nav_open_menu": "打开菜单",
     "nav_hide_sidebar": "隐藏侧边栏",
@@ -5032,10 +5033,10 @@
     "duplicate": "创建副本",
     "duplicate_success": "复制成功",
     "duplicate_error": "复制失败",
-    "share": "Share",
-    "shared": "Shared",
-    "shared_with_me": "Shared with me",
-    "shared_by": "Shared by {name}",
+    "share": "共享",
+    "shared": "已共享",
+    "shared_with_me": "与我共享",
+    "shared_by": "由 {name} 共享",
     "shared_files_from": "来自 {name} 的文件",
     "create_file_success": "文件已创建",
     "create_file_error": "创建文件失败",
@@ -5835,7 +5836,7 @@
     "account_error": "无法搜索 {account}",
     "recent_searches": "最近搜索",
     "recurring": "重复",
-    "no_subject": "(no subject)",
+    "no_subject": "（无主题）",
     "empty_hint": "在所有账户中搜索邮件、联系人、日程和文件。可尝试 from:、subject:、has:attachment、after:2026-01-01。",
     "flat_by_date": "按日期平铺",
     "grouped": "分组",

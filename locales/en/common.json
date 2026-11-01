@@ -4716,7 +4716,8 @@
       "default_alerts_hint": "New events in this calendar get these reminders unless you change them in the event. Changing them here doesn't change existing events. Email reminders are sent by the mail server.",
       "default_alerts_timed": "Events with a time",
       "default_alerts_all_day": "All-day events",
-      "default_alerts_updated": "Default reminders updated"
+      "default_alerts_updated": "Default reminders updated",
+      "custom_color": "Custom color"
     },
     "subscription": {
       "title": "iCal subscription",

@@ -43,6 +43,7 @@ function CalendarColorPicker({
   onChange: (color: string) => void;
   allowCustom?: boolean;
 }) {
+  const t = useTranslations('calendar.management');
   const selectedIsPreset = CALENDAR_COLORS.includes(value);
   const customRef = useRef<HTMLInputElement>(null);
   const onChangeRef = useRef(onChange);
@@ -84,7 +85,7 @@ function CalendarColorPicker({
             !selectedIsPreset && value && "ring-2 ring-offset-2 ring-offset-background ring-foreground"
           )}
           style={!selectedIsPreset && value ? { backgroundColor: value } : undefined}
-          title="Custom color"
+          title={t('custom_color')}
         >
           <input
             ref={customRef}
