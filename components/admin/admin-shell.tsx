@@ -40,6 +40,7 @@ import { useUpdateStore, selectHasUpdate } from '@/stores/update-store';
 import { useAdminUnsavedStore } from '@/stores/admin-unsaved-store';
 import { apiFetch, getPathPrefix } from '@/lib/browser-navigation';
 import { ADMIN_PAGES, adminPath, type AdminPageDef, type AdminPageId, type AdminSectionDef } from '@/lib/admin/admin-nav';
+import { ADMIN_ZH_DICT } from '@/lib/i18n/admin-zh';
 import { cn } from '@/lib/utils';
 import { AdminLink } from './admin-link';
 import { AdminShellContext } from './shell-context';
@@ -170,8 +171,8 @@ export function AdminShell({ authenticated, isStalwartAutoLogin, configReadOnly,
     const words = trimmed.split(/\s+/);
     const hits = (text: string) => words.every((w) => text.includes(w));
     return ADMIN_PAGES.flatMap((page) => {
-      const sections = page.sections.filter((s) => hits(`${s.title} ${s.keywords ?? ''}`.toLowerCase()));
-      const pageHit = hits(`${page.label} ${page.description} ${page.keywords}`.toLowerCase());
+      const sections = page.sections.filter((s) => hits(`${s.title} ${ADMIN_ZH_DICT[s.title] ?? ''} ${s.keywords ?? ''}`.toLowerCase()));
+      const pageHit = hits(`${page.label} ${ADMIN_ZH_DICT[page.label] ?? ''} ${page.description} ${ADMIN_ZH_DICT[page.description] ?? ''} ${page.keywords}`.toLowerCase());
       if (!pageHit && sections.length === 0) return [];
       return [{ page, sections: sections.slice(0, 5) }];
     });
