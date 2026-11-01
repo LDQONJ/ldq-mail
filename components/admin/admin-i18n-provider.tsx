@@ -64,6 +64,31 @@ export function AdminI18nProvider({ children, initialLocale }: AdminI18nProvider
       const lowerCollapsed = collapsedNormalized.toLowerCase();
       if (LOWERCASE_ZH_DICT[lowerCollapsed]) return LOWERCASE_ZH_DICT[lowerCollapsed];
 
+      // 5. Dynamic pattern matching
+      let m: RegExpMatchArray | null;
+      if ((m = str.match(/^Roll back to v(.+)\?$/))) return `回滚到 v${m[1]}？`;
+      if ((m = str.match(/^Remove "(.+)"\?$/))) return `确定要移除“${m[1]}”吗？`;
+      if ((m = str.match(/^Remove the branding for (.+)\?$/))) return `确定要移除 ${m[1]} 的品牌定制吗？`;
+      if ((m = str.match(/^At least (\d+) seconds$/))) return `至少 ${m[1]} 秒`;
+      if ((m = str.match(/^Update to v(.+)$/))) return `更新到 v${m[1]}`;
+      if ((m = str.match(/^Update from v(.+) to v(.+)$/))) return `从 v${m[1]} 更新到 v${m[2]}`;
+      if ((m = str.match(/^Install v(.+)$/))) return `安装 v${m[1]}`;
+      if ((m = str.match(/^Preview v(.+)$/))) return `预览 v${m[1]}`;
+      if ((m = str.match(/^Previewing v(.+)$/))) return `正在预览版本 v${m[1]}`;
+      if ((m = str.match(/^Installed v(.+)$/))) return `已安装 v${m[1]}`;
+      if ((m = str.match(/^Showing v(.+)$/))) return `显示版本 v${m[1]}`;
+      if ((m = str.match(/^v(.+) was withdrawn by its publisher$/))) return `v${m[1]} 已被发布者撤回`;
+      if ((m = str.match(/^The installed v(.+) was withdrawn by its publisher$/))) return `已安装的 v${m[1]} 已被发布者撤回`;
+      if ((m = str.match(/^(\d+) plugins? waiting for approval$/))) return `${m[1]} 个插件等待审批`;
+      if ((m = str.match(/^([\d.]+) out of 5 from (\d+) ratings?$/))) return `评分 ${m[1]} / 5（共 ${m[2]} 条评价）`;
+      if ((m = str.match(/^Security advisory (.+) \((.+)\)$/))) return `安全通告 ${m[1]} (${m[2]})`;
+      if ((m = str.match(/^Signed by the directory, key (.+)$/))) return `由扩展市场目录签名，密钥 ${m[1]}`;
+      if ((m = str.match(/^Logs \((\d+)\)$/))) return `日志 (${m[1]})`;
+      if ((m = str.match(/^Built-in outside hosts \((\d+)\)$/))) return `内置外部主机 (${m[1]})`;
+      if ((m = str.match(/^"(.+)" v(.+) replaces v(.+)\. The copy kept on this server is used; the directory is not asked\.$/))) {
+        return `“${m[1]}” v${m[2]} 将替换 v${m[3]}。将使用保存在此服务器上的副本，不向目录发起请求。`;
+      }
+
       return undefined;
     }
 
