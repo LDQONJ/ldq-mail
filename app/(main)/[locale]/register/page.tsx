@@ -265,6 +265,7 @@ export default function RegisterPage() {
                   <div className="relative z-20">
                     <div className="composite-input flex items-center h-11 w-full bg-muted/40 border border-border/60 rounded-xl focus-within:bg-background focus-within:border-primary/50 transition-all duration-200">
                       <input
+                        id="register-username"
                         type="text"
                         required
                         placeholder={t('username_placeholder')}
@@ -273,13 +274,13 @@ export default function RegisterPage() {
                         className="composite-input-field h-full px-3.5 bg-transparent border-0 rounded-l-xl shadow-none outline-none focus:outline-none focus:ring-0 text-sm text-foreground placeholder:text-muted-foreground flex-1 min-w-0"
                       />
                     <div className="h-5 w-[1px] bg-border/80 flex-shrink-0" />
-                    <div className="relative flex items-center flex-shrink-0" ref={domainDropdownRef}>
+                    <div className="relative flex items-center self-stretch flex-shrink-0" ref={domainDropdownRef}>
                       {domainOptions.length > 1 ? (
                         <>
                           <button
                             type="button"
                             onClick={() => setShowDomainDropdown((prev) => !prev)}
-                            className="flex items-center gap-1.5 h-11 px-3 bg-transparent hover:bg-muted/60 text-sm font-medium text-foreground rounded-r-xl transition-colors cursor-pointer select-none"
+                            className="flex items-center gap-1.5 self-stretch px-3 bg-transparent hover:bg-muted/60 text-sm font-medium text-foreground rounded-r-xl transition-colors cursor-pointer select-none"
                             aria-expanded={showDomainDropdown}
                             aria-haspopup="listbox"
                           >
@@ -320,7 +321,7 @@ export default function RegisterPage() {
                           )}
                         </>
                       ) : (
-                        <div className="flex items-center h-11 px-3 text-sm font-medium text-muted-foreground select-none">
+                        <div className="flex items-center self-stretch px-3 text-sm font-medium text-muted-foreground select-none">
                           @{selectedDomain || domainOptions[0] || 'localhost'}
                         </div>
                       )}

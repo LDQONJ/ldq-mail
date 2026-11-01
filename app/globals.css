@@ -1315,18 +1315,20 @@ optgroup {
   outline-offset: var(--focus-ring-offset, 2px) !important;
 }
 
-.composite-input > input,
-.composite-input > input:focus,
-.composite-input > input:focus-visible,
-.composite-input .composite-input-field,
-.composite-input .composite-input-field:focus,
-.composite-input .composite-input-field:focus-visible {
+:not(#_) .composite-input input:focus,
+:not(#_) .composite-input input:focus-visible,
+:not(#_) .composite-input .composite-input-field:focus,
+:not(#_) .composite-input .composite-input-field:focus-visible,
+:not(#_) .composite-input button[aria-haspopup="listbox"]:focus,
+:not(#_) .composite-input button[aria-haspopup="listbox"]:focus-visible,
+:not(#_):root[data-focus-always="on"] .composite-input input:focus,
+:not(#_):root[data-focus-always="on"] .composite-input .composite-input-field:focus,
+:not(#_):root[data-focus-always="on"] .composite-input button[aria-haspopup="listbox"]:focus,
+#username:focus,
+#username:focus-visible,
+#register-username:focus,
+#register-username:focus-visible {
   outline: none !important;
   outline-offset: 0 !important;
-}
-
-.composite-input button[aria-haspopup="listbox"]:focus,
-.composite-input button[aria-haspopup="listbox"]:focus-visible {
-  outline: none !important;
-  outline-offset: 0 !important;
+  box-shadow: none !important;
 }

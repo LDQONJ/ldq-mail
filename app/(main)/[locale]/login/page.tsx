@@ -1630,7 +1630,7 @@ function LoginPageContent() {
                             aria-describedby={[credentialsBlamed ? errorId : null, suggestionsOpen ? suggestionsHintId : null].filter(Boolean).join(" ") || undefined}
                           />
                           <div className="h-5 w-[1px] bg-border/80 flex-shrink-0" />
-                          <div className="relative flex items-center flex-shrink-0" ref={domainDropdownRef}>
+                          <div className="relative flex items-center self-stretch flex-shrink-0" ref={domainDropdownRef}>
                             {domainOptions.length > 1 ? (
                               <>
                                 <button
@@ -1639,7 +1639,7 @@ function LoginPageContent() {
                                     setShowDomainDropdown((prev) => !prev);
                                     setShowSuggestions(false);
                                   }}
-                                  className="flex items-center gap-1.5 h-11 px-3 bg-transparent hover:bg-muted/60 text-sm font-medium text-foreground rounded-r-xl transition-colors cursor-pointer select-none"
+                                  className="flex items-center gap-1.5 self-stretch px-3 bg-transparent hover:bg-muted/60 text-sm font-medium text-foreground rounded-r-xl transition-colors cursor-pointer select-none"
                                   aria-expanded={showDomainDropdown}
                                   aria-haspopup="listbox"
                                 >
@@ -1680,7 +1680,7 @@ function LoginPageContent() {
                                 )}
                               </>
                             ) : (
-                              <div className="flex items-center h-11 px-3 text-sm font-medium text-muted-foreground select-none">
+                              <div className="flex items-center self-stretch px-3 text-sm font-medium text-muted-foreground select-none">
                                 @{selectedDomain || domainOptions[0]?.domain}
                               </div>
                             )}

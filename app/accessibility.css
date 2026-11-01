@@ -134,6 +134,26 @@
 :is([role="option"], [role="row"], [role="treeitem"], [role="gridcell"], [role="menuitem"], [role="menuitemradio"], [role="menuitemcheckbox"], [role="tab"], .focus-inset):focus-visible {
   outline-offset: calc(var(--focus-ring-width) * -1) !important;
 }
+/* Composite controls (e.g. login and register composite email inputs):
+   the composite container carries the focus outline for the compound widget,
+   so the nested input and domain trigger button suppress their own inner outline. */
+:not(#_) .composite-input input:focus,
+:not(#_) .composite-input input:focus-visible,
+:not(#_) .composite-input .composite-input-field:focus,
+:not(#_) .composite-input .composite-input-field:focus-visible,
+:not(#_) .composite-input button[aria-haspopup="listbox"]:focus,
+:not(#_) .composite-input button[aria-haspopup="listbox"]:focus-visible,
+:not(#_):root[data-focus-always="on"] .composite-input input:focus,
+:not(#_):root[data-focus-always="on"] .composite-input .composite-input-field:focus,
+:not(#_):root[data-focus-always="on"] .composite-input button[aria-haspopup="listbox"]:focus,
+#username:focus,
+#username:focus-visible,
+#register-username:focus,
+#register-username:focus-visible {
+  outline: none !important;
+  outline-offset: 0 !important;
+  box-shadow: none !important;
+}
 /* The focused element scrolls clear of sticky headers and the bottom bar,
    in the page and inside the panes, which scroll on their own (scroll
    padding belongs to the scrolling box, so the root's alone did nothing
