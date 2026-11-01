@@ -1605,7 +1605,7 @@ function LoginPageContent() {
                     </label>
                     <div className="relative z-20">
                       {hasDomainOptions ? (
-                        <div className="flex items-center h-11 w-full bg-muted/40 border border-border/60 rounded-xl focus-within:bg-background focus-within:border-primary/50 transition-all duration-200">
+                        <div className={cn("composite-input flex items-center h-11 w-full bg-muted/40 border border-border/60 rounded-xl focus-within:bg-background focus-within:border-primary/50 transition-all duration-200", credentialsBlamed && "border-destructive/60")}>
                           <input
                             ref={inputRef}
                             id="username"
@@ -1614,7 +1614,7 @@ function LoginPageContent() {
                             onChange={handleUsernameChange}
                             onFocus={handleUsernameFocus}
                             onKeyDown={handleKeyDown}
-                            className="h-full px-3.5 bg-transparent border-0 rounded-l-xl shadow-none outline-none focus:outline-none focus:ring-0 focus-visible:ring-0 focus-visible:ring-offset-0 flex-1 min-w-0 text-sm text-foreground placeholder:text-muted-foreground"
+                            className="composite-input-field h-full px-3.5 bg-transparent border-0 rounded-l-xl shadow-none outline-none focus:outline-none focus:ring-0 focus-visible:ring-0 focus-visible:ring-offset-0 flex-1 min-w-0 text-sm text-foreground placeholder:text-muted-foreground"
                             placeholder={loginUsernamePlaceholder || t("username_placeholder")}
                             required={!signInWithToken}
                             autoComplete="username"

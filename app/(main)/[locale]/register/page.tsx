@@ -263,14 +263,14 @@ export default function RegisterPage() {
                     {t('email_label')}
                   </label>
                   <div className="relative z-20">
-                    <div className="flex items-center h-11 w-full bg-muted/40 border border-border/60 rounded-xl focus-within:bg-background focus-within:border-primary/50 transition-all duration-200">
+                    <div className="composite-input flex items-center h-11 w-full bg-muted/40 border border-border/60 rounded-xl focus-within:bg-background focus-within:border-primary/50 transition-all duration-200">
                       <input
                         type="text"
                         required
                         placeholder={t('username_placeholder')}
                         value={formData.username}
                         onChange={handleUsernameChange}
-                        className="h-full px-3.5 bg-transparent border-0 rounded-l-xl shadow-none outline-none focus:outline-none focus:ring-0 text-sm text-foreground placeholder:text-muted-foreground flex-1 min-w-0"
+                        className="composite-input-field h-full px-3.5 bg-transparent border-0 rounded-l-xl shadow-none outline-none focus:outline-none focus:ring-0 text-sm text-foreground placeholder:text-muted-foreground flex-1 min-w-0"
                       />
                     <div className="h-5 w-[1px] bg-border/80 flex-shrink-0" />
                     <div className="relative flex items-center flex-shrink-0" ref={domainDropdownRef}>

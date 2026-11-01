@@ -1307,3 +1307,26 @@ optgroup {
     width: var(--mv-rail-peek-w);
   }
 }
+
+/* Composite inputs (e.g. login/register username + domain dropdown) */
+.composite-input:has(:focus-visible),
+:root[data-focus-always="on"] .composite-input:focus-within {
+  outline: var(--focus-ring-width, 2px) solid var(--focus-ring-color, var(--color-ring)) !important;
+  outline-offset: var(--focus-ring-offset, 2px) !important;
+}
+
+.composite-input > input,
+.composite-input > input:focus,
+.composite-input > input:focus-visible,
+.composite-input .composite-input-field,
+.composite-input .composite-input-field:focus,
+.composite-input .composite-input-field:focus-visible {
+  outline: none !important;
+  outline-offset: 0 !important;
+}
+
+.composite-input button[aria-haspopup="listbox"]:focus,
+.composite-input button[aria-haspopup="listbox"]:focus-visible {
+  outline: none !important;
+  outline-offset: 0 !important;
+}
