@@ -13,6 +13,7 @@ import { rebaseApiUrl } from '@/lib/stalwart/jmap-api';
 import { forwardedClientHeaders, loginClientAddress } from '@/lib/auth/client-address';
 import { DisallowedUrlError } from '@/lib/security/url-guard';
 import { UPSTREAM_JSON_MAX_BYTES, UpstreamBodyTooLargeError, readJsonCapped } from '@/lib/security/capped-body';
+import { serverDevicePolicy } from '@/lib/admin/server-device-policy';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -23,6 +24,10 @@ interface ResolvedTarget {
   accountId: string;
   /** See StalwartCredentials.trusted - false routes through the guarded fetch. */
   trusted: boolean;
+  /** The login, for its device policy. */
+  serverUrl: string;
+  username: string;
+  accountName?: string;
   /**
    * Cookie slot of the login that owns the account. Handed back so a click
    * on the notification opens the message in that login: the worker knows
@@ -199,6 +204,9 @@ async function resolveTargetForAccount(
             accountId: targetAccountId,
             trusted,
             slot,
+            serverUrl: ctxServerUrl,
+            username: ctx.username,
+            accountName: ctx.accountName,
             hasTargetEmail,
             own: mailAccountId === targetAccountId,
           };
@@ -234,7 +242,7 @@ async function resolveDefaultTarget(creds: StalwartCredentials, forwarded: Recor
     ?? (session.apiUrl?.startsWith('http') ? session.apiUrl : `${creds.serverUrl}/jmap`);
   const accountId = session.primaryAccounts?.['urn:ietf:params:jmap:mail'];
   if (!apiUrl || !accountId) return null;
-  return { authHeader: creds.authHeader, apiUrl, accountId, trusted: creds.trusted };
+  return { authHeader: creds.authHeader, apiUrl, accountId, trusted: creds.trusted, serverUrl: creds.serverUrl, username: creds.username, accountName: creds.accountName };
 }
 
 /**
@@ -339,7 +347,20 @@ export async function GET(request: NextRequest) {
     }
 
     const inboxId = inboxBody.ids[0];
-    const emailProperties = ['id', 'threadId', 'from', 'subject', 'preview', 'receivedAt'];
+    // Organisation > Devices > Push without sender and subject, for this
+    // login's scopes (worked out from its own session): the message's
+    // sender, subject and text are never read, so they can't reach the
+    // notification, the push service or the lock screen. Unknown counts as on.
+    const redacted = await serverDevicePolicy({
+      serverUrl: target.serverUrl,
+      authHeader,
+      username: target.username,
+      accountName: target.accountName,
+      trusted,
+    }).then((devices) => devices.pushWithoutContent, () => true);
+    const emailProperties = redacted
+      ? ['id', 'threadId', 'receivedAt']
+      : ['id', 'threadId', 'from', 'subject', 'preview', 'receivedAt'];
 
     if (!inboxId && !requestedEmailId) {
       return NextResponse.json({
@@ -416,33 +437,46 @@ export async function GET(request: NextRequest) {
       methodResponses: [string, Record<string, unknown>, string][];
     };
 
-    const unreadTotal = (emailData.methodResponses.find(
-      ([method, , callId]) => method === 'Email/query' && callId === 'eq',
-    )?.[1] as { total?: number } | undefined)?.total ?? 0;
+    type EmailLite = {
+      id: string;
+      threadId: string;
+      from?: { name?: string | null; email?: string }[] | null;
+      subject?: string | null;
+      preview?: string | null;
+      receivedAt?: string | null;
+    };
 
-    const deliveredEmail = (emailData.methodResponses.find(
-      ([method, , callId]) => method === 'Email/get' && callId === 'delivered',
-    )?.[1] as { list?: Record<string, unknown>[] } | undefined)?.list?.[0];
+    let email: EmailLite | null = null;
+    let delivered: EmailLite | null = null;
+    let unreadTotal = 0;
+    for (const [method, body, callId] of emailData.methodResponses) {
+      if (method === 'Email/query') {
+        const query = body as { total?: number; ids?: unknown[] };
+        unreadTotal = typeof query.total === 'number' ? query.total : (query.ids?.length ?? 0);
+      }
+      if (method === 'Email/get') {
+        const list = (body as { list?: EmailLite[] }).list ?? [];
+        if (callId === 'delivered') delivered = list[0] ?? null;
+        else email = list[0] ?? null;
+      }
+    }
+    if (delivered) {
+      if (!email || email.id !== delivered.id) {
+        unreadTotal = Math.max(unreadTotal, 1);
+      }
+      email = delivered;
+    } else if (requestedEmailId) {
+      email = null;
+    }
 
-    const fallbackEmail = (emailData.methodResponses.find(
-      ([method, , callId]) => method === 'Email/get' && callId === 'eg',
-    )?.[1] as { list?: Record<string, unknown>[] } | undefined)?.list?.[0];
-
-    const rawEmail = deliveredEmail ?? fallbackEmail ?? null;
-
-    const email = rawEmail ? {
-      id: rawEmail.id,
-      threadId: rawEmail.threadId,
-      from: rawEmail.from,
-      subject: rawEmail.subject,
-      preview: typeof rawEmail.preview === 'string' ? cleanPreview(rawEmail.preview) : '',
-      receivedAt: rawEmail.receivedAt,
-    } : null;
+    if (email?.preview) email = { ...email, preview: cleanPreview(email.preview) };
+    if (redacted && email) email = { id: email.id, threadId: email.threadId, receivedAt: email.receivedAt ?? null };
 
     return NextResponse.json({
       email,
       unreadTotal,
-      slot: target.slot,
+      ...(redacted ? { redacted: true } : {}),
+      ...(target.slot !== undefined ? { slot: target.slot } : {})
     }, {
       headers: {
         'Cache-Control': 'no-store',

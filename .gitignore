@@ -17,9 +17,13 @@
 /.next/
 /out/
 .next.tar
+# Source maps CI collects for the error tracker (scripts/sourcemaps.mjs)
+/sourcemaps/
 /lite-image/
 # scripts/build-plugin-sandbox.mjs
 /public/plugin-sandbox-assets/
+# scripts/build-pst-worker.mjs
+/public/pst-worker.js
 
 # production
 /build
@@ -56,3 +60,6 @@ next-env.d.ts
 
 # Sibling repos
 /repos/
+
+# Kubernetes reference manifests: the secrets users fill in
+deploy/kubernetes/base/secrets.env

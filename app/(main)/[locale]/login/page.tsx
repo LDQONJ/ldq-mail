@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { IconButton } from "@/components/ui/icon-button";
 import { Input } from "@/components/ui/input";
 import { useAuthStore, consumeSignedOut, SESSION_EXPIRED_DRAFTS_UNSAVED_KEY } from "@/stores/auth-store";
+import { consumeLost } from "@/lib/offline/lost";
 import { useAccountStore } from "@/stores/account-store";
 import { useThemeStore } from "@/stores/theme-store";
 import { usePolicyStore } from "@/stores/policy-store";
@@ -21,6 +22,7 @@ import { AlertCircle, Loader2, X, Info, Eye, EyeOff, LogIn, Sun, Moon, Monitor, 
 import { type OAuthMetadata } from "@/lib/oauth/discovery";
 import { generateCodeVerifier, generateCodeChallenge, generateState } from "@/lib/oauth/pkce";
 import { DEFAULT_OAUTH_SCOPES, withProviderDataScopes } from "@/lib/oauth/scopes";
+import { addOauthResource } from "@/lib/oauth/resource";
 import { useUpdateStore, selectBanner } from "@/stores/update-store";
 import { offersOwnOAuth, type PublicJmapServerEntry } from "@/lib/admin/jmap-servers";
 import { IS_LITE, getLiteInjectedClientId } from "@/lib/lite";
@@ -34,9 +36,12 @@ import {
 } from "@/lib/auth/lite-oauth";
 import { toAsciiDomain } from "@/lib/idn";
 import { usePrefetchMailView } from "@/hooks/use-prefetch-mail-view";
-import { buildMobileHandoffUrl, mobileHandoffTarget, signedInLoginAction } from "@/lib/auth/mobile-handoff";
+import { buildMobileHandoffUrl, mobileCodeChallenge, mobileHandoffTarget, signedInLoginAction } from "@/lib/auth/mobile-handoff";
+import { requestMobileHandoffCodeUrl } from "@/lib/auth/mobile-handoff-client";
 import { MobileHandoffConsent } from "@/components/auth/mobile-handoff-consent";
 import { HelpLinks } from "@/components/layout/help-links";
+import { LoginSkeleton } from "@/components/boot-skeleton/login-skeleton";
+import { Block } from "@/components/boot-skeleton/kit";
 import { consumeSessionEnd, type SessionEndReason } from "@/lib/session-policy/sign-out-reason";
 
 /** The domain of a complete address (`user@example.com`), or '' while it is still being typed. */
@@ -182,6 +187,7 @@ function LoginPageContent() {
   const router = useRouter();
   const t = useTranslations("login");
   const tSessionLimits = useTranslations("session_limits");
+  const tOffline = useTranslations("offline");
   const tTheme = useTranslations("settings.appearance.theme");
   const params = useParams();
   const searchParams = useSearchParams();
@@ -194,14 +200,29 @@ function LoginPageContent() {
   // Only the app's own callback link is a handoff target, and nothing is
   // handed over before the user confirms it (lib/auth/mobile-handoff.ts).
   const rawMobileState = searchParams.get("mobile_state") ?? "";
-  const mobileRedirectUri = mobileHandoffTarget(searchParams.get("mobile_redirect_uri"));
+  // App builds that send a PKCE challenge get a one-time code in the link
+  // instead of the sign-in (bulwarkmail.org/docs/development/mobile-handoff). A malformed challenge
+  // makes this no hand-off at all: falling back to the fragment would put
+  // the password in the link the app asked to keep it out of. Lite has no
+  // server to park the sign-in on and keeps handing over in the fragment.
+  const rawMobileCodeChallenge = IS_LITE ? "" : searchParams.get("mobile_code_challenge") ?? "";
+  const mobileChallenge = mobileCodeChallenge(rawMobileCodeChallenge);
+  const mobileRedirectUri = rawMobileCodeChallenge && !mobileChallenge
+    ? ""
+    : mobileHandoffTarget(searchParams.get("mobile_redirect_uri"));
   const mobileState = mobileRedirectUri ? rawMobileState : "";
   const isMobileHandoff = Boolean(mobileRedirectUri);
-  const [pendingHandoff, setPendingHandoff] = useState<{ url: string; username: string } | null>(null);
+  const [pendingHandoff, setPendingHandoff] = useState<{
+    url: string | null;
+    resolveUrl?: () => Promise<string | null>;
+    username: string;
+  } | null>(null);
+  // Parking the sign-in for the app failed (code hand-off only).
+  const [handoffError, setHandoffError] = useState<string | null>(null);
   usePrefetchMailView(!isMobileHandoff);
   const { login, loginWithToken, loginDemo, isLoading, error, clearError, isAuthenticated } = useAuthStore();
   const { theme, setTheme, initializeTheme } = useThemeStore(useShallow((s) => ({ theme: s.theme, setTheme: s.setTheme, initializeTheme: s.initializeTheme })));
-  const { appName, jmapServerUrl: configuredServerUrl, oauthEnabled, oauthOnly, oauthClientId: globalOauthClientId, oauthIssuerUrl: globalOauthIssuerUrl, oauthScopes, rememberMeEnabled, devMode, demoMode, loginLogoLightUrl, loginLogoDarkUrl, loginCompanyName, loginImprintUrl, loginPrivacyPolicyUrl, loginWebsiteUrl, loginUsernamePlaceholder, loginLogoMaxHeight, loginLogoMaxWidth, loginShowHeading, loginShowSubtitle, loginShowTotp, loginShowTokenLogin, loginShowRememberMe, loginShowVersion, isLoading: configLoading, error: configError, autoSsoEnabled, embeddedMode: _embeddedMode, allowCustomJmapEndpoint, jmapServers, jmapServerAutoPickByDomain } = useConfig();
+  const { appName, jmapServerUrl: configuredServerUrl, oauthEnabled, oauthOnly, oauthClientId: globalOauthClientId, oauthIssuerUrl: globalOauthIssuerUrl, oauthScopes, oauthResource, rememberMeEnabled, devMode, demoMode, loginLogoLightUrl, loginLogoDarkUrl, loginCompanyName, loginImprintUrl, loginPrivacyPolicyUrl, loginWebsiteUrl, loginUsernamePlaceholder, loginLogoMaxHeight, loginLogoMaxWidth, loginShowHeading, loginShowSubtitle, loginShowTotp, loginShowTokenLogin, loginShowRememberMe, loginShowVersion, isLoading: configLoading, error: configError, autoSsoEnabled, embeddedMode: _embeddedMode, allowCustomJmapEndpoint, jmapServers, jmapServerAutoPickByDomain } = useConfig();
   const resolvedTheme = useThemeStore((s) => s.resolvedTheme);
   const colorModeLocked = usePolicyStore((s) => s.getColorModePolicy().locked);
 
@@ -311,6 +332,11 @@ function LoginPageContent() {
   const [sessionExpired, setSessionExpired] = useState(false);
   // Signed out by the organisation's idle timeout or maximum session length.
   const [sessionEnd, setSessionEnd] = useState<SessionEndReason | null>(null);
+  // Offline outbox messages a sign-out deleted unsent (#523), named once.
+  const [outboxLost, setOutboxLost] = useState<string[]>([]);
+  useEffect(() => {
+    setOutboxLost(consumeLost());
+  }, []);
   const [expiredDraftsUnsaved, setExpiredDraftsUnsaved] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [shakeError, setShakeError] = useState(false);
@@ -325,6 +351,8 @@ function LoginPageContent() {
   const [oauthLoading, setOauthLoading] = useState(false);
   const [demoLoading, setDemoLoading] = useState(false);
 
+  // The auth store's error, else a failed hand-off to the app.
+  const shownError = error || handoffError;
   // The error box and the recent-accounts list, tied to the fields they
   // belong to so a screen reader reads them with the field.
   const formId = useId();
@@ -510,12 +538,28 @@ function LoginPageContent() {
     const payload = mobileHandoffPayloadRef.current;
     if (!payload) return;
     mobileHandoffPayloadRef.current = null;
+    setHandoffError(null);
+    if (mobileChallenge) {
+      // The app gets a one-time code: on confirmation the sign-in is parked
+      // on the server, and its 60 seconds start then.
+      setPendingHandoff({
+        url: null,
+        resolveUrl: () => requestMobileHandoffCodeUrl({
+          target: mobileRedirectUri,
+          challenge: mobileChallenge,
+          state: mobileState,
+          payload,
+        }),
+        username: payload.username,
+      });
+      return;
+    }
     // Shown to the user first; the navigation happens on their confirmation.
     setPendingHandoff({
       url: buildMobileHandoffUrl(mobileRedirectUri, { flow: "password", ...payload, state: mobileState }),
       username: payload.username,
     });
-  }, [mobileRedirectUri, mobileState]);
+  }, [mobileRedirectUri, mobileState, mobileChallenge]);
 
   useEffect(() => {
     if (!isAuthenticated) return;
@@ -549,6 +593,7 @@ function LoginPageContent() {
 
   useEffect(() => {
     clearError();
+    setHandoffError(null);
   }, [formData, clearError]);
 
   useEffect(() => {
@@ -653,7 +698,11 @@ function LoginPageContent() {
           server_id: selectedServer?.id,
           remember: persistProviderSession,
           ...(isMobileHandoff
-            ? { mobile_redirect_uri: mobileRedirectUri, mobile_state: mobileState }
+            ? {
+                mobile_redirect_uri: mobileRedirectUri,
+                mobile_state: mobileState,
+                ...(mobileChallenge ? { mobile_code_challenge: mobileChallenge } : {}),
+              }
             : {}),
         }),
       });
@@ -681,7 +730,7 @@ function LoginPageContent() {
     } catch {
       setOauthLoading(false);
     }
-  }, [params.locale, selectedServer?.id, persistProviderSession, isMobileHandoff, mobileRedirectUri, mobileState]);
+  }, [params.locale, selectedServer?.id, persistProviderSession, isMobileHandoff, mobileRedirectUri, mobileState, mobileChallenge]);
 
   useEffect(() => {
     // After signing out, show the login page rather than signing straight
@@ -713,15 +762,10 @@ function LoginPageContent() {
     setShowThemeMenu(false);
   }, [setTheme]);
 
+  // The server HTML, and every visit until /api/config answers: the card's
+  // shape, the same one signed-out visitors of the app pages get first.
   if (configLoading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background to-muted/30">
-        <div className="w-full max-w-sm mx-auto px-4 text-center" role="status">
-          <Loader2 className="w-8 h-8 animate-spin text-primary mx-auto" />
-          <span className="sr-only">{t("loading")}</span>
-        </div>
-      </div>
-    );
+    return <LoginSkeleton label={t("loading")} />;
   }
 
   if (configError) {
@@ -1016,6 +1060,8 @@ function LoginPageContent() {
     authUrl.searchParams.set("state", state);
     authUrl.searchParams.set("code_challenge", challenge);
     authUrl.searchParams.set("code_challenge_method", "S256");
+    // RFC 8707 resource for the global provider only (#1461).
+    addOauthResource(authUrl, oauthResource, Boolean(server));
     if (isAddAccountMode) {
       authUrl.searchParams.set("prompt", "select_account");
     }
@@ -1357,10 +1403,15 @@ function LoginPageContent() {
     <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-background via-muted/10 to-muted/30 relative px-4">
       <MobileHandoffConsent
         url={pendingHandoff?.url ?? null}
+        resolveUrl={pendingHandoff?.resolveUrl ?? null}
         username={pendingHandoff?.username ?? ""}
         onCancel={() => {
           setPendingHandoff(null);
           router.push('/');
+        }}
+        onError={() => {
+          setPendingHandoff(null);
+          setHandoffError("server_error");
         }}
       />
       {/* Theme toggle - top right, dropdown style; hidden while the theme policy locks the mode (#1280) */}
@@ -1445,6 +1496,12 @@ function LoginPageContent() {
 
           {/* Form section */}
           <div className="px-8 pb-8">
+            {outboxLost.length > 0 && (
+              <div className="mb-5 p-3 rounded-xl border border-warning/30 bg-warning/5 text-sm text-foreground [overflow-wrap:anywhere]" role="status" data-testid="session-outbox-lost">
+                {tOffline("signout.lost", { subjects: outboxLost.map((s) => s || tOffline("outbox.no_subject")).join(", ") })}
+              </div>
+            )}
+
             {/* Session Expired Banner */}
             {sessionExpired && (
               <div
@@ -1480,27 +1537,27 @@ function LoginPageContent() {
 
             {/* Error Message. Asking for the code is the next step of a
                 sign-in that worked so far, not a failure (#1422). */}
-            {error && (
+            {shownError && (
               <div
                 className={cn(
                   "mb-5 p-3 rounded-xl border flex items-start gap-3",
-                  error === 'totp_required' ? "border-info/20 bg-info/5" : "border-destructive/20 bg-destructive/5",
+                  shownError === 'totp_required' ? "border-info/20 bg-info/5" : "border-destructive/20 bg-destructive/5",
                   shakeError && "animate-shake"
                 )}
                 data-testid="login-error"
-                role={error === 'totp_required' ? "status" : "alert"}
+                role={shownError === 'totp_required' ? "status" : "alert"}
               >
                 <div className={cn(
                   "w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 shadow-sm",
-                  error === 'totp_required' ? "bg-info/15 text-info" : "bg-destructive/15 text-destructive"
+                  shownError === 'totp_required' ? "bg-info/15 text-info" : "bg-destructive/15 text-destructive"
                 )}>
-                  {error === 'totp_required' ? <Info className="w-5 h-5" aria-hidden="true" /> : <AlertCircle className="w-5 h-5" aria-hidden="true" />}
+                  {shownError === 'totp_required' ? <Info className="w-5 h-5" aria-hidden="true" /> : <AlertCircle className="w-5 h-5" aria-hidden="true" />}
                 </div>
                 <div className="flex-1 min-w-0 self-center">
-                  <p id={errorId} className={cn("text-sm leading-relaxed", error === 'totp_required' ? "text-info" : "text-destructive")}>
-                    {error === 'invalid_credentials' && showTotpField && totpCode
+                  <p id={errorId} className={cn("text-sm leading-relaxed", shownError === 'totp_required' ? "text-info" : "text-destructive")}>
+                    {shownError === 'invalid_credentials' && showTotpField && totpCode
                       ? t('error.totp_invalid')
-                      : t(`error.${error}`) || t("error.generic")}
+                      : t(`error.${shownError}`) || t("error.generic")}
                   </p>
                 </div>
               </div>
@@ -1567,9 +1624,8 @@ function LoginPageContent() {
                     </div>
                   </div>
                 ) : (
-                  <div className="flex justify-center py-4">
-                    <Loader2 className="w-6 h-6 animate-spin text-primary" />
-                  </div>
+                  // Where the sign-in button goes once the provider answers.
+                  <Block className="w-full h-11 rounded-xl" />
                 )}
               </div>
             ) : (
@@ -2055,8 +2111,9 @@ function LoginPageContent() {
 // useSearchParams() above must sit under a Suspense boundary for the route to
 // prerender (the static Lite build); at runtime the boundary never suspends.
 export default function LoginPage() {
+  const t = useTranslations("login");
   return (
-    <Suspense fallback={null}>
+    <Suspense fallback={<LoginSkeleton label={t("loading")} />}>
       <LoginPageContent />
     </Suspense>
   );

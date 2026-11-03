@@ -8,6 +8,7 @@ import { IS_LITE, IS_LITE_STALWART, LITE_CONFIG_PATH, withLiteBuildId } from '@/
 import { applyLiteConfig, liteStalwartDefaults } from '@/lib/lite-config';
 import { isConfigData } from '@/lib/config-validation';
 import { setNoThirdPartyTraffic } from '@/lib/third-party-mode';
+import { configureErrorReporting, type ClientSettings } from '@/lib/error-reporting/client';
 
 export interface ConfigData {
   appName: string;
@@ -17,6 +18,7 @@ export interface ConfigData {
   oauthClientId: string;
   oauthIssuerUrl: string;
   oauthScopes: string;
+  oauthResource: string;
   rememberMeEnabled: boolean;
   settingsSyncEnabled: boolean;
   stalwartFeaturesEnabled: boolean;
@@ -58,6 +60,8 @@ export interface ConfigData {
   noThirdPartyTraffic: boolean;
   /** Lite only: whether sign-out revokes the refresh token (#1388). The server build decides in its token route. */
   oauthRevokeOnSignOut?: boolean;
+  /** Server build only; Lite reads it from policy.json (stores/policy-store.ts). */
+  errorReporting?: ClientSettings;
 }
 
 interface AppConfig extends ConfigData {
@@ -143,6 +147,8 @@ export async function fetchConfig(): Promise<ConfigData> {
     .then((data) => {
       configCache = data;
       setNoThirdPartyTraffic(data.noThirdPartyTraffic === true);
+      // Lite configures error reporting from policy.json instead.
+      if (!IS_LITE) configureErrorReporting(data.errorReporting ?? null);
       // Fetch admin policy alongside config (non-blocking)
       usePolicyStore.getState().fetchPolicy();
       return data;
@@ -171,6 +177,7 @@ export function useConfig(): AppConfig {
     oauthClientId: configCache?.oauthClientId || '',
     oauthIssuerUrl: configCache?.oauthIssuerUrl || '',
     oauthScopes: configCache?.oauthScopes || '',
+    oauthResource: configCache?.oauthResource || '',
     rememberMeEnabled: configCache?.rememberMeEnabled || false,
     settingsSyncEnabled: configCache?.settingsSyncEnabled || false,
     stalwartFeaturesEnabled: configCache?.stalwartFeaturesEnabled ?? true,
@@ -223,6 +230,7 @@ export function useConfig(): AppConfig {
         oauthClientId: configCache.oauthClientId,
         oauthIssuerUrl: configCache.oauthIssuerUrl,
         oauthScopes: configCache.oauthScopes,
+        oauthResource: configCache.oauthResource,
         rememberMeEnabled: configCache.rememberMeEnabled,
         settingsSyncEnabled: configCache.settingsSyncEnabled,
         stalwartFeaturesEnabled: configCache.stalwartFeaturesEnabled,
@@ -276,6 +284,7 @@ export function useConfig(): AppConfig {
           oauthClientId: data.oauthClientId,
           oauthIssuerUrl: data.oauthIssuerUrl,
           oauthScopes: data.oauthScopes,
+          oauthResource: data.oauthResource,
           rememberMeEnabled: data.rememberMeEnabled,
           settingsSyncEnabled: data.settingsSyncEnabled,
           stalwartFeaturesEnabled: data.stalwartFeaturesEnabled,

@@ -3,7 +3,7 @@ import { logger } from '@/lib/logger';
 import { configManager } from '@/lib/admin/config-manager';
 import { parseJmapServers, redactJmapServers } from '@/lib/admin/jmap-servers';
 import { hasSessionSecret } from '@/lib/auth/session-secret';
-import { getOauthScopes } from '@/lib/oauth/tokens';
+import { getOauthResource, getOauthScopes } from '@/lib/oauth/tokens';
 import { httpOrMailtoOrEmpty, httpUrlOrEmpty } from '@/lib/config-validation';
 import {
   matchDomainBranding,
@@ -12,6 +12,7 @@ import {
   type BrandingOverrideKey,
 } from '@/lib/admin/domain-branding';
 import { isNoThirdPartyTrafficOn } from '@/lib/admin/third-party-mode';
+import { browserErrorSettings } from '@/lib/error-reporting/settings';
 
 /**
  * Runtime configuration endpoint
@@ -66,6 +67,7 @@ export async function GET(request: NextRequest) {
       oauthClientId: configManager.get<string>('oauthClientId', ''),
       oauthIssuerUrl: configManager.get<string>('oauthIssuerUrl', ''),
       oauthScopes: getOauthScopes(),
+      oauthResource: getOauthResource(),
       rememberMeEnabled: hasSessionSecret(),
       settingsSyncEnabled: configManager.get<boolean>('settingsSyncEnabled', false) && hasSessionSecret(),
       stalwartFeaturesEnabled,
@@ -108,6 +110,9 @@ export async function GET(request: NextRequest) {
       signLanguageUrl: httpUrlOrEmpty(branded<string>('signLanguageUrl', '')),
       // Browser-side switches of lib/outgoing-hosts.ts read this (#903).
       noThirdPartyTraffic: await isNoThirdPartyTrafficOn(),
+      // Error reporting (lib/error-reporting/client.ts): off unless a DSN is
+      // set or this server counts errors. The DSN is public by design.
+      errorReporting: await browserErrorSettings(),
     },
     {
       // Runtime settings can change without new asset URLs. Prevent stale
