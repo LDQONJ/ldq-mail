@@ -84,9 +84,75 @@ export function AdminI18nProvider({ children, initialLocale }: AdminI18nProvider
       if ((m = str.match(/^Security advisory (.+) \((.+)\)$/))) return `安全通告 ${m[1]} (${m[2]})`;
       if ((m = str.match(/^Signed by the directory, key (.+)$/))) return `由扩展市场目录签名，密钥 ${m[1]}`;
       if ((m = str.match(/^Logs \((\d+)\)$/))) return `日志 (${m[1]})`;
-      if ((m = str.match(/^Built-in outside hosts \((\d+)\)$/))) return `内置外部主机 (${m[1]})`;
+      if ((m = str.match(/^Built-in outside hosts \((\d+)\)(?:,\s*all off)?$/))) return `内置外部主机 (${m[1]})${str.includes('all off') ? '，全部关闭' : ''}`;
+      if ((m = str.match(/^Move (.+) up$/))) return `上移 ${m[1]}`;
+      if ((m = str.match(/^Move (.+) down$/))) return `下移 ${m[1]}`;
+      if ((m = str.match(/^Remove (.+)$/))) return `移除 ${m[1]}`;
+      if ((m = str.match(/^Text in (.+)$/))) return `${lookupTranslation(m[1]) ?? m[1]} 文本`;
+      if ((m = str.match(/^No text in (.+) yet\.$/))) return `暂无 ${lookupTranslation(m[1]) ?? m[1]} 文本。`;
+      if ((m = str.match(/^Force (.+) on for everyone$/))) return `为所有人强制启用 ${lookupTranslation(m[1]) ?? m[1]}`;
+      if ((m = str.match(/^At most (\d+) labels\.$/))) return `最多可添加 ${m[1]} 个标签。`;
+      if ((m = str.match(/^At most (\d+) company calendars\.$/))) return `最多可添加 ${m[1]} 个企业日历。`;
+      if ((m = str.match(/^At most (\d+) replies\.$/))) return `最多可添加 ${m[1]} 个回复模板。`;
+      if ((m = str.match(/^(\d+) errors today \(UTC\), most frequent first\.$/))) return `今日（UTC）共 ${m[1]} 个错误，按频次排序。`;
+      if ((m = str.match(/^Same as Everyone \((.+)\)$/))) return `与“所有人”相同 (${lookupTranslation(m[1]) ?? m[1]})`;
+      if ((m = str.match(/^From Everyone: (.+)$/))) return `继承自“所有人”：${lookupTranslation(m[1]) ?? m[1]}`;
+      if ((m = str.match(/^Everyone: (.+)$/))) return `所有人：${lookupTranslation(m[1]) ?? m[1]}`;
+      if ((m = str.match(/^Proofreading with (.+)$/))) return `使用 ${lookupTranslation(m[1]) ?? m[1]} 进行校对`;
+      if ((m = str.match(/^Dates are written in the user['’]s language and time zone\. Stalwart takes at most 511 bytes of subject and 2047 bytes of text\.$/))) {
+        return `日期将按用户的界面语言和所在时区格式化。Stalwart 允许的主题上限为 511 字节，正文上限为 2047 字节。`;
+      }
+      if ((m = str.match(/^Users in this scope get Everyone['’]s replies and these\. A reply changed here replaces Everyone['’]s for this scope only\.$/))) {
+        return `当前作用域内的用户将获得全局“所有人”的模板以及这些专属模板。在此修改的模板仅会在当前作用域中覆盖全局模板。`;
+      }
+      if ((m = str.match(/^Changes here apply to (.+) only\. Settings this scope doesn['’]t change come from Everyone\.$/))) {
+        return `此处的更改仅适用于 ${m[1]}。当前作用域未修改的设置将继承自“所有人”。`;
+      }
       if ((m = str.match(/^"(.+)" v(.+) replaces v(.+)\. The copy kept on this server is used; the directory is not asked\.$/))) {
         return `“${m[1]}” v${m[2]} 将替换 v${m[3]}。将使用保存在此服务器上的副本，不向目录发起请求。`;
+      }
+
+      // Dynamic pattern for device policy compound descriptions: <description> <enforced>
+      for (const [suffix, suffixZh] of [
+        ['In the office editor checked by the server; elsewhere in the browser only.', '文档协同编辑器由服务端校验，其余界面由浏览器前端管控。'],
+        ['Checked by the server.', '由服务器端强制校验拦截。'],
+        ['In the browser only.', '仅在浏览器端管控。'],
+      ] as const) {
+        if (str.endsWith(suffix)) {
+          const prefix = str.slice(0, -suffix.length).trim();
+          const prefixZh = lookupTranslation(prefix);
+          if (prefixZh) {
+            return `${prefixZh} ${suffixZh}`;
+          }
+        }
+      }
+
+      if ((m = str.match(/^Version (.+) is installed\. For each switch that is on, Bulwark skips the matching part of the plugin \(its send confirm, or its banner and new-mail toast\) so nobody is warned twice; version (.+) and later step back by themselves\.$/))) {
+        return `已安装版本 ${m[1]}。对于此处开启的每个开关，Bulwark 将跳过插件对应的功能（发信确认，或横幅与新邮件提示），避免重复提醒；版本 ${m[2]} 及更高版本会自动回退关闭。`;
+      }
+      if ((m = str.match(/^Running with only the servers entered on their admin page: (.+)$/))) {
+        return `仅使用其管理设置页面中填写的服务器运行：${m[1]}`;
+      }
+      if ((m = str.match(/^Without the switch: (.+)$/))) {
+        return `未开启开关时：${m[1]}`;
+      }
+      if ((m = str.match(/^(\d+) of (\d+) enabled\. The switch turns a (?:plugin|theme) on or off for everyone\.$/))) {
+        return `已启用 ${m[1]} / ${m[2]} 个。此开关将为所有人开启或关闭。`;
+      }
+      if ((m = str.match(/^(\d+) active this week$/))) {
+        return `本周活跃 ${m[1]} 人`;
+      }
+      if ((m = str.match(/^(\d+) awaiting approval$/))) {
+        return `${m[1]} 个待审批`;
+      }
+      if ((m = str.match(/^What['’]s new in (\d+) versions$/))) {
+        return `${m[1]} 个版本的新增功能`;
+      }
+      if ((m = str.match(/^Applies, in this order: Everyone, (.+)\.$/))) {
+        return `应用顺序依次为：所有人，${m[1]}。`;
+      }
+      if ((m = str.match(/^(\d+) settings? of its own$/))) {
+        return `拥有 ${m[1]} 项独立设置`;
       }
 
       return undefined;
@@ -145,6 +211,19 @@ export function AdminI18nProvider({ children, initialLocale }: AdminI18nProvider
         el.dataset.noTranslate === "true"
       ) {
         return;
+      }
+
+      // If an element contains only text nodes (e.g. from JSX expressions `{a} text {b}`),
+      // translate the combined textContent as a whole if a translation exists.
+      if (el.children.length === 0 && el.childNodes.length > 1) {
+        const combined = el.textContent?.trim();
+        if (combined && combined.length <= 2000 && !TRANSLATED_VALUES.has(combined)) {
+          const translation = lookupTranslation(combined);
+          if (translation) {
+            el.textContent = translation;
+            return;
+          }
+        }
       }
 
       // Traverse children
