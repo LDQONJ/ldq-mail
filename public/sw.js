@@ -761,11 +761,11 @@ async function handleNotificationClick(event) {
         if (focused && "navigate" in focused && targetUrl) {
           try {
             await focused.navigate(targetUrl);
+            return focused;
           } catch (_) {
-            // Focused but not navigated still beats nothing opening at all.
+            // Navigate failed - fall through to openWindow
           }
         }
-        return focused;
       } catch (_) {
         // navigate() can reject for cross-origin or detached clients - fall
         // through and open a new window below.
@@ -917,29 +917,26 @@ function getReusableClientScore(state) {
 function buildClickUrl(data) {
   if (!data) return `${BASE_PATH}/`;
 
-  const params = new URLSearchParams();
-  if (Number.isInteger(data.slot)) params.set("slot", String(data.slot));
-  if (typeof data.accountId === "string" && data.accountId) params.set("owner", data.accountId);
-  const qs = params.toString();
-  const targetQuery = qs ? `?${qs}` : "";
-
   let base;
   if (data.kind === "email" && data.emailId) {
-    base = `${BASE_PATH}/mail/message/${encodeURIComponent(data.emailId)}${targetQuery}`;
-  } else if (data.kind === "mail-list" && Number.isInteger(data.slot)) {
-    base = `${BASE_PATH}/mail/folder/inbox${targetQuery}`;
+    base = `${BASE_PATH}/mail/message/${encodeURIComponent(data.emailId)}`;
+  } else if (data.kind === "mail-list") {
+    base = `${BASE_PATH}/mail/folder/inbox`;
   } else {
     base = `${BASE_PATH}/?openLatestUnread=1`;
   }
 
-  if (!data.accountLabel && !data.serverUrl) {
-    return new URL(base, self.location.origin).href;
+  // If any account identifier is present, route through push-redirect to ensure
+  // the active session switches seamlessly before opening the email.
+  if (data.accountLabel || data.serverUrl || Number.isInteger(data.slot) || data.accountId) {
+    const url = new URL(`${BASE_PATH}/push-redirect`, self.location.origin);
+    if (data.accountLabel) url.searchParams.set("accountLabel", data.accountLabel);
+    if (data.serverUrl) url.searchParams.set("serverUrl", data.serverUrl);
+    if (Number.isInteger(data.slot)) url.searchParams.set("slot", String(data.slot));
+    if (data.accountId) url.searchParams.set("accountId", data.accountId);
+    url.searchParams.set("to", base);
+    return url.href;
   }
 
-  const url = new URL(`${BASE_PATH}/push-redirect`, self.location.origin);
-  if (data.accountLabel) url.searchParams.set("accountLabel", data.accountLabel);
-  if (data.serverUrl) url.searchParams.set("serverUrl", data.serverUrl);
-  url.searchParams.set("to", base);
-
-  return url.href;
+  return new URL(base, self.location.origin).href;
 }
