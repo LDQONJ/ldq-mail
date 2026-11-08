@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useCallback, useMemo, useEffect } from "react";
+import { useQuietState } from "@/hooks/use-quiet-state";
 import { cn } from "@/lib/utils";
 import { ShieldAlert } from "@/components/icons";
 // Bulwark Webmail: default avatar initials are always pure white text.
@@ -240,12 +241,13 @@ function detectLightIcon(img: HTMLImageElement): boolean {
 }
 
 export function Avatar({ name, email, contactPhoto, size = "md", className, disableImages = false, disableFavicon = false, fallbackColor, senderWarning, brandDomain }: AvatarProps) {
-  const [imgError, setImgError] = useState(false);
+  const [imgError, setImgError] = useQuietState(false);
   const [isLightIcon, setIsLightIcon] = useState<boolean>(false);
   // The BIMI logo of this domain answered with no logo (or didn't load).
-  const [failedBrand, setFailedBrand] = useState<string | null>(null);
-  const [pluginAvatarUrl, setPluginAvatarUrl] = useState<string | null>(null);
-  const [pluginAvatarFailed, setPluginAvatarFailed] = useState(false);
+  const [failedBrand, setFailedBrand] = useQuietState<string | null>(null);
+  const [pluginAvatarUrl, setPluginAvatarUrl] = useQuietState<string | null>(null);
+  // Reset for every sender shown: quiet, so an avatar with nothing to reset is not drawn again.
+  const [pluginAvatarFailed, setPluginAvatarFailed] = useQuietState(false);
   // A contact photo that downloaded but would not render (an SVG made inert,
   // corrupt bytes) falls through to the next source instead of an empty circle.
   const [failedContactPhoto, setFailedContactPhoto] = useState<string | null>(null);
@@ -267,7 +269,7 @@ export function Avatar({ name, email, contactPhoto, size = "md", className, disa
       .then((url) => { if (!cancelled) setPluginAvatarUrl(url); })
       .catch(() => { if (!cancelled) setPluginAvatarFailed(true); });
     return () => { cancelled = true; };
-  }, [email, name]);
+  }, [email, name, setPluginAvatarFailed, setPluginAvatarUrl]);
 
   // The caller's contact photo, else the photo of a contact with this address.
   const photoRef = useMemo(() => {
@@ -283,7 +285,7 @@ export function Avatar({ name, email, contactPhoto, size = "md", className, disa
   useEffect(() => {
     setImgError(false);
     setFailedBrand(null);
-  }, [faviconRefreshedAt]);
+  }, [faviconRefreshedAt, setFailedBrand, setImgError]);
 
   const domain = email?.split("@")[1]?.toLowerCase();
   // Use root domain for favicon lookups (e.g. newsletter.example.com → example.com)
@@ -382,7 +384,7 @@ export function Avatar({ name, email, contactPhoto, size = "md", className, disa
     if (faviconDomain && !resolvedContactPhoto && !pluginAvatar && !customAvatar && !profilePic) {
       failedFaviconDomains.add(faviconDomain);
     }
-  }, [imgSrc, pluginAvatar, faviconDomain, resolvedContactPhoto, brandSrc, brandDomain, customAvatar, profilePic]);
+  }, [imgSrc, pluginAvatar, faviconDomain, resolvedContactPhoto, brandSrc, brandDomain, customAvatar, profilePic, setFailedBrand, setImgError, setPluginAvatarFailed]);
 
   const initialsBackground = fallbackColor ?? getBackgroundColor();
 

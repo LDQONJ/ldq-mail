@@ -3,7 +3,9 @@ import { NextRequest, NextResponse } from 'next/server';
 import { logger } from '@/lib/logger';
 import { cleanPreview } from '@/lib/utils';
 import { MAX_ACCOUNT_SLOTS } from '@/lib/account-utils';
-import { readStalwartAuthContextFromStore } from '@/lib/stalwart/auth-context';
+import { readPushAuthContext } from '@/lib/stalwart/push-auth-context';
+import { renewPushAuthHeader } from '@/lib/stalwart/push-token-renewal';
+import type { StalwartAuthContext } from '@/lib/stalwart/auth-context';
 import {
   getStalwartCredentials,
   type StalwartCredentials,
@@ -14,6 +16,7 @@ import { forwardedClientHeaders, loginClientAddress } from '@/lib/auth/client-ad
 import { DisallowedUrlError } from '@/lib/security/url-guard';
 import { UPSTREAM_JSON_MAX_BYTES, UpstreamBodyTooLargeError, readJsonCapped } from '@/lib/security/capped-body';
 import { serverDevicePolicy } from '@/lib/admin/server-device-policy';
+import { loginFingerprint } from '@/lib/pwa-notify/login-fingerprint';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -36,153 +39,113 @@ interface ResolvedTarget {
   slot?: number;
 }
 
-interface ResolveTargetOptions {
-  accountId?: string | null;
-  accountLabel?: string | null;
-  serverUrl?: string | null;
-  emailId?: string | null;
-  forwarded: Record<string, string>;
+type CookieStore = Awaited<ReturnType<typeof cookies>>;
+
+/**
+ * The login's JMAP session, and the Authorization header that opened it. A
+ * token sign-in's access token expires within the hour, and with no tab open
+ * nothing renews it: the mail server turns it away and the push gets the
+ * worker's generic notification (#1509). Renewed here then, once, when
+ * `mayRenew` says this is the login the push is for.
+ */
+async function openSession(
+  cookieStore: CookieStore,
+  slot: number,
+  ctx: StalwartAuthContext,
+  serverUrl: string,
+  trusted: boolean,
+  forwarded: Record<string, string>,
+  basePath: string | undefined,
+  mayRenew: boolean,
+): Promise<{ res: Response; authHeader: string }> {
+  const get = (authHeader: string) => fetchJmapServer(`${serverUrl}/.well-known/jmap`, {
+    headers: { Authorization: authHeader, ...forwarded },
+  }, trusted);
+  const res = await get(ctx.authHeader);
+  if (res.status !== 401 || !mayRenew) return { res, authHeader: ctx.authHeader };
+  const renewed = await renewPushAuthHeader(cookieStore, slot, ctx, basePath);
+  if (!renewed) return { res, authHeader: ctx.authHeader };
+  return { res: await get(renewed), authHeader: renewed };
 }
 
-interface ProbeResult extends ResolvedTarget {
-  hasTargetEmail?: boolean;
+interface ProbeResult {
+  target: ResolvedTarget;
   own: boolean;
+  hasTargetEmail?: boolean;
 }
 
-// When the SW passes ?serverUrl=, ?accountId=, or ?accountLabel=, we need the slot whose
-// JMAP session owns that account - not just "the first signed-in slot", which is
-// what getStalwartCredentials() defaults to. Probe candidate sessions in
-// parallel and return the best match.
+// When the SW passes ?serverUrl=, ?accountId=, or ?login=/?accountLabel=, we need the slot whose
+// JMAP session owns that account - not just "the first signed-in slot", which is what
+// getStalwartCredentials() defaults to. Probe candidate sessions in parallel and return the best match.
 async function resolveTargetForAccount(
-  options: ResolveTargetOptions,
+  accountId: string,
+  login: string | null,
+  forwarded: Record<string, string>,
+  basePath: string | undefined,
+  serverUrlParam?: string | null,
+  requestedEmailId?: string | null,
 ): Promise<ResolvedTarget | 'ambiguous' | null> {
-  const { accountId, accountLabel, serverUrl, emailId, forwarded } = options;
   const cookieStore = await cookies();
-  const probes: Promise<ProbeResult | null>[] = [];
+  const contexts: { slot: number; ctx: StalwartAuthContext }[] = [];
+  for (let slot = 0; slot < MAX_ACCOUNT_SLOTS; slot++) {
+    const ctx = await readPushAuthContext(cookieStore, slot);
+    if (ctx) contexts.push({ slot, ctx });
+  }
 
-  logger.info('push-preview: resolveTargetForAccount', {
-    accountId, accountLabel, serverUrl, emailId,
+  const named = login?.toLowerCase().trim();
+  const normalizedServerParam = serverUrlParam ? serverUrlParam.replace(/\/+$/, '').toLowerCase() : null;
+
+  // Filter candidate contexts by serverUrl if provided (multi-server support)
+  const candidateContexts = contexts.filter(({ ctx }) => {
+    if (!normalizedServerParam) return true;
+    const ctxServer = ctx.serverUrl.replace(/\/+$/, '').toLowerCase();
+    if (ctxServer === normalizedServerParam) return true;
+    try {
+      const u1 = new URL(ctxServer).hostname.toLowerCase();
+      const u2 = new URL(normalizedServerParam.startsWith('http') ? normalizedServerParam : `https://${normalizedServerParam}`).hostname.toLowerCase();
+      return u1 === u2;
+    } catch {
+      return false;
+    }
   });
 
-  for (let slot = 0; slot < MAX_ACCOUNT_SLOTS; slot++) {
-    const ctx = readStalwartAuthContextFromStore(cookieStore, slot);
-    if (!ctx) {
-      if (slot < 5) logger.info('push-preview: slot empty', { slot });
-      continue;
-    }
+  const mayRenew = (ctx: StalwartAuthContext) => (named
+    ? ctx.username.toLowerCase() === named || ctx.accountName?.toLowerCase() === named || (named.includes('@') && named.split('@')[0] === ctx.username.toLowerCase())
+    : candidateContexts.length === 1);
 
-    logger.info('push-preview: slot found', {
-      slot,
-      ctxServerUrl: ctx.serverUrl,
-      ctxUsername: ctx.username,
-    });
-
-    const ctxServerUrl = ctx.serverUrl.replace(/\/+$/, '');
-    const ctxUsername = ctx.username.toLowerCase().trim();
-
-    // 1. Match by serverUrl if provided (highest precision across separate Stalwart instances)
-    if (serverUrl) {
-      const normalizedServer = serverUrl.replace(/\/+$/, '').toLowerCase();
-      let serverMatch = ctxServerUrl.toLowerCase() === normalizedServer;
-      if (!serverMatch) {
-        try {
-          const u1 = new URL(ctxServerUrl).hostname.toLowerCase();
-          const u2 = new URL(normalizedServer.startsWith('http') ? normalizedServer : `https://${normalizedServer}`).hostname.toLowerCase();
-          serverMatch = u1 === u2;
-        } catch {
-          // ignore
-        }
-      }
-      if (!serverMatch) continue;
-    }
-
-    // 2. If accountLabel is provided, match by accountLabel domain or full username
-    if (accountLabel) {
-      const normalizedLabel = accountLabel.toLowerCase().trim();
-      const labelUser = normalizedLabel.includes('@') ? normalizedLabel.split('@')[0] : normalizedLabel;
-      const labelDomain = normalizedLabel.includes('@') ? normalizedLabel.split('@')[1] : '';
-
-      const ctxUser = ctxUsername.includes('@') ? ctxUsername.split('@')[0] : ctxUsername;
-      const ctxDomain = ctxUsername.includes('@') ? ctxUsername.split('@')[1] : '';
-      let ctxServerHostname = '';
-      try {
-        ctxServerHostname = new URL(ctxServerUrl).hostname.toLowerCase();
-      } catch {
-        ctxServerHostname = ctxServerUrl.toLowerCase();
-      }
-
-      if (labelDomain) {
-        // Domain was specified: it MUST match either the context domain or server hostname
-        const domainMatches = (ctxDomain && ctxDomain === labelDomain) || ctxServerHostname.includes(labelDomain);
-        if (!domainMatches) continue;
-      } else if (!serverUrl) {
-        // No domain in accountLabel AND no serverUrl from relay → legacy registration.
-        // Cannot safely distinguish between slots that share the same username (e.g. "admin"
-        // on ldqmail.com vs lidaqian.com). Skip ALL slots to avoid cross-account leaks.
-        // The SW will show a safe generic "New mail" notification instead.
-        logger.info('push-preview: skipping slot (ambiguous legacy label)', {
-          slot, labelUser, ctxServerUrl,
-        });
-        continue;
-      }
-
-      // Username part must match
-      if (labelUser && labelUser !== ctxUser && ctxUsername !== normalizedLabel) {
-        continue;
-      }
-    }
-
+  const probes: Promise<ProbeResult | null>[] = [];
+  for (const { slot, ctx } of candidateContexts) {
+    const serverUrl = ctx.serverUrl.replace(/\/+$/, '');
     probes.push(
       (async (): Promise<ProbeResult | null> => {
         try {
-          const trusted = await isTrustedJmapServerUrl(ctxServerUrl);
-          const res = await fetchJmapServer(`${ctxServerUrl}/.well-known/jmap`, {
-            headers: { Authorization: ctx.authHeader, ...forwarded },
-          }, trusted);
-
-          if (!res.ok) {
-            logger.warn('push-preview: probe well-known failed', { slot, ctxServerUrl, status: res.status });
-            return null;
-          }
+          const trusted = await isTrustedJmapServerUrl(serverUrl);
+          const { res, authHeader } = await openSession(cookieStore, slot, ctx, serverUrl, trusted, forwarded, basePath, mayRenew(ctx));
+          if (!res.ok) return null;
           const session = (await readJsonCapped(res, UPSTREAM_JSON_MAX_BYTES)) as {
             apiUrl?: string;
             primaryAccounts?: Record<string, string>;
             accounts?: Record<string, unknown>;
           };
           const mailAccountId = session.primaryAccounts?.['urn:ietf:params:jmap:mail'];
-          if (!mailAccountId) {
-            logger.warn('push-preview: probe no mail account in session', { slot, ctxServerUrl });
-            return null;
-          }
-
-          // Shared and group mailboxes are never the primary mail account -
-          // they only appear in session.accounts. Accept those too, or the
-          // SW falls back to a generic "New mail" notification for them. (#839)
-          const isSharedAccount =
-            Boolean(accountId && accountId !== mailAccountId &&
-            Object.prototype.hasOwnProperty.call(session.accounts ?? {}, accountId));
-          if (accountId && mailAccountId !== accountId && !isSharedAccount) {
-            return null;
-          }
+          if (!mailAccountId) return null;
+          const isSharedAccount = Boolean(accountId && accountId !== mailAccountId && Object.prototype.hasOwnProperty.call(session.accounts ?? {}, accountId));
+          if (accountId && mailAccountId !== accountId && !isSharedAccount) return null;
           const targetAccountId: string = (isSharedAccount && accountId) ? accountId : mailAccountId;
-
-          const absoluteApiUrl = rebaseApiUrl(session, ctxServerUrl)
-            ?? (session.apiUrl?.startsWith('http') ? session.apiUrl : `${ctxServerUrl}/jmap`);
-          if (!absoluteApiUrl) {
-            logger.warn('push-preview: probe no absolute api url', { slot, ctxServerUrl });
-            return null;
-          }
+          const apiUrl = rebaseApiUrl(session, serverUrl)
+            ?? (session.apiUrl?.startsWith('http') ? session.apiUrl : `${serverUrl}/jmap`);
+          if (!apiUrl) return null;
 
           let hasTargetEmail = false;
-          if (emailId) {
+          if (requestedEmailId) {
             try {
-              const checkRes = await fetchJmapServer(absoluteApiUrl, {
+              const checkRes = await fetchJmapServer(apiUrl, {
                 method: 'POST',
-                headers: { Authorization: ctx.authHeader, 'Content-Type': 'application/json', ...forwarded },
+                headers: { Authorization: authHeader, 'Content-Type': 'application/json', ...forwarded },
                 body: JSON.stringify({
                   using: ['urn:ietf:params:jmap:core', 'urn:ietf:params:jmap:mail'],
                   methodCalls: [
-                    ['Email/get', { accountId: targetAccountId, ids: [emailId], properties: ['id'] }, '0'],
+                    ['Email/get', { accountId: targetAccountId, ids: [requestedEmailId], properties: ['id'] }, '0'],
                   ],
                 }),
               }, trusted);
@@ -197,42 +160,47 @@ async function resolveTargetForAccount(
             }
           }
 
-          logger.info('push-preview: probe success', { slot, ctxServerUrl, hasTargetEmail, trusted });
           return {
-            authHeader: ctx.authHeader,
-            apiUrl: absoluteApiUrl,
-            accountId: targetAccountId,
-            trusted,
-            slot,
-            serverUrl: ctxServerUrl,
-            username: ctx.username,
-            accountName: ctx.accountName,
-            hasTargetEmail,
+            target: { authHeader, apiUrl, accountId: targetAccountId, trusted, slot, serverUrl, username: ctx.username, accountName: ctx.accountName },
             own: mailAccountId === targetAccountId,
+            hasTargetEmail,
           };
-        } catch (err) {
-          logger.warn('push-preview: probe exception', { slot, ctxServerUrl, err: String(err) });
+        } catch {
           return null;
         }
-      })(),
+      })()
     );
   }
 
-  const results = await Promise.all(probes);
-  const valid = results.filter((r): r is ProbeResult => r !== null);
-  if (valid.length === 0) return null;
-  const foundWithEmail = valid.find((r) => r.hasTargetEmail);
-  if (foundWithEmail) return foundWithEmail;
-  const owners = valid.filter((r) => r.own);
-  if (owners.length === 1) return owners[0];
-  if (valid.length === 1) return valid[0];
-  return valid.length > 1 ? 'ambiguous' : null;
+  const results = (await Promise.all(probes)).filter((r): r is ProbeResult => r !== null);
+  if (requestedEmailId) {
+    const withEmail = results.find((r) => r.hasTargetEmail);
+    if (withEmail) return withEmail.target;
+  }
+  if (named && results.length > 0) {
+    const namedMatches = results.filter((r) => {
+      const u = r.target.username.toLowerCase();
+      const a = r.target.accountName?.toLowerCase();
+      if (u === named || a === named) return true;
+      if (named.includes('@')) {
+        const [user, domain] = named.split('@');
+        if (u === user && r.target.serverUrl.toLowerCase().includes(domain)) return true;
+      }
+      return false;
+    });
+    const servers = new Set(namedMatches.map((r) => r.target.serverUrl));
+    if (namedMatches.length === 1 && (!serverUrlParam || servers.size <= 1)) return namedMatches[0].target;
+    if (namedMatches.length > 1 && servers.size > 1 && !serverUrlParam) return 'ambiguous';
+    if (namedMatches.length === 1) return namedMatches[0].target;
+  }
+  const owners = results.filter((r) => r.own);
+  if (owners.length === 1) return owners[0].target;
+  if (results.length === 1) return results[0].target;
+  return results.length > 1 ? 'ambiguous' : null;
 }
 
-async function resolveDefaultTarget(creds: StalwartCredentials, forwarded: Record<string, string>): Promise<ResolvedTarget | null> {
-  const sessionRes = await fetchJmapServer(`${creds.serverUrl}/.well-known/jmap`, {
-    headers: { Authorization: creds.authHeader, ...forwarded },
-  }, creds.trusted);
+async function resolveDefaultTarget(creds: StalwartCredentials, forwarded: Record<string, string>, basePath: string | undefined): Promise<ResolvedTarget | null> {
+  const { res: sessionRes, authHeader } = await openSession(await cookies(), creds.slot, creds, creds.serverUrl, creds.trusted, forwarded, basePath, true);
   if (!sessionRes.ok) return null;
   const session = (await readJsonCapped(sessionRes, UPSTREAM_JSON_MAX_BYTES)) as {
     apiUrl?: string;
@@ -242,28 +210,40 @@ async function resolveDefaultTarget(creds: StalwartCredentials, forwarded: Recor
     ?? (session.apiUrl?.startsWith('http') ? session.apiUrl : `${creds.serverUrl}/jmap`);
   const accountId = session.primaryAccounts?.['urn:ietf:params:jmap:mail'];
   if (!apiUrl || !accountId) return null;
-  return { authHeader: creds.authHeader, apiUrl, accountId, trusted: creds.trusted, serverUrl: creds.serverUrl, username: creds.username, accountName: creds.accountName };
+  return { authHeader, apiUrl, accountId, trusted: creds.trusted, serverUrl: creds.serverUrl, username: creds.username, accountName: creds.accountName };
 }
 
 /**
- * GET /api/push/preview
+ * Service worker push notification preview endpoint.
  *
- * Called from the service worker when a Web Push wake-up arrives. Fetches the
- * latest unread email so the SW can build an enriched system notification
- * (sender, subject, avatar) without ever exposing JMAP credentials to the
- * SW context.
+ * The browser's service worker calls this with cookies included to get the
+ * sender and preview snippet of the newest unread message when a push event
+ * arrives. The SW cannot make JMAP calls itself since credentials are in
+ * httpOnly cookies.
  *
- * The relay's push payload is intentionally minimal (just a state-change
- * ping), so this is what makes "From: Alice / Subject: …" appear instead of
+ * Never answers 401 on unexpected failure: any unauthenticated response makes
+ * the worker post a generic "New mail" notification. Only deliberate denial
+ * (no session at all) should make the SW fall back to its offline behavior.
+ *
+ * If the preview cannot be read (network glitch, JMAP error), the endpoint
+ * returns 502 with a descriptive body so the service worker falls back to
  * a generic "New mail" string.
  */
 export async function GET(request: NextRequest) {
+  // The preview may renew a login's token (#1509), which spends its refresh
+  // token at the provider. GET passes the same-origin gate of the other auth
+  // routes, so a page elsewhere could make the browser do that with a link.
+  // The service worker's own fetch is same-origin.
+  const fetchSite = request.headers.get('sec-fetch-site');
+  if (fetchSite && fetchSite !== 'same-origin') {
+    return NextResponse.json({ error: 'Cross-origin request' }, { status: 403 });
+  }
   try {
-    // SW passes ?accountId=<jmap-account-id>, ?accountLabel=<user@domain>, and ?serverUrl=<url>
+    // SW passes ?accountId=<jmap-account-id>, ?login=<user@domain>, and ?serverUrl=<url>
     // derived from the push payload so multi-account/multi-server browsers fetch
     // from the right slot.
     const requestedAccountId = request.nextUrl.searchParams.get('accountId');
-    const requestedAccountLabel = request.nextUrl.searchParams.get('accountLabel');
+    const requestedAccountLabel = request.nextUrl.searchParams.get('login') || request.nextUrl.searchParams.get('accountLabel');
     const requestedServerUrl = request.nextUrl.searchParams.get('serverUrl');
     // With a server-side delivery filter (draft-ietf-jmap-emailpush) the push
     // carries the id of the message that was actually delivered, so the SW
@@ -271,17 +251,19 @@ export async function GET(request: NextRequest) {
     // which is wrong whenever Sieve filed the new message into a folder.
     const requestedEmailId = request.nextUrl.searchParams.get('emailId');
     const forwarded = forwardedClientHeaders(loginClientAddress(request));
+    const basePath = request.nextUrl.basePath;
 
     let target: ResolvedTarget | null = null;
     let authHeader: string;
     if (requestedAccountId || requestedAccountLabel || requestedServerUrl) {
-      const resolved = await resolveTargetForAccount({
-        accountId: requestedAccountId,
-        accountLabel: requestedAccountLabel,
-        serverUrl: requestedServerUrl,
-        emailId: requestedEmailId,
+      const resolved = await resolveTargetForAccount(
+        requestedAccountId || '',
+        requestedAccountLabel,
         forwarded,
-      });
+        basePath,
+        requestedServerUrl,
+        requestedEmailId,
+      );
       if (!resolved) {
         // Return 401 so the service worker knows the account is not authenticated,
         // which triggers the safe fallback notification ("You have new mail") instead
@@ -294,22 +276,72 @@ export async function GET(request: NextRequest) {
         return NextResponse.json({ error: 'Account is in more than one signed-in login' }, { status: 409 });
       }
       target = resolved;
-      authHeader = target.authHeader;
+      authHeader = resolved.authHeader;
     } else {
       const creds = await getStalwartCredentials(request);
       if (!creds) {
         return NextResponse.json({ error: 'Not authenticated' }, { status: 401 });
       }
-      target = await resolveDefaultTarget(creds, forwarded);
-      if (!target) {
-        return NextResponse.json({ error: 'JMAP session failed' }, { status: 502 });
+      const defaultTarget = await resolveDefaultTarget(creds, forwarded, basePath);
+      if (!defaultTarget) {
+        return NextResponse.json({ error: 'Could not resolve default target' }, { status: 502 });
       }
-      authHeader = creds.authHeader;
+      target = defaultTarget;
+      authHeader = defaultTarget.authHeader;
     }
 
-    const { apiUrl, accountId, trusted } = target;
+    // Check device policy: if push notification content is redacted, don't query email details
+    const policy = await serverDevicePolicy(target);
+    const redacted = policy.pushWithoutContent;
 
-    const inboxRes = await fetchJmapServer(apiUrl, {
+    // Fast-path: if content is redacted, we only need the unread count, not email details
+    const methodCalls: [string, unknown, string][] = [
+      ['Email/query', {
+        accountId: target.accountId,
+        filter: { inMailboxOtherThan: [], hasKeyword: '$seen', allInThreadHaveKeyword: false },
+        calculateTotal: true,
+        limit: 0,
+      }, '0'],
+    ];
+
+    if (!redacted) {
+      if (requestedEmailId) {
+        methodCalls.push([
+          'Email/get',
+          {
+            accountId: target.accountId,
+            ids: [requestedEmailId],
+            properties: ['id', 'threadId', 'from', 'subject', 'preview', 'receivedAt'],
+          },
+          'delivered',
+        ]);
+      }
+      methodCalls.push([
+        'Email/query',
+        {
+          accountId: target.accountId,
+          filter: { inMailboxOtherThan: [], hasKeyword: '$seen', allInThreadHaveKeyword: false },
+          sort: [{ property: 'receivedAt', isAscending: false }],
+          limit: 1,
+        },
+        '1',
+      ]);
+      methodCalls.push([
+        'Email/get',
+        {
+          accountId: target.accountId,
+          '#ids': {
+            resultOf: '1',
+            name: 'Email/query',
+            path: '/ids',
+          },
+          properties: ['id', 'threadId', 'from', 'subject', 'preview', 'receivedAt'],
+        },
+        '2',
+      ]);
+    }
+
+    const jmapRes = await fetchJmapServer(target.apiUrl, {
       method: 'POST',
       headers: {
         Authorization: authHeader,
@@ -318,124 +350,31 @@ export async function GET(request: NextRequest) {
       },
       body: JSON.stringify({
         using: ['urn:ietf:params:jmap:core', 'urn:ietf:params:jmap:mail'],
-        methodCalls: [
-          [
-            'Mailbox/query',
-            { accountId, filter: { role: 'inbox' }, limit: 1 },
-            'mb',
-          ],
-        ],
+        methodCalls,
       }),
-    }, trusted);
+    }, target.trusted);
 
-    if (!inboxRes.ok) {
-      return NextResponse.json({ error: 'JMAP mailbox query failed' }, { status: 502 });
+    if (!jmapRes.ok) {
+      return NextResponse.json({ error: 'JMAP request failed' }, { status: 502 });
     }
-
-    const inboxData = (await readJsonCapped(inboxRes, UPSTREAM_JSON_MAX_BYTES)) as {
+    const data = (await readJsonCapped(jmapRes, UPSTREAM_JSON_MAX_BYTES)) as {
       methodResponses: [string, Record<string, unknown>, string][];
     };
 
-    const inboxBody = inboxData.methodResponses.find(
-      ([method, , callId]) => method === 'Mailbox/query' && callId === 'mb',
-    )?.[1] as { ids?: string[] } | undefined;
-
-    // A method-level JMAP error still has HTTP 200. Do not turn it into
-    // an empty Inbox: the service worker would silently discard the push.
-    if (!Array.isArray(inboxBody?.ids)) {
-      return NextResponse.json({ error: 'JMAP mailbox query failed' }, { status: 502 });
-    }
-
-    const inboxId = inboxBody.ids[0];
-    // Organisation > Devices > Push without sender and subject, for this
-    // login's scopes (worked out from its own session): the message's
-    // sender, subject and text are never read, so they can't reach the
-    // notification, the push service or the lock screen. Unknown counts as on.
-    const redacted = await serverDevicePolicy({
-      serverUrl: target.serverUrl,
-      authHeader,
-      username: target.username,
-      accountName: target.accountName,
-      trusted,
-    }).then((devices) => devices.pushWithoutContent, () => true);
-    const emailProperties = redacted
-      ? ['id', 'threadId', 'receivedAt']
-      : ['id', 'threadId', 'from', 'subject', 'preview', 'receivedAt'];
-
-    if (!inboxId && !requestedEmailId) {
-      return NextResponse.json({
-        email: null,
-        unreadTotal: 0,
-      }, {
-        headers: {
-          'Cache-Control': 'no-store',
-        },
-      });
-    }
-
-    // Pull the most recent unread message from the resolved Inbox mailbox
-    // (and its unread total for the "+N more" line). When the SW named the
-    // delivered message, fetch that one too and prefer it.
-    const methodCalls: unknown[] = [];
-    if (inboxId) {
-      methodCalls.push(
-        [
-          'Email/query',
-          {
-            accountId,
-            filter: {
-              operator: 'AND',
-              conditions: [
-                { inMailbox: inboxId },
-                { notKeyword: '$seen' },
-              ],
-            },
-            sort: [{ property: 'receivedAt', isAscending: false }],
-            limit: 1,
-            calculateTotal: true,
-          },
-          'eq',
-        ],
-        [
-          'Email/get',
-          {
-            accountId,
-            '#ids': { resultOf: 'eq', name: 'Email/query', path: '/ids' },
-            properties: emailProperties,
-          },
-          'eg',
-        ],
-      );
-    }
-    if (requestedEmailId) {
-      methodCalls.push([
-        'Email/get',
-        { accountId, ids: [requestedEmailId], properties: emailProperties },
-        'delivered',
-      ]);
-    }
-    const requestBody = {
-      using: ['urn:ietf:params:jmap:core', 'urn:ietf:params:jmap:mail'],
-      methodCalls,
-    };
-
-    const emailRes = await fetchJmapServer(apiUrl, {
-      method: 'POST',
-      headers: {
-        Authorization: authHeader,
-        'Content-Type': 'application/json',
-        ...forwarded,
-      },
-      body: JSON.stringify(requestBody),
-    }, trusted);
-
-    if (!emailRes.ok) {
+    // Missing/failed method responses are preview failures, not proof that
+    // there is no unread mail. A non-2xx response lets the SW show its fallback.
+    // The message the server named, once read, is a complete preview on its
+    // own, whatever became of the Inbox lookups next to it.
+    const resultOf = (name: string, id: string) =>
+      data.methodResponses.find(([method, , callId]) => method === name && callId === id)?.[1];
+    const failed = (methodCalls as [string, unknown, string][]).some(([name, , id]) => {
+      const result = resultOf(name, id);
+      return !result || (name === 'Email/query' ? !Array.isArray(result.ids) : !Array.isArray(result.list));
+    });
+    const deliveredList = resultOf('Email/get', 'delivered')?.list;
+    if (failed && !(Array.isArray(deliveredList) && deliveredList.length > 0)) {
       return NextResponse.json({ error: 'JMAP email query failed' }, { status: 502 });
     }
-
-    const emailData = (await readJsonCapped(emailRes, UPSTREAM_JSON_MAX_BYTES)) as {
-      methodResponses: [string, Record<string, unknown>, string][];
-    };
 
     type EmailLite = {
       id: string;
@@ -449,8 +388,9 @@ export async function GET(request: NextRequest) {
     let email: EmailLite | null = null;
     let delivered: EmailLite | null = null;
     let unreadTotal = 0;
-    for (const [method, body, callId] of emailData.methodResponses) {
+    for (const [method, body, callId] of data.methodResponses) {
       if (method === 'Email/query') {
+        // A server that leaves out the optional total still lists the ids.
         const query = body as { total?: number; ids?: unknown[] };
         unreadTotal = typeof query.total === 'number' ? query.total : (query.ids?.length ?? 0);
       }
@@ -460,33 +400,60 @@ export async function GET(request: NextRequest) {
         else email = list[0] ?? null;
       }
     }
+    // The message the server said it delivered beats "newest unread in the
+    // Inbox" - it may have been filed elsewhere by Sieve. Keep the Inbox
+    // unread total for the group line; count the delivered one if it isn't
+    // already in it (unread total is Inbox-scoped).
     if (delivered) {
       if (!email || email.id !== delivered.id) {
         unreadTotal = Math.max(unreadTotal, 1);
       }
       email = delivered;
     } else if (requestedEmailId) {
+      // The server named the message that arrived and it could not be read -
+      // deleted since, or filed where this login cannot see it. "Newest unread
+      // in the Inbox" is then some other message, and announcing it would be
+      // confidently wrong. Name no message: the unread total still comes back,
+      // so the SW posts its generic toast instead of staying silent.
       email = null;
     }
 
+    // Some servers build the preview from HTML without skipping <style>; a
+    // notification that opens on a style sheet says nothing.
     if (email?.preview) email = { ...email, preview: cleanPreview(email.preview) };
+    // Whatever the server sent anyway, only what a click needs goes back.
     if (redacted && email) email = { id: email.id, threadId: email.threadId, receivedAt: email.receivedAt ?? null };
 
     return NextResponse.json({
       email,
       unreadTotal,
       ...(redacted ? { redacted: true } : {}),
-      ...(target.slot !== undefined ? { slot: target.slot } : {})
+      ...(target.slot !== undefined ? { slot: target.slot } : {}),
+      // For the notification's buttons, which must not land on whoever signs
+      // into this slot later (app/api/push/action).
+      ...(target.slot !== undefined && email ? { login: await loginFingerprint(target.serverUrl, target.username) } : {}),
     }, {
       headers: {
+        // SW already gates on its own logic - don't let push events get
+        // cached and served stale.
         'Cache-Control': 'no-store',
       },
     });
   } catch (error) {
-    if (error instanceof DisallowedUrlError || error instanceof UpstreamBodyTooLargeError) {
-      return NextResponse.json({ error: 'Upstream request blocked' }, { status: 502 });
+    if (error instanceof DisallowedUrlError) {
+      logger.warn('push preview refused non-public server address', { error: error.message });
+      return NextResponse.json({ error: 'JMAP server address is not allowed' }, { status: 502 });
     }
-    logger.error('push-preview: unexpected error', { error: String(error) });
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+    if (error instanceof UpstreamBodyTooLargeError) {
+      logger.warn('push preview: JMAP response too large', { maxBytes: error.maxBytes });
+      return NextResponse.json({ error: 'JMAP server response is too large' }, { status: 502 });
+    }
+    const err = error as Error & { cause?: { code?: string; message?: string } };
+    logger.error('push preview failed', {
+      error: err?.message ?? 'Unknown error',
+      causeCode: err?.cause?.code,
+      causeMessage: err?.cause?.message,
+    });
+    return NextResponse.json({ error: 'Internal error' }, { status: 500 });
   }
 }
